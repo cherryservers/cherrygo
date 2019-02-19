@@ -8,7 +8,7 @@ Installation
 ### Examples ###
 
 
-```
+```go
 	c, err := cherrygo.NewClient()
 	if err != nil {
 		log.Fatal(err)
