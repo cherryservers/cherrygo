@@ -34,6 +34,7 @@ type Client struct {
 	Images      GetImages
 	Projects    GetProjects
 	SSHKeys     GetSSHKeys
+	SSHKey      GetSSHKey
 	Servers     GetServers
 	Server      GetServer
 	IPAddresses GetIPS
@@ -177,6 +178,7 @@ func NewClient() (*Client, error) {
 	c.Images = &ImagesClient{client: c}
 	c.Projects = &ProjectsClient{client: c}
 	c.SSHKeys = &SSHKeysClient{client: c}
+	c.SSHKey = &SSHKeyClient{client: c}
 	c.Servers = &ServersClient{client: c}
 	c.Server = &ServerClient{client: c}
 	c.IPAddresses = &IPSClient{client: c}
