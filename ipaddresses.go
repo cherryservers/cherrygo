@@ -2,7 +2,6 @@ package cherrygo
 
 import (
 	"log"
-	"strconv"
 	"strings"
 )
 
@@ -11,7 +10,7 @@ const endIPSPath = "ips"
 
 // GetIPS interface metodas isgauti team'sus
 type GetIPS interface {
-	List(projectID int) ([]IPAddresses, *Response, error)
+	List(projectID string) ([]IPAddresses, *Response, error)
 }
 
 // IPSClient paveldi client
@@ -20,12 +19,10 @@ type IPSClient struct {
 }
 
 // List func lists teams
-func (i *IPSClient) List(projectID int) ([]IPAddresses, *Response, error) {
+func (i *IPSClient) List(projectID string) ([]IPAddresses, *Response, error) {
 	//root := new(teamRoot)
 
-	projectIDString := strconv.Itoa(projectID)
-
-	ipsPath := strings.Join([]string{baseIPSPath, projectIDString, endIPSPath}, "/")
+	ipsPath := strings.Join([]string{baseIPSPath, projectID, endIPSPath}, "/")
 
 	var trans []IPAddresses
 	//resp := t.client.Bumba()
