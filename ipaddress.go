@@ -2,16 +2,15 @@ package cherrygo
 
 import (
 	"log"
-	"strconv"
 	"strings"
 )
 
 // GetIP interface metodas isgauti team'sus
 type GetIP interface {
-	List(projectID int, ipID string) (IPAddresses, *Response, error)
-	Create(projectID int, request *CreateIPAddress) (IPAddresses, *Response, error)
-	Remove(projectID int, request *RemoveIPAddress) (IPAddresses, *Response, error)
-	Update(projectID int, ipID string, request *UpdateIPAddress) (IPAddresses, *Response, error)
+	List(projectID string, ipID string) (IPAddresses, *Response, error)
+	Create(projectID string, request *CreateIPAddress) (IPAddresses, *Response, error)
+	Remove(projectID string, request *RemoveIPAddress) (IPAddresses, *Response, error)
+	Update(projectID string, ipID string, request *UpdateIPAddress) (IPAddresses, *Response, error)
 }
 
 // IPClient paveldi client
@@ -43,12 +42,10 @@ type RemoveIPAddress struct {
 }
 
 // List func lists teams
-func (i *IPClient) List(projectID int, ipID string) (IPAddresses, *Response, error) {
+func (i *IPClient) List(projectID string, ipID string) (IPAddresses, *Response, error) {
 	//root := new(teamRoot)
 
-	projectIDString := strconv.Itoa(projectID)
-
-	ipsPath := strings.Join([]string{baseIPSPath, projectIDString, endIPSPath, ipID}, "/")
+	ipsPath := strings.Join([]string{baseIPSPath, projectID, endIPSPath, ipID}, "/")
 
 	var trans IPAddresses
 
@@ -61,13 +58,11 @@ func (i *IPClient) List(projectID int, ipID string) (IPAddresses, *Response, err
 }
 
 // Create function orders new floating IP address
-func (i *IPClient) Create(projectID int, request *CreateIPAddress) (IPAddresses, *Response, error) {
+func (i *IPClient) Create(projectID string, request *CreateIPAddress) (IPAddresses, *Response, error) {
 
 	var trans IPAddresses
 
-	projectIDString := strconv.Itoa(projectID)
-
-	ipAddressPath := strings.Join([]string{baseIPSPath, projectIDString, endIPSPath}, "/")
+	ipAddressPath := strings.Join([]string{baseIPSPath, projectID, endIPSPath}, "/")
 
 	resp, err := i.client.MakeRequest("POST", ipAddressPath, request, &trans)
 	if err != nil {
@@ -78,13 +73,11 @@ func (i *IPClient) Create(projectID int, request *CreateIPAddress) (IPAddresses,
 }
 
 // Update function updates existing floating IP address
-func (i *IPClient) Update(projectID int, ipID string, request *UpdateIPAddress) (IPAddresses, *Response, error) {
+func (i *IPClient) Update(projectID string, ipID string, request *UpdateIPAddress) (IPAddresses, *Response, error) {
 
 	var trans IPAddresses
 
-	projectIDString := strconv.Itoa(projectID)
-
-	ipAddressPath := strings.Join([]string{baseIPSPath, projectIDString, endIPSPath, ipID}, "/")
+	ipAddressPath := strings.Join([]string{baseIPSPath, projectID, endIPSPath, ipID}, "/")
 
 	resp, err := i.client.MakeRequest("PUT", ipAddressPath, request, &trans)
 	if err != nil {
@@ -95,13 +88,11 @@ func (i *IPClient) Update(projectID int, ipID string, request *UpdateIPAddress) 
 }
 
 // Remove function remove existing floating IP address
-func (i *IPClient) Remove(projectID int, request *RemoveIPAddress) (IPAddresses, *Response, error) {
+func (i *IPClient) Remove(projectID string, request *RemoveIPAddress) (IPAddresses, *Response, error) {
 
 	var trans IPAddresses
 
-	projectIDString := strconv.Itoa(projectID)
-
-	ipAddressPath := strings.Join([]string{baseIPSPath, projectIDString, endIPSPath, request.ID}, "/")
+	ipAddressPath := strings.Join([]string{baseIPSPath, projectID, endIPSPath, request.ID}, "/")
 
 	resp, err := i.client.MakeRequest("DELETE", ipAddressPath, request, &trans)
 	if err != nil {
