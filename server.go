@@ -2,7 +2,6 @@ package cherrygo
 
 import (
 	"log"
-	"strconv"
 	"strings"
 )
 
@@ -12,12 +11,12 @@ const powerPath = "?fields=power"
 
 // GetServer interface metodas isgauti team'sus
 type GetServer interface {
-	List(serverID int) (Server, *Response, error)
+	List(serverID string) (Server, *Response, error)
 	PowerOff(serverID string) (Server, *Response, error)
 	PowerOn(serverID string) (Server, *Response, error)
-	Create(projectID int, request *CreateServer) (Server, *Response, error)
+	Create(projectID string, request *CreateServer) (Server, *Response, error)
 	Delete(request *DeleteServer) (Server, *Response, error)
-	PowerState(serverID int) (PowerState, *Response, error)
+	PowerState(serverID string) (PowerState, *Response, error)
 	Reboot(serverID string) (Server, *Response, error)
 }
 
@@ -54,8 +53,8 @@ type PowerState struct {
 
 // CreateServer fields for ordering new server
 type CreateServer struct {
-	ProjectID   int      `json:"project_id", omitempty`
-	PlanID      int      `json:"plan_id", omitempty`
+	ProjectID   string   `json:"project_id", omitempty`
+	PlanID      string   `json:"plan_id", omitempty`
 	Hostname    string   `json:"hostname", omitempty`
 	Image       string   `json:"image", omitempty`
 	Region      string   `json:"region", omitempty`
@@ -69,12 +68,12 @@ type DeleteServer struct {
 }
 
 // List func lists teams
-func (s *ServerClient) List(serverID int) (Server, *Response, error) {
+func (s *ServerClient) List(serverID string) (Server, *Response, error) {
 	//root := new(teamRoot)
 
-	serverIDString := strconv.Itoa(serverID)
+	//serverIDString := strconv.Itoa(serverID)
 
-	serverPath := strings.Join([]string{baseServerPath, serverIDString}, "/")
+	serverPath := strings.Join([]string{baseServerPath, serverID}, "/")
 
 	var trans Server
 
@@ -87,10 +86,11 @@ func (s *ServerClient) List(serverID int) (Server, *Response, error) {
 }
 
 // PowerState func
-func (s *ServerClient) PowerState(serverID int) (PowerState, *Response, error) {
-	serverIDString := strconv.Itoa(serverID)
+func (s *ServerClient) PowerState(serverID string) (PowerState, *Response, error) {
 
-	serverPath := strings.Join([]string{baseServerPath, serverIDString + powerPath}, "/")
+	//serverIDString := strconv.Itoa(serverID)
+
+	serverPath := strings.Join([]string{baseServerPath, serverID + powerPath}, "/")
 
 	var trans PowerState
 
@@ -103,13 +103,13 @@ func (s *ServerClient) PowerState(serverID int) (PowerState, *Response, error) {
 }
 
 // Create function orders new floating IP address
-func (s *ServerClient) Create(projectID int, request *CreateServer) (Server, *Response, error) {
+func (s *ServerClient) Create(projectID string, request *CreateServer) (Server, *Response, error) {
 
 	var trans Server
 
-	projectIDString := strconv.Itoa(projectID)
+	//projectIDString := strconv.Itoa(projectID)
 
-	serverPath := strings.Join([]string{baseIPSPath, projectIDString, endServersPath}, "/")
+	serverPath := strings.Join([]string{baseIPSPath, projectID, endServersPath}, "/")
 
 	//log.Fatalf("Request: %v", request)
 	resp, err := s.client.MakeRequest("POST", serverPath, request, &trans)

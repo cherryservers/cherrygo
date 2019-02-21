@@ -2,7 +2,6 @@ package cherrygo
 
 import (
 	"log"
-	"strconv"
 	"strings"
 )
 
@@ -11,7 +10,7 @@ const endServersPath = "servers"
 
 // GetServers interface metodas isgauti team'sus
 type GetServers interface {
-	List(projectID int) ([]Servers, *Response, error)
+	List(projectID string) ([]Servers, *Response, error)
 }
 
 // Servers tai ka grazina api
@@ -83,12 +82,12 @@ type ServersClient struct {
 }
 
 // List func lists teams
-func (s *ServersClient) List(projectID int) ([]Servers, *Response, error) {
+func (s *ServersClient) List(projectID string) ([]Servers, *Response, error) {
 	//root := new(teamRoot)
 
-	serversIDString := strconv.Itoa(projectID)
+	//serversIDString := strconv.Itoa(projectID)
 
-	serversPath := strings.Join([]string{baseServersPath, serversIDString, endServersPath}, "/")
+	serversPath := strings.Join([]string{baseServersPath, projectID, endServersPath}, "/")
 
 	var trans []Servers
 	//resp := t.client.Bumba()
