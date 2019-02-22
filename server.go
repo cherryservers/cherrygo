@@ -58,7 +58,7 @@ type CreateServer struct {
 	Hostname    string   `json:"hostname", omitempty`
 	Image       string   `json:"image", omitempty`
 	Region      string   `json:"region", omitempty`
-	SSHKeys     []int    `json:"ssh_keys", omitempty`
+	SSHKeys     []string `json:"ssh_keys", omitempty`
 	IPAddresses []string `json:"ip_addresses", omitempty`
 }
 
