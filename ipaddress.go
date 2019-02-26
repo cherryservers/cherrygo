@@ -20,25 +20,25 @@ type IPClient struct {
 
 // CreateIPAddress fields for adding addition IP address
 type CreateIPAddress struct {
-	Type       string `json:"type", omitempty`
-	Region     string `json:"region", omitempty`
-	PtrRecord  string `json:"ptr_record", omitempty`
-	ARecord    string `json:"a_record", omitempty`
-	RoutedTo   string `json:"routed_to", omitempty`
-	AssignedTo string `json:"assigned_to", omitempty`
+	Type       string `json:"type,omitempty"`
+	Region     string `json:"region,omitempty"`
+	PtrRecord  string `json:"ptr_record,omitempty"`
+	ARecord    string `json:"a_record,omitempty"`
+	RoutedTo   string `json:"routed_to,omitempty"`
+	AssignedTo string `json:"assigned_to,omitempty"`
 }
 
 // UpdateIPAddress fields for updating IP address
 type UpdateIPAddress struct {
-	PtrRecord  string `json:"ptr_record", omitempty`
-	ARecord    string `json:"a_record", omitempty`
-	RoutedTo   string `json:"routed_to", omitempty`
-	AssignedTo string `json:"assigned_to", omitempty`
+	PtrRecord  string `json:"ptr_record,omitempty"`
+	ARecord    string `json:"a_record,omitempty"`
+	RoutedTo   string `json:"routed_to,omitempty"`
+	AssignedTo string `json:"assigned_to,omitempty"`
 }
 
 // RemoveIPAddress fields for removing IP address
 type RemoveIPAddress struct {
-	ID string `json:"id", omitempty`
+	ID string `json:"id,omitempty"`
 }
 
 // List func lists teams

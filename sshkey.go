@@ -15,30 +15,30 @@ type GetSSHKey interface {
 
 // SSHKey fields for return values after creation
 type SSHKey struct {
-	ID          int    `json:"id", omitempty`
-	Label       string `json:"label", omitempty`
-	Key         string `json:"key", omitempty`
-	Fingerprint string `json:"fingerprint", omitempty`
-	Updated     string `json:"updated", omitempty`
-	Created     string `json:"created", omitempty`
-	Href        string `json:"href", omitempty`
+	ID          int    `json:"id,omitempty"`
+	Label       string `json:"label,omitempty"`
+	Key         string `json:"key,omitempty"`
+	Fingerprint string `json:"fingerprint,omitempty"`
+	Updated     string `json:"updated,omitempty"`
+	Created     string `json:"created,omitempty"`
+	Href        string `json:"href,omitempty"`
 }
 
 // CreateSSHKey fields for adding new key with label and raw key
 type CreateSSHKey struct {
-	Label string `json:"label", omitempty`
-	Key   string `json:"key", omitempty`
+	Label string `json:"label,omitempty"`
+	Key   string `json:"key,omitempty"`
 }
 
 // DeleteSSHKey fields for key delition by its ID
 type DeleteSSHKey struct {
-	ID string `json:"id", omitempty`
+	ID string `json:"id,omitempty"`
 }
 
 // UpdateSSHKey fields for label or key update
 type UpdateSSHKey struct {
-	Label string `json:"label", omitempty`
-	Key   string `json:"key", omitempty`
+	Label string `json:"label,omitempty"`
+	Key   string `json:"key,omitempty"`
 }
 
 // SSHKeyClient paveldi client

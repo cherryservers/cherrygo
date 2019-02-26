@@ -16,9 +16,9 @@ type GetImages interface {
 
 // Images tai ka grazina api
 type Images struct {
-	ID      int     `json:"id", omitempty`
-	Name    string  `json:"name", omitempty`
-	Pricing Pricing `json:"pricing", omitempty`
+	ID      int     `json:"id,omitempty"`
+	Name    string  `json:"name,omitempty"`
+	Pricing Pricing `json:"pricing,omitempty"`
 }
 
 // ImagesClient paveldi client
