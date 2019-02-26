@@ -36,10 +36,11 @@ type Specs struct {
 
 // Cpus fields
 type Cpus struct {
-	Count     int    `json:"count", omitempty`
-	Name      string `json:"name", omitempty`
-	Cores     int    `json:"cores", omitempty`
-	Frequency string `json:"frequency", omitempty`
+	Count     int     `json:"count", omitempty`
+	Name      string  `json:"name", omitempty`
+	Cores     int     `json:"cores", omitempty`
+	Frequency float32 `json:"frequency", omitempty`
+	Unit      string  `json:"unit, omitempty"`
 }
 
 // Memory fields
@@ -52,9 +53,10 @@ type Memory struct {
 
 // Storage fields
 type Storage struct {
-	Count int    `json:"count", omitempty`
-	Name  string `json:"name", omitempty`
-	Size  string `json:"size", omitempty`
+	Count int     `json:"count", omitempty`
+	Name  string  `json:"name", omitempty`
+	Size  float32 `json:"size", omitempty`
+	Unit  string  `json:"unit, omitempty"`
 }
 
 // Raid fields
