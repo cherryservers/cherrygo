@@ -22,18 +22,18 @@ type GetServer interface {
 
 // Server tai ka grazina api
 type Server struct {
-	ID               int              `json:"id", omitempty`
-	Name             string           `json:"name", omitempty`
-	Href             string           `json:"href", omitempty`
-	Hostname         string           `json:"hostname", omitempty`
-	Image            string           `json:"image", omitempty`
-	Region           Region           `json:"region", omitempty`
-	State            string           `json:"state", omitempty`
-	Plans            Plans            `json:"plan", omitempty`
-	AvailableRegions AvailableRegions `json:"availableregions", omitempty`
-	Pricing          Pricing          `json:"pricing", omitempty`
-	IPAddresses      []IPAddresses    `json:"ip_addresses", omitempty`
-	SSHKeys          []SSHKeys        `json:"ssh_keys", omitempty`
+	ID               int              `json:"id,omitempty"`
+	Name             string           `json:"name,omitempty"`
+	Href             string           `json:"href,omitempty"`
+	Hostname         string           `json:"hostname,omitempty"`
+	Image            string           `json:"image,omitempty"`
+	Region           Region           `json:"region,omitempty"`
+	State            string           `json:"state,omitempty"`
+	Plans            Plans            `json:"plan,omitempty"`
+	AvailableRegions AvailableRegions `json:"availableregions,omitempty"`
+	Pricing          Pricing          `json:"pricing,omitempty"`
+	IPAddresses      []IPAddresses    `json:"ip_addresses,omitempty"`
+	SSHKeys          []SSHKeys        `json:"ssh_keys,omitempty"`
 }
 
 // ServerClient paveldi client
@@ -43,28 +43,28 @@ type ServerClient struct {
 
 // ServerAction fields for performed action on server
 type ServerAction struct {
-	Type string `json:"type", omitempty`
+	Type string `json:"type,omitempty"`
 }
 
 // PowerState fields
 type PowerState struct {
-	Power string `json:"power", omitempty`
+	Power string `json:"power,omitempty"`
 }
 
 // CreateServer fields for ordering new server
 type CreateServer struct {
-	ProjectID   string   `json:"project_id", omitempty`
-	PlanID      string   `json:"plan_id", omitempty`
-	Hostname    string   `json:"hostname", omitempty`
-	Image       string   `json:"image", omitempty`
-	Region      string   `json:"region", omitempty`
-	SSHKeys     []string `json:"ssh_keys", omitempty`
-	IPAddresses []string `json:"ip_addresses", omitempty`
+	ProjectID   string   `json:"project_id,omitempty"`
+	PlanID      string   `json:"plan_id,omitempty"`
+	Hostname    string   `json:"hostname,omitempty"`
+	Image       string   `json:"image,omitempty"`
+	Region      string   `json:"region,omitempty"`
+	SSHKeys     []string `json:"ssh_keys,omitempty"`
+	IPAddresses []string `json:"ip_addresses,omitempty"`
 }
 
 // DeleteServer field for removing server
 type DeleteServer struct {
-	ID string `json:"id", omitempty`
+	ID string `json:"id,omitempty"`
 }
 
 // List func lists teams
