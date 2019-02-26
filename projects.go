@@ -16,9 +16,9 @@ type GetProjects interface {
 
 // Projects tai ka grazina api
 type Projects struct {
-	ID   int    `json:"id", omitempty`
-	Name string `json:"name", omitempty`
-	Href string `json:"href", omitempty`
+	ID   int    `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+	Href string `json:"href,omitempty"`
 }
 
 // ProjectsClient paveldi client
