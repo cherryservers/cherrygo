@@ -31,49 +31,49 @@ type Servers struct {
 
 // Region fields
 type Region struct {
-	ID         int    `json:"id", omitempty`
-	Name       string `json:"name", omitempty`
-	RegionIso2 string `json:"region_iso_2", omitempty`
-	Href       string `json:"href", omitempty`
+	ID         int    `json:"id,omitempty"`
+	Name       string `json:"name,omitempty"`
+	RegionIso2 string `json:"region_iso_2,omitempty"`
+	Href       string `json:"href,omitempty"`
 }
 
 // IPAddresses fields
 type IPAddresses struct {
-	ID            string     `json:"id", omitempty`
-	Address       string     `json:"address", omitempty`
-	AddressFamily int        `json:"address_family", omitempty`
-	Cidr          string     `json:"cidr", omitempty`
-	Gateway       string     `json:"gateway", omitempty`
-	Type          string     `json:"type", omitempty`
-	Region        Region     `json:"region", omitempty`
-	RoutedTo      RoutedTo   `json:"routed_to", omitempty`
-	AssignedTo    AssignedTo `json:"assigned_to", omitempty`
-	PtrRecord     string     `json:"ptr_record", omitempty`
-	ARecord       string     `json:"a_record", omitempty`
-	Href          string     `json:"href", omitempty`
+	ID            string     `json:"id,omitempty"`
+	Address       string     `json:"address,omitempty"`
+	AddressFamily int        `json:"address_family,omitempty"`
+	Cidr          string     `json:"cidr,omitempty"`
+	Gateway       string     `json:"gateway,omitempty"`
+	Type          string     `json:"type,omitempty"`
+	Region        Region     `json:"region,omitempty"`
+	RoutedTo      RoutedTo   `json:"routed_to,omitempty"`
+	AssignedTo    AssignedTo `json:"assigned_to,omitempty"`
+	PtrRecord     string     `json:"ptr_record,omitempty"`
+	ARecord       string     `json:"a_record,omitempty"`
+	Href          string     `json:"href,omitempty"`
 }
 
 // RoutedTo fields
 type RoutedTo struct {
-	ID            string `json:"id", omitempty`
-	Address       string `json:"address", omitempty`
-	AddressFamily int    `json:"address_family", omitempty`
-	Cidr          string `json:"cidr", omitempty`
-	Gateway       string `json:"gateway", omitempty`
-	Type          string `json:"type", omitempty`
-	Region        Region `json:"region", omitempty`
+	ID            string `json:"id,omitempty"`
+	Address       string `json:"address,omitempty"`
+	AddressFamily int    `json:"address_family,omitempty"`
+	Cidr          string `json:"cidr,omitempty"`
+	Gateway       string `json:"gateway,omitempty"`
+	Type          string `json:"type,omitempty"`
+	Region        Region `json:"region,omitempty"`
 }
 
 // AssignedTo fields
 type AssignedTo struct {
-	ID       int     `json:"id", omitempty`
-	Name     string  `json:"name", omitempty`
-	Href     string  `json:"href", omitempty`
-	Hostname string  `json:"hostname", omitempty`
-	Image    string  `json:"image", omitempty`
-	Region   Region  `json:"region", omitempty`
-	State    string  `json:"state", omitempty`
-	Pricing  Pricing `json:"pricing", omitempty`
+	ID       int     `json:"id,omitempty"`
+	Name     string  `json:"name,omitempty"`
+	Href     string  `json:"href,omitempty"`
+	Hostname string  `json:"hostname,omitempty"`
+	Image    string  `json:"image,omitempty"`
+	Region   Region  `json:"region,omitempty"`
+	State    string  `json:"state,omitempty"`
+	Pricing  Pricing `json:"pricing,omitempty"`
 }
 
 // ServersClient paveldi client
