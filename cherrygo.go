@@ -65,7 +65,7 @@ func (c *Client) MakeRequest(method, path string, body, v interface{}) (*Respons
 		}
 	}
 
-	fmt.Printf("\nBODY: %v\n", buf)
+	//fmt.Printf("\nBODY: %v\n", buf)
 
 	req, err := http.NewRequest(method, u.String(), buf)
 	if err != nil {
