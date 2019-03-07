@@ -122,8 +122,9 @@ func (c *Client) MakeRequest(method, path string, body, v interface{}) (*Respons
 			fmt.Printf("Error while unmarshal error body: %v", err)
 		}
 		// jei reikia viso, tai printinti response.Response
-		log.Fatalf("Error response from API: %v (error code: %v)", errorResponse.Message, errorResponse.Code)
-		//return &response, err
+		err = fmt.Errorf("Error response from API: %v (error code: %v)", errorResponse.Message, errorResponse.Code)
+
+		return &response, err
 	}
 
 	// errR := &ErrorResponse{Response: resp}

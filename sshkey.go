@@ -1,7 +1,7 @@
 package cherrygo
 
 import (
-	"log"
+	"fmt"
 	"strings"
 )
 
@@ -56,7 +56,7 @@ func (s *SSHKeyClient) List(sshKeyID string) (SSHKey, *Response, error) {
 
 	resp, err := s.client.MakeRequest("GET", sshKeyPath, nil, &trans)
 	if err != nil {
-		log.Fatal(err)
+		err = fmt.Errorf("Error: %v", err)
 	}
 
 	return trans, resp, err
@@ -69,7 +69,7 @@ func (s *SSHKeyClient) Create(request *CreateSSHKey) (SSHKeys, *Response, error)
 
 	resp, err := s.client.MakeRequest("POST", baseSSHPath, request, &trans)
 	if err != nil {
-		log.Fatal(err)
+		err = fmt.Errorf("Error: %v", err)
 	}
 	return trans, resp, err
 }
@@ -83,7 +83,7 @@ func (s *SSHKeyClient) Delete(request *DeleteSSHKey) (SSHKeys, *Response, error)
 
 	resp, err := s.client.MakeRequest("DELETE", sshKeyPath, request, &trans)
 	if err != nil {
-		log.Fatal("Error in Delete: ", err)
+		err = fmt.Errorf("Error: %v", err)
 	}
 	return trans, resp, err
 }
@@ -97,7 +97,7 @@ func (s *SSHKeyClient) Update(sshKeyID string, request *UpdateSSHKey) (SSHKeys, 
 
 	resp, err := s.client.MakeRequest("PUT", sshKeyPath, request, &trans)
 	if err != nil {
-		log.Fatal(err)
+		err = fmt.Errorf("Error: %v", err)
 	}
 	return trans, resp, err
 }
