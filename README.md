@@ -2,8 +2,14 @@
 
 Cherry Servers golang API for Cherry Servers RESTful API.
 
+![](https://pbs.twimg.com/profile_images/900630217630285824/p46dA56X_400x400.jpg)
+
 Installation
 ------------
+
+```
+go get github.com/cherryservers/cherrygo
+```
 
 ### Examples ###
 
@@ -28,7 +34,7 @@ for _, t := range teams {
 ```
 
 #### Get projects
-After you have your team ID, you can list your projects. You will need your project id to list your servers or order new ones.
+After you have your team ID, you can list your projects. You will need your project ID to list your servers or order new ones.
 ```go
 c, err := cherrygo.NewClient()
 if err != nil {
@@ -47,6 +53,7 @@ for _, p := range projects {
 ```
 
 #### Get plans
+You know your project ID, so next thing in order to get new server is to choose one, we call it plans
 
 ```go
 c, err := cherrygo.NewClient()
@@ -67,6 +74,7 @@ for _, p := range plans {
 ```
 
 #### Get images
+After you manage to know desired plan, you need to get available images for that plan
 ```go
 c, err := cherrygo.NewClient()
 if err != nil {
@@ -84,9 +92,8 @@ for _, i := range images {
 }
 ```
 
-
-
 #### Order new server
+Now you are ready to order new server
 ```go
 c, err := cherrygo.NewClient()
 if err != nil {
