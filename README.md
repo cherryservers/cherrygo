@@ -27,7 +27,27 @@ for _, t := range teams {
 }
 ```
 
+#### Get projects
+After you have your team ID, you can list your projects. You will need your project id to list your servers or order new ones.
+```go
+c, err := cherrygo.NewClient()
+if err != nil {
+    log.Fatal(err)
+}
+
+projects, _, err := c.Projects.List(teamID)
+if err != nil {
+    log.Fatal("Error", err)
+}
+
+for _, p := range projects {
+    fmt.Fprintf(tw, "%v\t%v\t%v\n",
+        p.ID, p.Name, p.Href)
+}
+```
+
 #### Get plans
+
 ```go
 c, err := cherrygo.NewClient()
 if err != nil {
@@ -64,23 +84,7 @@ for _, i := range images {
 }
 ```
 
-#### Get projects
-```go
-c, err := cherrygo.NewClient()
-if err != nil {
-    log.Fatal(err)
-}
 
-projects, _, err := c.Projects.List(teamID)
-if err != nil {
-    log.Fatal("Error", err)
-}
-
-for _, p := range projects {
-    fmt.Fprintf(tw, "%v\t%v\t%v\n",
-        p.ID, p.Name, p.Href)
-}
-```
 
 #### Order new server
 ```go
