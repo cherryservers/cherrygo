@@ -8,6 +8,7 @@ Installation
 ### Examples ###
 
 #### Get teams
+You will need team ID for later calls, for example to get projects for specified team, you will need to provide team ID.
 ```go
 c, err := cherrygo.NewClient()
 if err != nil {
