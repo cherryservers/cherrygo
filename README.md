@@ -4,11 +4,34 @@ Cherry Servers golang API for Cherry Servers RESTful API.
 
 ![](https://pbs.twimg.com/profile_images/900630217630285824/p46dA56X_400x400.jpg)
 
-Installation
-------------
+## Table of Contents
 
+- [Installation](#installation)
+- [Authentication](#authentication)
+- [Examples](#examples)
+  - [Get teams](#get-teams)
+  - [Get projects](#get-projects)
+  - [Get plans](#get-plans)
+  - [Get images](#get-images)
+  - [Order new server](#order-new-server)
+
+## Installation
+
+Download the library to you GOPATH:
 ```
 go get github.com/cherryservers/cherrygo
+```
+
+Then import the library in your Go code:
+```
+import cherrygo
+```
+
+### Authentication
+
+In order to authenticate you need to export CHERRY_AUTH_TOKEN variable:
+```
+export CHERRY_AUTH_TOKEN="4bdc0acb8f7af4bdc0acb8f7afe78522e6dae9b7e03b0e78522e6dae9b7e03b0"
 ```
 
 ### Examples ###
