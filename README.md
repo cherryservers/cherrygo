@@ -138,3 +138,7 @@ if err != nil {
     log.Fatal("Error while creating new server: ", err)
 }
 ```
+
+## License
+
+See the [LICENSE](LICENSE.md) file for license rights and limitations.
