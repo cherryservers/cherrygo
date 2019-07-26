@@ -167,6 +167,20 @@ func NewClient() (*Client, error) {
 		return nil, fmt.Errorf("You must export %s", cherryAuthTokenVar)
 	}
 
+	c := NewClientWithAuthVar(httpClient, authToken)
+
+	return c, nil
+}
+
+// NewClientWithAuthVar needed for auth without env variable
+func NewClientWithAuthVar(httpClient *http.Client, authToken string) *Client {
+	c, _ := NewClientBase(httpClient, authToken)
+	return c
+}
+
+// NewClientBase is for new client base creation
+func NewClientBase(httpClient *http.Client, authToken string) (*Client, error) {
+
 	url, err := url.Parse(apiURL)
 	if err != nil {
 		return nil, err
@@ -188,7 +202,7 @@ func NewClient() (*Client, error) {
 	c.IPAddresses = &IPSClient{client: c}
 	c.IPAddress = &IPClient{client: c}
 
-	return c, nil
+	return c, err
 }
 
 // ErrorResponse fields
