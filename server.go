@@ -60,6 +60,7 @@ type CreateServer struct {
 	Region      string   `json:"region,omitempty"`
 	SSHKeys     []string `json:"ssh_keys"`
 	IPAddresses []string `json:"ip_addresses"`
+	UserData    string   `json:"user_data"`
 }
 
 // DeleteServer field for removing server
