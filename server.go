@@ -22,18 +22,19 @@ type GetServer interface {
 
 // Server tai ka grazina api
 type Server struct {
-	ID               int              `json:"id,omitempty"`
-	Name             string           `json:"name,omitempty"`
-	Href             string           `json:"href,omitempty"`
-	Hostname         string           `json:"hostname,omitempty"`
-	Image            string           `json:"image,omitempty"`
-	Region           Region           `json:"region,omitempty"`
-	State            string           `json:"state,omitempty"`
-	Plans            Plans            `json:"plan,omitempty"`
-	AvailableRegions AvailableRegions `json:"availableregions,omitempty"`
-	Pricing          Pricing          `json:"pricing,omitempty"`
-	IPAddresses      []IPAddresses    `json:"ip_addresses,omitempty"`
-	SSHKeys          []SSHKeys        `json:"ssh_keys,omitempty"`
+	ID               int               `json:"id,omitempty"`
+	Name             string            `json:"name,omitempty"`
+	Href             string            `json:"href,omitempty"`
+	Hostname         string            `json:"hostname,omitempty"`
+	Image            string            `json:"image,omitempty"`
+	Region           Region            `json:"region,omitempty"`
+	State            string            `json:"state,omitempty"`
+	Plans            Plans             `json:"plan,omitempty"`
+	AvailableRegions AvailableRegions  `json:"availableregions,omitempty"`
+	Pricing          Pricing           `json:"pricing,omitempty"`
+	IPAddresses      []IPAddresses     `json:"ip_addresses,omitempty"`
+	SSHKeys          []SSHKeys         `json:"ssh_keys,omitempty"`
+	Tags             map[string]string `json:"tags,omitempty"`
 }
 
 // ServerClient paveldi client
@@ -53,14 +54,15 @@ type PowerState struct {
 
 // CreateServer fields for ordering new server
 type CreateServer struct {
-	ProjectID   string   `json:"project_id,omitempty"`
-	PlanID      string   `json:"plan_id,omitempty"`
-	Hostname    string   `json:"hostname,omitempty"`
-	Image       string   `json:"image,omitempty"`
-	Region      string   `json:"region,omitempty"`
-	SSHKeys     []string `json:"ssh_keys"`
-	IPAddresses []string `json:"ip_addresses"`
-	UserData    string   `json:"user_data"`
+	ProjectID   string            `json:"project_id,omitempty"`
+	PlanID      string            `json:"plan_id,omitempty"`
+	Hostname    string            `json:"hostname,omitempty"`
+	Image       string            `json:"image,omitempty"`
+	Region      string            `json:"region,omitempty"`
+	SSHKeys     []string          `json:"ssh_keys"`
+	IPAddresses []string          `json:"ip_addresses"`
+	UserData    string            `json:"user_data,omitempty"`
+	Tags        map[string]string `json:"tags,omitempty"`
 }
 
 // DeleteServer field for removing server
