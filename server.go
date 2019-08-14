@@ -18,6 +18,7 @@ type GetServer interface {
 	Delete(request *DeleteServer) (Server, *Response, error)
 	PowerState(serverID string) (PowerState, *Response, error)
 	Reboot(serverID string) (Server, *Response, error)
+	Update(serverID string, request *UpdateServer) (Server, *Response, error)
 }
 
 // Server tai ka grazina api
@@ -63,6 +64,11 @@ type CreateServer struct {
 	IPAddresses []string          `json:"ip_addresses"`
 	UserData    string            `json:"user_data,omitempty"`
 	Tags        map[string]string `json:"tags,omitempty"`
+}
+
+// UpdateServer fields for updating a server with specified tags
+type UpdateServer struct {
+	Tags map[string]string `json:"tags,omitempty"`
 }
 
 // DeleteServer field for removing server
@@ -181,5 +187,19 @@ func (s *ServerClient) Reboot(serverID string) (Server, *Response, error) {
 
 	resp, err := s.client.MakeRequest("POST", serverPath, rebootRequest, &trans)
 
+	return trans, resp, err
+}
+
+// Update update server with tags
+func (s *ServerClient) Update(serverID string, request *UpdateServer) (Server, *Response, error) {
+
+	var trans Server
+
+	serverPath := strings.Join([]string{baseServerPath, serverID}, "/")
+
+	resp, err := s.client.MakeRequest("PUT", serverPath, request, &trans)
+	if err != nil {
+		err = fmt.Errorf("Error: %v", err)
+	}
 	return trans, resp, err
 }
