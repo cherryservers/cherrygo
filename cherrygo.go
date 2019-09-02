@@ -55,7 +55,9 @@ func (c *Client) MakeRequest(method, path string, body, v interface{}) (*Respons
 	url, _ := url.Parse(path)
 
 	u := c.BaseURL.ResolveReference(url)
-	fmt.Printf("\nAPI Endpoint: %v\n", u)
+	if c.debug {
+		fmt.Printf("\nAPI Endpoint: %v\n", u)
+	}
 
 	buf := new(bytes.Buffer)
 	if body != nil {
