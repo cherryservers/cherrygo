@@ -40,6 +40,8 @@ type Client struct {
 	SSHKey      GetSSHKey
 	Servers     GetServers
 	Server      GetServer
+	Storages    GetStorages
+	Storage     GetStorage
 	IPAddresses GetIPS
 	IPAddress   GetIP
 }
@@ -201,6 +203,8 @@ func NewClientBase(httpClient *http.Client, authToken string) (*Client, error) {
 	c.SSHKey = &SSHKeyClient{client: c}
 	c.Servers = &ServersClient{client: c}
 	c.Server = &ServerClient{client: c}
+	c.Storages = &StoragesClient{client: c}
+	c.Storage = &StorageClient{client: c}
 	c.IPAddresses = &IPSClient{client: c}
 	c.IPAddress = &IPClient{client: c}
 
