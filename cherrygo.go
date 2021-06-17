@@ -14,10 +14,11 @@ import (
 )
 
 const (
+	libraryVersion     = "1.1.1"
 	apiURL             = "https://api.cherryservers.com/v1/"
 	cherryAuthTokenVar = "CHERRY_AUTH_TOKEN"
 	mediaType          = "application/json"
-	userAgent          = "cherry-agent-go"
+	userAgent          = "cherry-agent-go/" + libraryVersion
 	cherryDebugVar     = "CHERRY_DEBUG"
 )
 
@@ -48,6 +49,8 @@ type Client struct {
 type Response struct {
 	*http.Response
 }
+
+type ClientOpt func(*Client) error
 
 // MakeRequest makes request to API
 func (c *Client) MakeRequest(method, path string, body, v interface{}) (*Response, error) {
@@ -85,6 +88,7 @@ func (c *Client) MakeRequest(method, path string, body, v interface{}) (*Respons
 
 	bearer := "Bearer " + c.AuthToken
 	req.Header.Add("Authorization", bearer)
+	req.Header.Set("User-Agent", c.UserAgent)
 
 	// New request cia baigiasi
 
@@ -160,7 +164,7 @@ func (c *Client) MakeRequest(method, path string, body, v interface{}) (*Respons
 }
 
 // NewClient initialization
-func NewClient() (*Client, error) {
+func NewClient(opts ...ClientOpt) (*Client, error) {
 
 	httpClient := &http.Client{}
 
@@ -170,6 +174,12 @@ func NewClient() (*Client, error) {
 	}
 
 	c := NewClientWithAuthVar(httpClient, authToken)
+
+	for _, opt := range opts {
+		if err := opt(c); err != nil {
+			return nil, err
+		}
+	}
 
 	return c, nil
 }
@@ -227,4 +237,11 @@ func checkResponseForErrors(r *http.Response) *ErrorResponse {
 
 	return errR
 
+}
+
+func SetUserAgent(ua string) ClientOpt {
+	return func(c *Client) error {
+		c.UserAgent = fmt.Sprintf("%s %s", ua, c.UserAgent)
+		return nil
+	}
 }
