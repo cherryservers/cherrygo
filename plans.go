@@ -26,12 +26,12 @@ type Plans struct {
 
 // Specs specifies fields for specs
 type Specs struct {
-	Cpus      Cpus      `json:"cpus,omitempty"`
-	Memory    Memory    `json:"memory,omitempty"`
-	Storage   []Storage `json:"storage,omitempty"`
-	Raid      Raid      `json:"raid,omitempty"`
-	Nics      Nics      `json:"nics,omitempty"`
-	Bandwidth Bandwidth `json:"bandwidth,omitempty"`
+	Cpus      Cpus          `json:"cpus,omitempty"`
+	Memory    Memory        `json:"memory,omitempty"`
+	Storage   []StorageSpec `json:"storage,omitempty"`
+	Raid      Raid          `json:"raid,omitempty"`
+	Nics      Nics          `json:"nics,omitempty"`
+	Bandwidth Bandwidth     `json:"bandwidth,omitempty"`
 }
 
 // Cpus fields
@@ -52,7 +52,7 @@ type Memory struct {
 }
 
 // Storage fields
-type Storage struct {
+type StorageSpec struct {
 	Count int     `json:"count,omitempty"`
 	Name  string  `json:"name,omitempty"`
 	Size  float32 `json:"size,omitempty"`
