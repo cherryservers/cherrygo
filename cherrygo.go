@@ -43,6 +43,8 @@ type Client struct {
 	Server      GetServer
 	IPAddresses GetIPS
 	IPAddress   GetIP
+	Storages    GetStorages
+	Storage     GetStorage
 }
 
 // Response is the http response from api calls
@@ -213,6 +215,8 @@ func NewClientBase(httpClient *http.Client, authToken string) (*Client, error) {
 	c.Server = &ServerClient{client: c}
 	c.IPAddresses = &IPSClient{client: c}
 	c.IPAddress = &IPClient{client: c}
+	c.Storages = &StoragesClient{client: c}
+	c.Storage = &StorageClient{client: c}
 
 	return c, err
 }

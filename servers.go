@@ -28,6 +28,7 @@ type Servers struct {
 	IPAddresses      []IPAddresses     `json:"ip_addresses,omitempty"`
 	SSHKeys          []SSHKeys         `json:"ssh_keys,omitempty"`
 	Tags             map[string]string `json:"tags,omitempty"`
+	Storage          BlockStorage      `json:"storage,omitempty"`
 }
 
 // Region fields
