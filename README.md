@@ -2,6 +2,9 @@
 
 Cherry Servers golang API for Cherry Servers RESTful API.
 
+You can view the client API docs here: [https://pkg.go.dev/github.com/cherryservers/cherrygo](https://pkg.go.dev/github.com/cherryservers/cherrygo)
+You can view Cherry Servers API docs here: [https://api.cherryservers.com/doc](https://api.cherryservers.com/doc)
+
 ![](https://pbs.twimg.com/profile_images/900630217630285824/p46dA56X_400x400.jpg)
 
 ## Table of Contents
