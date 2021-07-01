@@ -28,6 +28,7 @@ type Server struct {
 	Href             string            `json:"href,omitempty"`
 	Hostname         string            `json:"hostname,omitempty"`
 	Image            string            `json:"image,omitempty"`
+	SpotInstance     bool              `json:"spot_instance"`
 	Region           Region            `json:"region,omitempty"`
 	State            string            `json:"state,omitempty"`
 	Plans            Plans             `json:"plan,omitempty"`
@@ -37,6 +38,8 @@ type Server struct {
 	SSHKeys          []SSHKeys         `json:"ssh_keys,omitempty"`
 	Tags             map[string]string `json:"tags,omitempty"`
 	Storage          BlockStorage      `json:"storage,omitempty"`
+	Created          string            `json:"created_at,omitempty"`
+	TerminationDate  string            `json:"termination_date,omitempty"`
 }
 
 // ServerClient paveldi client
@@ -56,15 +59,16 @@ type PowerState struct {
 
 // CreateServer fields for ordering new server
 type CreateServer struct {
-	ProjectID   string            `json:"project_id,omitempty"`
-	PlanID      string            `json:"plan_id,omitempty"`
-	Hostname    string            `json:"hostname,omitempty"`
-	Image       string            `json:"image,omitempty"`
-	Region      string            `json:"region,omitempty"`
-	SSHKeys     []string          `json:"ssh_keys"`
-	IPAddresses []string          `json:"ip_addresses"`
-	UserData    string            `json:"user_data,omitempty"`
-	Tags        map[string]string `json:"tags,omitempty"`
+	ProjectID    string            `json:"project_id,omitempty"`
+	PlanID       string            `json:"plan_id,omitempty"`
+	Hostname     string            `json:"hostname,omitempty"`
+	Image        string            `json:"image,omitempty"`
+	Region       string            `json:"region,omitempty"`
+	SSHKeys      []string          `json:"ssh_keys"`
+	IPAddresses  []string          `json:"ip_addresses"`
+	UserData     string            `json:"user_data,omitempty"`
+	Tags         map[string]string `json:"tags,omitempty"`
+	SpotInstance bool              `json:"spot_market"`
 }
 
 // UpdateServer fields for updating a server with specified tags
