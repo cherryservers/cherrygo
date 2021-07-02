@@ -104,6 +104,7 @@ func TestServer_Create(t *testing.T) {
 		"ip_addresses": []interface{}{"e3f75899-1db3-b794-137f-78c5ee9096af"},
 		"user_data":    "dXNlcl9kYXRh",
 		"tags":         map[string]interface{}{"env": "dev"},
+		"spot_market":  false,
 	}
 
 	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID)+"/servers", func(writer http.ResponseWriter, request *http.Request) {
