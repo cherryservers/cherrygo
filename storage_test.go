@@ -50,7 +50,7 @@ func TestStorage_List(t *testing.T) {
 		}`)
 	})
 
-	storage, _, err := client.Storage.List(strconv.Itoa(projectID), "123")
+	storage, _, err := client.Storage.List(strconv.Itoa(projectID), "123", nil)
 	if err != nil {
 		t.Errorf("Storage.List returned %+v", err)
 	}

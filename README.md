@@ -48,7 +48,7 @@ if err != nil {
     log.Fatal(err)
 }
 
-teams, _, err := c.Teams.List()
+teams, _, err := c.Teams.List(nil)
 if err != nil {
     log.Fatal("Error", err)
 }
@@ -68,7 +68,7 @@ if err != nil {
     log.Fatal(err)
 }
 
-projects, _, err := c.Projects.List(teamID)
+projects, _, err := c.Projects.List(teamID, nil)
 if err != nil {
     log.Fatal("Error", err)
 }
@@ -88,7 +88,7 @@ if err != nil {
     log.Fatal(err)
 }
 
-plans, _, err := c.Plans.List(projectID)
+plans, _, err := c.Plans.List(projectID, nil)
 if err != nil {
     log.Fatalf("Plans error: %v", err)
 }
@@ -108,7 +108,7 @@ if err != nil {
     log.Fatal(err)
 }
 
-images, _, err := c.Images.List(planID)
+images, _, err := c.Images.List(planID, nil)
 if err != nil {
     log.Fatal("Error", err)
 }

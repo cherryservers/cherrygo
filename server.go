@@ -11,7 +11,7 @@ const powerPath = "?fields=power"
 
 // GetServer interface metodas isgauti team'sus
 type GetServer interface {
-	List(serverID string) (Server, *Response, error)
+	List(serverID string, opts *GetOptions) (Server, *Response, error)
 	PowerOff(serverID string) (Server, *Response, error)
 	PowerOn(serverID string) (Server, *Response, error)
 	Create(projectID string, request *CreateServer) (Server, *Response, error)
@@ -82,16 +82,17 @@ type DeleteServer struct {
 }
 
 // List func lists teams
-func (s *ServerClient) List(serverID string) (Server, *Response, error) {
+func (s *ServerClient) List(serverID string, opts *GetOptions) (Server, *Response, error) {
 	//root := new(teamRoot)
 
 	//serverIDString := strconv.Itoa(serverID)
 
-	serverPath := strings.Join([]string{baseServerPath, serverID}, "/")
+	path := strings.Join([]string{baseServerPath, serverID}, "/")
+	pathQuery := opts.WithQuery(path)
 
 	var trans Server
 
-	resp, err := s.client.MakeRequest("GET", serverPath, nil, &trans)
+	resp, err := s.client.MakeRequest("GET", pathQuery, nil, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}

@@ -31,7 +31,7 @@ func TestSSHKey_List(t *testing.T) {
 		fmt.Fprint(writer, response)
 	})
 
-	sshKey, _, err := client.SSHKey.List("1")
+	sshKey, _, err := client.SSHKey.List("1", nil)
 	if err != nil {
 		t.Errorf("SSHKey.List returned %+v", err)
 	}

@@ -90,7 +90,7 @@ func TestIpAddress_List(t *testing.T) {
 		 }`)
 	})
 
-	ip, _, err := client.IPAddress.List(strconv.Itoa(projectID), ipUID)
+	ip, _, err := client.IPAddress.List(strconv.Itoa(projectID), ipUID, nil)
 	if err != nil {
 		t.Errorf("IPAddress.List returned %+v", err)
 	}

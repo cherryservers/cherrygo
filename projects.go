@@ -11,7 +11,7 @@ const endProjectPath = "projects"
 
 // GetProjects interface metodas isgauti team'sus
 type GetProjects interface {
-	List(teamID int) ([]Projects, *Response, error)
+	List(teamID int, opts *GetOptions) ([]Projects, *Response, error)
 }
 
 // Projects tai ka grazina api
@@ -27,16 +27,17 @@ type ProjectsClient struct {
 }
 
 // List func lists teams
-func (p *ProjectsClient) List(teamID int) ([]Projects, *Response, error) {
+func (p *ProjectsClient) List(teamID int, opts *GetOptions) ([]Projects, *Response, error) {
 	//root := new(teamRoot)
 
 	teamIDString := strconv.Itoa(teamID)
 
-	plansPath := strings.Join([]string{baseProjectPath, teamIDString, endProjectPath}, "/")
+	path := strings.Join([]string{baseProjectPath, teamIDString, endProjectPath}, "/")
+	pathQuery := opts.WithQuery(path)
 
 	var trans []Projects
 
-	resp, err := p.client.MakeRequest("GET", plansPath, nil, &trans)
+	resp, err := p.client.MakeRequest("GET", pathQuery, nil, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}

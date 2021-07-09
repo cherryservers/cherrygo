@@ -6,7 +6,7 @@ const teamsPath = "/v1/teams"
 
 // GetTeams interface metodas isgauti team'sus
 type GetTeams interface {
-	List() ([]Teams, *Response, error)
+	List(opts *GetOptions) ([]Teams, *Response, error)
 }
 
 // Kad teamsus i slice'us irasytume
@@ -85,13 +85,11 @@ type TeamsClient struct {
 }
 
 // List func lists teams
-func (t *TeamsClient) List() ([]Teams, *Response, error) {
-	//root := new(teamRoot)
-
+func (t *TeamsClient) List(opts *GetOptions) ([]Teams, *Response, error) {
 	var trans []Teams
-	//resp := t.client.Bumba()
-	//log.Println("\nFROM LIST1: ", root.Teams)
-	resp, err := t.client.MakeRequest("GET", teamsPath, nil, &trans)
+
+	pathQuery := opts.WithQuery(teamsPath)
+	resp, err := t.client.MakeRequest("GET", pathQuery, nil, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}

@@ -18,7 +18,7 @@ func TestPlans_List(t *testing.T) {
 		fmt.Fprint(writer, response)
 	})
 
-	plans, _, err := client.Plans.List(teamID)
+	plans, _, err := client.Plans.List(teamID, nil)
 	if err != nil {
 		t.Errorf("Plans.List returned %+v", err)
 	}

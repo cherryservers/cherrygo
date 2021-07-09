@@ -52,7 +52,7 @@ func TestImages_List(t *testing.T) {
 		]`)
 	})
 
-	images, _, err := client.Images.List(165)
+	images, _, err := client.Images.List(165, nil)
 	if err != nil {
 		t.Errorf("Images.List returned %+v", err)
 	}

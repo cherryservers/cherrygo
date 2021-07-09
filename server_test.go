@@ -38,7 +38,7 @@ func TestServer_List(t *testing.T) {
 		fmt.Fprint(writer, response)
 	})
 
-	server, _, err := client.Server.List("383531")
+	server, _, err := client.Server.List("383531", nil)
 	if err != nil {
 		t.Errorf("Server.List returned %+v", err)
 	}

@@ -11,10 +11,11 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"strconv"
 )
 
 const (
-	libraryVersion     = "1.1.2"
+	libraryVersion     = "1.1.3"
 	apiURL             = "https://api.cherryservers.com/v1/"
 	cherryAuthTokenVar = "CHERRY_AUTH_TOKEN"
 	mediaType          = "application/json"
@@ -50,6 +51,11 @@ type Client struct {
 // Response is the http response from api calls
 type Response struct {
 	*http.Response
+	Meta
+}
+
+type Meta struct {
+	Total int
 }
 
 type ClientOpt func(*Client) error
@@ -104,6 +110,7 @@ func (c *Client) MakeRequest(method, path string, body, v interface{}) (*Respons
 
 	// inicializuojam responsa reikiamo tipo grazinimui
 	response := Response{Response: resp}
+	response.populateTotal()
 
 	if c.debug {
 		o, _ := httputil.DumpResponse(response.Response, true)
@@ -247,5 +254,12 @@ func SetUserAgent(ua string) ClientOpt {
 	return func(c *Client) error {
 		c.UserAgent = fmt.Sprintf("%s %s", ua, c.UserAgent)
 		return nil
+	}
+}
+
+func (r *Response) populateTotal() {
+	// parse the headers and populate Meta.Total
+	if total := r.Header.Get("X-Total-Count"); total != "" {
+		r.Meta.Total, _ = strconv.Atoi(total)
 	}
 }

@@ -6,7 +6,7 @@ const baseSSHPath = "/v1/ssh-keys"
 
 // GetSSHKeys interface metodas isgauti team'sus
 type GetSSHKeys interface {
-	List() ([]SSHKeys, *Response, error)
+	List(opts *GetOptions) ([]SSHKeys, *Response, error)
 }
 
 // SSHKeys fields for return values after creation
@@ -26,13 +26,13 @@ type SSHKeysClient struct {
 }
 
 // List func lists all available ssh keys
-func (s *SSHKeysClient) List() ([]SSHKeys, *Response, error) {
+func (s *SSHKeysClient) List(opts *GetOptions) ([]SSHKeys, *Response, error) {
 	//root := new(teamRoot)
 
 	var trans []SSHKeys
-	//resp := t.client.Bumba()
-	//log.Println("\nFROM LIST1: ", root.Teams)
-	resp, err := s.client.MakeRequest("GET", baseSSHPath, nil, &trans)
+
+	pathQuery := opts.WithQuery(baseSSHPath)
+	resp, err := s.client.MakeRequest("GET", pathQuery, nil, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}

@@ -8,7 +8,7 @@ import (
 const baseStoragePath = "/v1/projects/%s/storages"
 
 type GetStorage interface {
-	List(projectID string, storageID string) (BlockStorage, *Response, error)
+	List(projectID string, storageID string, opts *GetOptions) (BlockStorage, *Response, error)
 	Create(request *CreateStorage) (BlockStorage, *Response, error)
 	Delete(request *DeleteStorage) (*Response, error)
 	Attach(request *AttachTo) (BlockStorage, *Response, error)
@@ -61,12 +61,13 @@ type DetachFrom struct {
 	StorageID string `json:"storage_id"`
 }
 
-func (s *StorageClient) List(projectID string, storageID string) (BlockStorage, *Response, error) {
-	serverPath := strings.Join([]string{fmt.Sprintf(baseStoragePath, projectID), storageID}, "/")
+func (s *StorageClient) List(projectID string, storageID string, opts *GetOptions) (BlockStorage, *Response, error) {
+	path := strings.Join([]string{fmt.Sprintf(baseStoragePath, projectID), storageID}, "/")
+	pathQuery := opts.WithQuery(path)
 
 	var trans BlockStorage
 
-	resp, err := s.client.MakeRequest("GET", serverPath, nil, &trans)
+	resp, err := s.client.MakeRequest("GET", pathQuery, nil, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}

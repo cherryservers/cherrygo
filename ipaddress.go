@@ -7,7 +7,7 @@ import (
 
 // GetIP interface metodas isgauti team'sus
 type GetIP interface {
-	List(projectID string, ipID string) (IPAddresses, *Response, error)
+	List(projectID string, ipID string, opts *GetOptions) (IPAddresses, *Response, error)
 	Create(projectID string, request *CreateIPAddress) (IPAddresses, *Response, error)
 	Remove(projectID string, request *RemoveIPAddress) (IPAddresses, *Response, error)
 	Update(projectID string, ipID string, request *UpdateIPAddress) (IPAddresses, *Response, error)
@@ -42,14 +42,15 @@ type RemoveIPAddress struct {
 }
 
 // List func lists teams
-func (i *IPClient) List(projectID string, ipID string) (IPAddresses, *Response, error) {
+func (i *IPClient) List(projectID string, ipID string, opts *GetOptions) (IPAddresses, *Response, error) {
 	//root := new(teamRoot)
 
-	ipsPath := strings.Join([]string{baseIPSPath, projectID, endIPSPath, ipID}, "/")
+	path := strings.Join([]string{baseIPSPath, projectID, endIPSPath, ipID}, "/")
+	pathQuery := opts.WithQuery(path)
 
 	var trans IPAddresses
 
-	resp, err := i.client.MakeRequest("GET", ipsPath, nil, &trans)
+	resp, err := i.client.MakeRequest("GET", pathQuery, nil, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}

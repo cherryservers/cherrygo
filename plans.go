@@ -11,7 +11,7 @@ const endPlanPath = "plans"
 
 // GetPlans interface metodas isgauti team'sus
 type GetPlans interface {
-	List(teamID int) ([]Plans, *Response, error)
+	List(teamID int, opts *GetOptions) ([]Plans, *Response, error)
 }
 
 // Plans tai ka grazina api
@@ -96,16 +96,15 @@ type PlansClient struct {
 }
 
 // List func lists teams
-func (p *PlansClient) List(teamID int) ([]Plans, *Response, error) {
-	//root := new(teamRoot)
-
+func (p *PlansClient) List(teamID int, opts *GetOptions) ([]Plans, *Response, error) {
 	teamIDString := strconv.Itoa(teamID)
 
 	plansPath := strings.Join([]string{basePlanPath, teamIDString, endPlanPath}, "/")
+	pathQuery := opts.WithQuery(plansPath)
 
 	var trans []Plans
 
-	resp, err := p.client.MakeRequest("GET", plansPath, nil, &trans)
+	resp, err := p.client.MakeRequest("GET", pathQuery, nil, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
