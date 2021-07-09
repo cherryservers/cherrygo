@@ -35,7 +35,7 @@ func TestProjects_List(t *testing.T) {
 		fmt.Fprint(writer, response)
 	})
 
-	projects, _, err := client.Projects.List(teamID)
+	projects, _, err := client.Projects.List(teamID, nil)
 
 	if err != nil {
 		t.Errorf("Projects.List returned %+v", err)

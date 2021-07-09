@@ -11,7 +11,7 @@ const endImagePath = "images"
 
 // GetImages interface metodas isgauti team'sus
 type GetImages interface {
-	List(planID int) ([]Images, *Response, error)
+	List(planID int, opts *GetOptions) ([]Images, *Response, error)
 }
 
 // Images tai ka grazina api
@@ -27,16 +27,17 @@ type ImagesClient struct {
 }
 
 // List func lists teams
-func (i *ImagesClient) List(planID int) ([]Images, *Response, error) {
+func (i *ImagesClient) List(planID int, opts *GetOptions) ([]Images, *Response, error) {
 	//root := new(teamRoot)
 
 	planIDString := strconv.Itoa(planID)
 
-	plansPath := strings.Join([]string{baseImagePath, planIDString, endImagePath}, "/")
+	path := strings.Join([]string{baseImagePath, planIDString, endImagePath}, "/")
+	pathQuery := opts.WithQuery(path)
 
 	var trans []Images
 
-	resp, err := i.client.MakeRequest("GET", plansPath, nil, &trans)
+	resp, err := i.client.MakeRequest("GET", pathQuery, nil, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}

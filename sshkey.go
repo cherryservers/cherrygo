@@ -7,7 +7,7 @@ import (
 
 // GetSSHKey interface
 type GetSSHKey interface {
-	List(sshKeyID string) (SSHKey, *Response, error)
+	List(sshKeyID string, opts *GetOptions) (SSHKey, *Response, error)
 	Create(request *CreateSSHKey) (SSHKeys, *Response, error)
 	Delete(request *DeleteSSHKey) (SSHKeys, *Response, error)
 	Update(sshKeyID string, request *UpdateSSHKey) (SSHKeys, *Response, error)
@@ -47,14 +47,15 @@ type SSHKeyClient struct {
 }
 
 // List func lists all available ssh keys
-func (s *SSHKeyClient) List(sshKeyID string) (SSHKey, *Response, error) {
+func (s *SSHKeyClient) List(sshKeyID string, opts *GetOptions) (SSHKey, *Response, error) {
 	//root := new(teamRoot)
 
 	var trans SSHKey
 
 	sshKeyPath := strings.Join([]string{baseSSHPath, sshKeyID}, "/")
+	pathQuery := opts.WithQuery(sshKeyPath)
 
-	resp, err := s.client.MakeRequest("GET", sshKeyPath, nil, &trans)
+	resp, err := s.client.MakeRequest("GET", pathQuery, nil, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}

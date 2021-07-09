@@ -10,7 +10,7 @@ const endServersPath = "servers"
 
 // GetServers interface metodas isgauti team'sus
 type GetServers interface {
-	List(projectID string) ([]Server, *Response, error)
+	List(projectID string, opts *GetOptions) ([]Server, *Response, error)
 }
 
 // Servers tai ka grazina api
@@ -84,17 +84,18 @@ type ServersClient struct {
 }
 
 // List func lists teams
-func (s *ServersClient) List(projectID string) ([]Server, *Response, error) {
+func (s *ServersClient) List(projectID string, opts *GetOptions) ([]Server, *Response, error) {
 	//root := new(teamRoot)
 
 	//serversIDString := strconv.Itoa(projectID)
 
-	serversPath := strings.Join([]string{baseServersPath, projectID, endServersPath}, "/")
+	path := strings.Join([]string{baseServersPath, projectID, endServersPath}, "/")
+	pathQuery := opts.WithQuery(path)
 
 	var trans []Server
 	//resp := t.client.Bumba()
 	//log.Println("\nFROM LIST1: ", root.Teams)
-	resp, err := s.client.MakeRequest("GET", serversPath, nil, &trans)
+	resp, err := s.client.MakeRequest("GET", pathQuery, nil, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
