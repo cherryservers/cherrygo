@@ -21,7 +21,7 @@ type GetServer interface {
 	Update(serverID string, request *UpdateServer) (Server, *Response, error)
 }
 
-// Server tai ka grazina api
+// Server response object
 type Server struct {
 	ID               int               `json:"id,omitempty"`
 	Name             string            `json:"name,omitempty"`
@@ -29,6 +29,7 @@ type Server struct {
 	Hostname         string            `json:"hostname,omitempty"`
 	Image            string            `json:"image,omitempty"`
 	SpotInstance     bool              `json:"spot_instance"`
+	BGP              ServerBGP         `json:"bgp,omitempty"`
 	Region           Region            `json:"region,omitempty"`
 	State            string            `json:"state,omitempty"`
 	Plans            Plans             `json:"plan,omitempty"`
@@ -74,6 +75,7 @@ type CreateServer struct {
 // UpdateServer fields for updating a server with specified tags
 type UpdateServer struct {
 	Tags map[string]string `json:"tags,omitempty"`
+	Bgp  bool              `json:"bgp"`
 }
 
 // DeleteServer field for removing server

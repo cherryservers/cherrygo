@@ -13,16 +13,24 @@ func TestProjects_List(t *testing.T) {
 	setup()
 	defer teardown()
 
-	expected := []Projects{
+	expected := []Project{
 		{
 			ID:   321,
 			Name: "My Project",
 			Href: "/projects/321",
+			Bgp: ProjectBGP{
+				Enabled:  true,
+				LocalASN: 123,
+			},
 		},
 		{
 			ID:   322,
 			Name: "My New Project",
 			Href: "/projects/322",
+			Bgp: ProjectBGP{
+				Enabled:  false,
+				LocalASN: 0,
+			},
 		},
 	}
 

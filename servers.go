@@ -13,32 +13,6 @@ type GetServers interface {
 	List(projectID string, opts *GetOptions) ([]Server, *Response, error)
 }
 
-// Servers tai ka grazina api
-type Servers struct {
-	ID               int               `json:"id,omitempty"`
-	Name             string            `json:"name,omitempty"`
-	Href             string            `json:"href,omitempty"`
-	Hostname         string            `json:"hostname,omitempty"`
-	Image            string            `json:"image,omitempty"`
-	Region           Region            `json:"region,omitempty"`
-	State            string            `json:"state,omitempty"`
-	Plans            Plans             `json:"plan,omitempty"`
-	AvailableRegions AvailableRegions  `json:"availableregions,omitempty"`
-	Pricing          Pricing           `json:"pricing,omitempty"`
-	IPAddresses      []IPAddresses     `json:"ip_addresses,omitempty"`
-	SSHKeys          []SSHKeys         `json:"ssh_keys,omitempty"`
-	Tags             map[string]string `json:"tags,omitempty"`
-	Storage          BlockStorage      `json:"storage,omitempty"`
-}
-
-// Region fields
-type Region struct {
-	ID         int    `json:"id,omitempty"`
-	Name       string `json:"name,omitempty"`
-	RegionIso2 string `json:"region_iso_2,omitempty"`
-	Href       string `json:"href,omitempty"`
-}
-
 // IPAddresses fields
 type IPAddresses struct {
 	ID            string     `json:"id,omitempty"`
