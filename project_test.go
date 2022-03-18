@@ -17,6 +17,10 @@ func TestProject_List(t *testing.T) {
 		ID:   projectID,
 		Name: "My Project",
 		Href: "/projects/321",
+		Bgp: ProjectBGP{
+			Enabled:  true,
+			LocalASN: 123,
+		},
 	}
 
 	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID), func(writer http.ResponseWriter, request *http.Request) {
@@ -24,7 +28,11 @@ func TestProject_List(t *testing.T) {
 		fmt.Fprint(writer, `{
 			"id": 321,
 			"name": "My Project",
-			"href": "/projects/321"
+			"href": "/projects/321",
+			"bgp": {
+				"enabled": true,
+				"local_asn": 123
+			}
 		}`)
 	})
 
@@ -46,6 +54,10 @@ func TestProject_Create(t *testing.T) {
 		ID:   322,
 		Name: "My Custom Project",
 		Href: "/projects/322",
+		Bgp: ProjectBGP{
+			Enabled:  true,
+			LocalASN: 123,
+		},
 	}
 
 	requestBody := map[string]interface{}{
@@ -90,6 +102,7 @@ func TestProject_Update(t *testing.T) {
 
 	requestBody := map[string]interface{}{
 		"name": "My Updated Project",
+		"bgp":  true,
 	}
 
 	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID), func(writer http.ResponseWriter, request *http.Request) {
@@ -110,6 +123,7 @@ func TestProject_Update(t *testing.T) {
 
 	projectUpdate := UpdateProject{
 		Name: "My Updated Project",
+		Bgp:  true,
 	}
 
 	_, _, err := client.Project.Update(strconv.Itoa(projectID), &projectUpdate)

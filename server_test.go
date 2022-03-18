@@ -25,6 +25,9 @@ func TestServer_List(t *testing.T) {
 			RegionIso2: "LT",
 			Href:       "/regions/1",
 		},
+		BGP: ServerBGP{
+			Enabled: true,
+		},
 		State: "active",
 		Tags:  map[string]string{"env": "dev"},
 	}
@@ -287,7 +290,10 @@ func TestServer_Update(t *testing.T) {
 	defer teardown()
 
 	response := Server{
-		ID:   383531,
+		ID: 383531,
+		BGP: ServerBGP{
+			Enabled: false,
+		},
 		Tags: map[string]string{"env": "dev"},
 	}
 
@@ -302,6 +308,7 @@ func TestServer_Update(t *testing.T) {
 
 		expected := map[string]interface{}{
 			"tags": map[string]interface{}{"env": "dev"},
+			"bgp":  false,
 		}
 
 		if !reflect.DeepEqual(v, expected) {
@@ -315,6 +322,7 @@ func TestServer_Update(t *testing.T) {
 
 	serverUpdate := UpdateServer{
 		Tags: map[string]string{"env": "dev"},
+		Bgp:  false,
 	}
 
 	server, _, err := client.Server.Update("383531", &serverUpdate)

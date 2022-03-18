@@ -16,9 +16,10 @@ type GetProject interface {
 
 // Project tai ka grazina api
 type Project struct {
-	ID   int    `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
-	Href string `json:"href,omitempty"`
+	ID   int        `json:"id,omitempty"`
+	Name string     `json:"name,omitempty"`
+	Bgp  ProjectBGP `json:"bgp,omitempty"`
+	Href string     `json:"href,omitempty"`
 }
 
 // ProjectClient paveldi client
@@ -29,11 +30,13 @@ type ProjectClient struct {
 // CreateProject fields for adding new project with specified name
 type CreateProject struct {
 	Name string `json:"name,omitempty"`
+	Bgp  bool   `json:"bgp,omitempty"`
 }
 
 // UpdateProject fields for updating a project with specified name
 type UpdateProject struct {
 	Name string `json:"name,omitempty"`
+	Bgp  bool   `json:"bgp,omitempty"`
 }
 
 // DeleteProject fields for key delition by its ID
