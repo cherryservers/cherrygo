@@ -30,7 +30,7 @@ type Server struct {
 	Image            string            `json:"image,omitempty"`
 	SpotInstance     bool              `json:"spot_instance"`
 	BGP              ServerBGP         `json:"bgp,omitempty"`
-	Project			 Project           `json:"project,omitempty"`
+	Project          Project           `json:"project,omitempty"`
 	Region           Region            `json:"region,omitempty"`
 	State            string            `json:"state,omitempty"`
 	Plans            Plans             `json:"plan,omitempty"`
