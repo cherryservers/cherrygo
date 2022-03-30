@@ -55,7 +55,7 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestNewClientWithAuthVar(t *testing.T) {
-	c, _ := NewClientBase(&http.Client{}, authToken)
+	c, _ := NewClient(WithAuthToken(authToken))
 
 	if c.AuthToken != authToken {
 		t.Errorf("NewClient AuthToken = %v, expected %v", client.AuthToken, authToken)
@@ -87,7 +87,7 @@ func TestCustomUserAgent(t *testing.T) {
 	os.Setenv("CHERRY_AUTH_TOKEN", "token")
 
 	ua := "testing/1.0"
-	c, err := NewClient(SetUserAgent(ua))
+	c, err := NewClient(WithUserAgent(ua))
 
 	if err != nil {
 		t.Fatalf("NewClient() unexpected error: %v", err)
