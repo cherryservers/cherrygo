@@ -24,6 +24,7 @@ type IPAddresses struct {
 	Region        Region     `json:"region,omitempty"`
 	RoutedTo      RoutedTo   `json:"routed_to,omitempty"`
 	AssignedTo    AssignedTo `json:"assigned_to,omitempty"`
+	TargetedTo    AssignedTo `json:"targeted_to,omitempty"`
 	PtrRecord     string     `json:"ptr_record,omitempty"`
 	ARecord       string     `json:"a_record,omitempty"`
 	Href          string     `json:"href,omitempty"`

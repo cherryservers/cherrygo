@@ -58,8 +58,6 @@ type Meta struct {
 	Total int
 }
 
-type ClientOpt func(*Client) error
-
 // MakeRequest makes request to API
 func (c *Client) MakeRequest(method, path string, body, v interface{}) (*Response, error) {
 
@@ -172,42 +170,39 @@ func (c *Client) MakeRequest(method, path string, body, v interface{}) (*Respons
 	return &response, nil
 }
 
+type options struct {
+	url       string
+	client    *http.Client
+	userAgent string
+	authToken string
+}
+
+type ClientOpt func(*options) error
+
 // NewClient initialization
 func NewClient(opts ...ClientOpt) (*Client, error) {
 
-	httpClient := &http.Client{}
-
-	authToken := os.Getenv(cherryAuthTokenVar)
-	if authToken == "" {
-		return nil, fmt.Errorf("You must export %s", cherryAuthTokenVar)
+	parsedOpts := &options{
+		authToken: os.Getenv(cherryAuthTokenVar),
+		client:    &http.Client{},
+		url:       apiURL,
+		userAgent: userAgent,
 	}
-
-	c := NewClientWithAuthVar(httpClient, authToken)
-
 	for _, opt := range opts {
-		if err := opt(c); err != nil {
+		if err := opt(parsedOpts); err != nil {
 			return nil, err
 		}
 	}
+	if parsedOpts.authToken == "" {
+		return nil, fmt.Errorf("auth token must be provided as parameter of environment variable %s", cherryAuthTokenVar)
+	}
 
-	return c, nil
-}
-
-// NewClientWithAuthVar needed for auth without env variable
-func NewClientWithAuthVar(httpClient *http.Client, authToken string) *Client {
-	c, _ := NewClientBase(httpClient, authToken)
-	return c
-}
-
-// NewClientBase is for new client base creation
-func NewClientBase(httpClient *http.Client, authToken string) (*Client, error) {
-
-	url, err := url.Parse(apiURL)
+	url, err := url.Parse(parsedOpts.url)
 	if err != nil {
 		return nil, err
 	}
 
-	c := &Client{client: httpClient, AuthToken: authToken, BaseURL: url, UserAgent: userAgent}
+	c := &Client{client: parsedOpts.client, AuthToken: parsedOpts.authToken, BaseURL: url, UserAgent: parsedOpts.userAgent}
 
 	// I teamsClient atiduotu cca turiu apie client'a
 	c.debug = os.Getenv(cherryDebugVar) != ""
@@ -250,9 +245,35 @@ func checkResponseForErrors(r *http.Response) *ErrorResponse {
 
 }
 
-func SetUserAgent(ua string) ClientOpt {
-	return func(c *Client) error {
-		c.UserAgent = fmt.Sprintf("%s %s", ua, c.UserAgent)
+// WithUserAgent set user agent when making requests
+func WithUserAgent(ua string) ClientOpt {
+	return func(c *options) error {
+		c.userAgent = fmt.Sprintf("%s %s", ua, userAgent)
+		return nil
+	}
+}
+
+// WithURL use url as endpoint for API requests
+func WithURL(url string) ClientOpt {
+	return func(c *options) error {
+		c.url = url
+		return nil
+	}
+}
+
+// WithHTTPClient use client as the http.Client to make API requests
+func WithHTTPClient(client *http.Client) ClientOpt {
+	return func(c *options) error {
+		c.client = client
+		return nil
+	}
+}
+
+// WithAuthToken use provided auth token to make requests, defaults to environment variable
+// CHERRY_AUTH_TOKEN
+func WithAuthToken(authToken string) ClientOpt {
+	return func(c *options) error {
+		c.authToken = authToken
 		return nil
 	}
 }
