@@ -61,22 +61,22 @@ type PowerState struct {
 
 // CreateServer fields for ordering new server
 type CreateServer struct {
-	ProjectID    string            `json:"project_id,omitempty"`
-	PlanID       string            `json:"plan_id,omitempty"`
-	Hostname     string            `json:"hostname,omitempty"`
-	Image        string            `json:"image,omitempty"`
-	Region       string            `json:"region,omitempty"`
-	SSHKeys      []string          `json:"ssh_keys"`
-	IPAddresses  []string          `json:"ip_addresses"`
-	UserData     string            `json:"user_data,omitempty"`
-	Tags         map[string]string `json:"tags,omitempty"`
-	SpotInstance bool              `json:"spot_market"`
+	ProjectID    string             `json:"project_id,omitempty"`
+	PlanID       string             `json:"plan_id,omitempty"`
+	Hostname     string             `json:"hostname,omitempty"`
+	Image        string             `json:"image,omitempty"`
+	Region       string             `json:"region,omitempty"`
+	SSHKeys      []string           `json:"ssh_keys"`
+	IPAddresses  []string           `json:"ip_addresses"`
+	UserData     string             `json:"user_data,omitempty"`
+	Tags         *map[string]string `json:"tags,omitempty"`
+	SpotInstance bool               `json:"spot_market"`
 }
 
 // UpdateServer fields for updating a server with specified tags
 type UpdateServer struct {
-	Tags map[string]string `json:"tags,omitempty"`
-	Bgp  bool              `json:"bgp"`
+	Tags *map[string]string `json:"tags,omitempty"`
+	Bgp  bool               `json:"bgp"`
 }
 
 // DeleteServer field for removing server

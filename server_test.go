@@ -129,6 +129,7 @@ func TestServer_Create(t *testing.T) {
 		fmt.Fprint(writer, response)
 	})
 
+	tags := map[string]string{"env": "dev"}
 	serverCreate := CreateServer{
 		PlanID:      "161",
 		Hostname:    "server-hostname",
@@ -137,7 +138,7 @@ func TestServer_Create(t *testing.T) {
 		SSHKeys:     []string{"1", "2", "3"},
 		IPAddresses: []string{"e3f75899-1db3-b794-137f-78c5ee9096af"},
 		UserData:    "dXNlcl9kYXRh",
-		Tags:        map[string]string{"env": "dev"},
+		Tags:        &tags,
 	}
 
 	server, _, err := client.Server.Create(strconv.Itoa(projectID), &serverCreate)
@@ -320,8 +321,9 @@ func TestServer_Update(t *testing.T) {
 		fmt.Fprint(writer, string(jsonBytes))
 	})
 
+	tags := map[string]string{"env": "dev"}
 	serverUpdate := UpdateServer{
-		Tags: map[string]string{"env": "dev"},
+		Tags: &tags,
 		Bgp:  false,
 	}
 
