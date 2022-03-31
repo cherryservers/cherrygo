@@ -26,6 +26,7 @@ type CreateIPAddress struct {
 	ARecord    string `json:"a_record,omitempty"`
 	RoutedTo   string `json:"routed_to,omitempty"`
 	AssignedTo string `json:"assigned_to,omitempty"`
+	TargetedTo string `json:"targeted_to,omitempty"`
 }
 
 // UpdateIPAddress fields for updating IP address
@@ -34,6 +35,7 @@ type UpdateIPAddress struct {
 	ARecord    string `json:"a_record,omitempty"`
 	RoutedTo   string `json:"routed_to,omitempty"`
 	AssignedTo string `json:"assigned_to,omitempty"`
+	TargetedTo string `json:"targeted_to,omitempty"`
 }
 
 // RemoveIPAddress fields for removing IP address
