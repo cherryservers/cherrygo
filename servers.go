@@ -15,20 +15,21 @@ type GetServers interface {
 
 // IPAddresses fields
 type IPAddresses struct {
-	ID            string     `json:"id,omitempty"`
-	Address       string     `json:"address,omitempty"`
-	AddressFamily int        `json:"address_family,omitempty"`
-	Cidr          string     `json:"cidr,omitempty"`
-	Gateway       string     `json:"gateway,omitempty"`
-	Type          string     `json:"type,omitempty"`
-	Region        Region     `json:"region,omitempty"`
-	RoutedTo      RoutedTo   `json:"routed_to,omitempty"`
-	AssignedTo    AssignedTo `json:"assigned_to,omitempty"`
-	TargetedTo    AssignedTo `json:"targeted_to,omitempty"`
-	Project       Project    `json:"project,omitempty"`
-	PtrRecord     string     `json:"ptr_record,omitempty"`
-	ARecord       string     `json:"a_record,omitempty"`
-	Href          string     `json:"href,omitempty"`
+	ID            string            `json:"id,omitempty"`
+	Address       string            `json:"address,omitempty"`
+	AddressFamily int               `json:"address_family,omitempty"`
+	Cidr          string            `json:"cidr,omitempty"`
+	Gateway       string            `json:"gateway,omitempty"`
+	Type          string            `json:"type,omitempty"`
+	Region        Region            `json:"region,omitempty"`
+	RoutedTo      RoutedTo          `json:"routed_to,omitempty"`
+	AssignedTo    AssignedTo        `json:"assigned_to,omitempty"`
+	TargetedTo    AssignedTo        `json:"targeted_to,omitempty"`
+	Project       Project           `json:"project,omitempty"`
+	PtrRecord     string            `json:"ptr_record,omitempty"`
+	ARecord       string            `json:"a_record,omitempty"`
+	Tags          map[string]string `json:"tags,omitempty"`
+	Href          string            `json:"href,omitempty"`
 }
 
 // RoutedTo fields
