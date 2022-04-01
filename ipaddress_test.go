@@ -132,6 +132,7 @@ func TestIpAddress_Create(t *testing.T) {
 		},
 		PtrRecord: "ptr-r",
 		ARecord:   "a-r",
+		Tags: map[string]string{"env": "dev"},
 		Href:      "/ips/e3f75899-1db3-b794-137f-78c5ee9096af",
 	}
 
@@ -140,6 +141,7 @@ func TestIpAddress_Create(t *testing.T) {
 		"ptr_record": "ptr",
 		"a_record":   "a",
 		"routed_to":  "3ee8e5ce-4208-f437-7055-347e9e4e124e",
+		"tags": map[string]interface{}{"env": "dev"},
 	}
 
 	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID)+"/ips", func(writer http.ResponseWriter, request *http.Request) {
@@ -160,11 +162,13 @@ func TestIpAddress_Create(t *testing.T) {
 		fmt.Fprint(writer, response)
 	})
 
+	tags := map[string]string{"env": "dev"}
 	ipCreate := CreateIPAddress{
 		Region:    "EU-Nord-1",
 		PtrRecord: "ptr",
 		ARecord:   "a",
 		RoutedTo:  "3ee8e5ce-4208-f437-7055-347e9e4e124e",
+		Tags:      &tags,
 	}
 
 	ipAddress, _, err := client.IPAddress.Create(strconv.Itoa(projectID), &ipCreate)
@@ -186,11 +190,13 @@ func TestIpAddress_Update(t *testing.T) {
 		ID:        "e3f75899-1db3-b794-137f-78c5ee9096af",
 		PtrRecord: "ptr-new",
 		ARecord:   "a-new",
+		Tags: map[string]string{"env": "dev"},
 	}
 
 	requestBody := map[string]interface{}{
 		"ptr_record": "ptr-new",
 		"a_record":   "a-new",
+		"tags": map[string]interface{}{"env": "dev"},
 	}
 
 	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID)+"/ips/"+ipId, func(writer http.ResponseWriter, request *http.Request) {
@@ -211,9 +217,11 @@ func TestIpAddress_Update(t *testing.T) {
 		fmt.Fprint(writer, response)
 	})
 
+	tags := map[string]string{"env": "dev"}
 	ipUpdate := UpdateIPAddress{
 		PtrRecord: "ptr-new",
 		ARecord:   "a-new",
+		Tags:      &tags,
 	}
 
 	ipAddress, _, err := client.IPAddress.Update(strconv.Itoa(projectID), ipId, &ipUpdate)
