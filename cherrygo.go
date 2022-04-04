@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	libraryVersion     = "2.0.0"
+	libraryVersion     = "2.1.0"
 	apiURL             = "https://api.cherryservers.com/v1/"
 	cherryAuthTokenVar = "CHERRY_AUTH_TOKEN"
 	mediaType          = "application/json"

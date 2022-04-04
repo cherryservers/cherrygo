@@ -1,4 +1,4 @@
-module github.com/cherryservers/cherrygo
+module github.com/cherryservers/cherrygo/v2
 
 go 1.13
 
