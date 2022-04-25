@@ -19,6 +19,7 @@ type GetServer interface {
 	PowerState(serverID string) (PowerState, *Response, error)
 	Reboot(serverID string) (Server, *Response, error)
 	Update(serverID string, request *UpdateServer) (Server, *Response, error)
+	Reinstall(serverID string, fields *ReinstallServerFields) (Server, *Response, error)
 }
 
 // Server response object
@@ -61,16 +62,17 @@ type PowerState struct {
 
 // CreateServer fields for ordering new server
 type CreateServer struct {
-	ProjectID    string             `json:"project_id,omitempty"`
-	PlanID       string             `json:"plan_id,omitempty"`
-	Hostname     string             `json:"hostname,omitempty"`
-	Image        string             `json:"image,omitempty"`
-	Region       string             `json:"region,omitempty"`
-	SSHKeys      []string           `json:"ssh_keys"`
-	IPAddresses  []string           `json:"ip_addresses"`
-	UserData     string             `json:"user_data,omitempty"`
-	Tags         *map[string]string `json:"tags,omitempty"`
-	SpotInstance bool               `json:"spot_market"`
+	ProjectID       string             `json:"project_id,omitempty"`
+	PlanID          string             `json:"plan_id,omitempty"`
+	Hostname        string             `json:"hostname,omitempty"`
+	Image           string             `json:"image,omitempty"`
+	Region          string             `json:"region,omitempty"`
+	SSHKeys         []string           `json:"ssh_keys"`
+	IPAddresses     []string           `json:"ip_addresses"`
+	UserData        string             `json:"user_data,omitempty"`
+	Tags            *map[string]string `json:"tags,omitempty"`
+	SpotInstance    bool               `json:"spot_market"`
+	OSPartitionSize int                `json:"os_partition_size,omitempty"`
 }
 
 // UpdateServer fields for updating a server with specified tags
@@ -82,6 +84,19 @@ type UpdateServer struct {
 // DeleteServer field for removing server
 type DeleteServer struct {
 	ID string `json:"id,omitempty"`
+}
+
+type ReinstallServer struct {
+	ServerAction
+	*ReinstallServerFields
+}
+
+type ReinstallServerFields struct {
+	Image           string   `json:"image"`
+	Hostname        string   `json:"hostname,omitempty"`
+	Password        string   `json:"password"`
+	SSHKeys         []string `json:"ssh_key,omitempty"`
+	OSPartitionSize int      `json:"os_partition_size,omitempty"`
 }
 
 // List func lists teams
@@ -210,5 +225,16 @@ func (s *ServerClient) Update(serverID string, request *UpdateServer) (Server, *
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
+	return trans, resp, err
+}
+
+func (s *ServerClient) Reinstall(serverID string, fields *ReinstallServerFields) (Server, *Response, error) {
+	var trans Server
+
+	request := &ReinstallServer{ServerAction{Type: "reinstall"}, fields}
+	serverPath := strings.Join([]string{baseServerPath, serverID, serverActionPath}, "/")
+
+	resp, err := s.client.MakeRequest("POST", serverPath, request, &trans)
+
 	return trans, resp, err
 }
