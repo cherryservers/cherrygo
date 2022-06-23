@@ -14,7 +14,7 @@ func TestPlans_List(t *testing.T) {
 
 	mux.HandleFunc("/v1/teams/"+strconv.Itoa(teamID)+"/plans", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
-		response := `[{"id":625,"name":"Cloud VPS 1","title":"Cloud VPS 1","custom":false,"category":"Shared resources","softwares":[{"image":{"name":"Ubuntu 18.04 64bit"}}],"specs":{"cpus":{"count":1,"name":"Cloud VPS 1","cores":1,"frequency":0.0,"unit":"GHz"},"memory":{"count":1,"total":1,"unit":"GB","name":"1GB"},"storage":[{"count":1,"name":"20GB SSD","size":20,"unit":"GB","type":"SSD"}],"nics":{"name":"1Gbps"},"bandwidth":{"name":"1TB"}},"pricing":[{"price":0.015,"currency":"EUR","taxed":false,"unit":"Hourly","id":37}],"available_regions":[{"id":1,"name":"EU-Nord-1","region_iso_2":"LT","stock_qty":122,"spot_qty":0,"location":"Lithuania, Vilnius"},{"id":2,"name":"EU-West-1","region_iso_2":"NL","stock_qty":91,"spot_qty":0,"location":"Netherlands, Amsterdam"}]}]`
+		response := `[{"id":625,"name":"Cloud VPS 1","slug":"cloud_vps_1","title":"Cloud VPS 1","custom":false,"category":"Shared resources","softwares":[{"image":{"name":"Ubuntu 18.04 64bit"}}],"specs":{"cpus":{"count":1,"name":"Cloud VPS 1","cores":1,"frequency":0.0,"unit":"GHz"},"memory":{"count":1,"total":1,"unit":"GB","name":"1GB"},"storage":[{"count":1,"name":"20GB SSD","size":20,"unit":"GB","type":"SSD"}],"nics":{"name":"1Gbps"},"bandwidth":{"name":"1TB"}},"pricing":[{"price":0.015,"currency":"EUR","taxed":false,"unit":"Hourly","id":37}],"available_regions":[{"id":1,"name":"EU-Nord-1","region_iso_2":"LT","stock_qty":122,"spot_qty":5,"location":"Lithuania, Vilnius"}]}]`
 		fmt.Fprint(writer, response)
 	})
 
@@ -23,10 +23,17 @@ func TestPlans_List(t *testing.T) {
 		t.Errorf("Plans.List returned %+v", err)
 	}
 
-	expected := []Plans{
+	ltRegion := Region{
+		ID:         1,
+		Name:       "EU-Nord-1",
+		RegionIso2: "LT",
+	}
+
+	expected := []Plan{
 		{
 			ID:     625,
 			Name:   "Cloud VPS 1",
+			Slug:   "cloud_vps_1",
 			Custom: false,
 			Specs: Specs{
 				Cpus: Cpus{
@@ -64,16 +71,9 @@ func TestPlans_List(t *testing.T) {
 			}},
 			AvailableRegions: []AvailableRegions{
 				{
-					ID:         1,
-					Name:       "EU-Nord-1",
-					RegionIso2: "LT",
-					StockQty:   122,
-				},
-				{
-					ID:         2,
-					Name:       "EU-West-1",
-					RegionIso2: "NL",
-					StockQty:   91,
+					Region:   &ltRegion,
+					StockQty: 122,
+					SpotQty:  5,
 				},
 			},
 		},

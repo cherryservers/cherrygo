@@ -34,10 +34,10 @@ type Server struct {
 	Project          Project           `json:"project,omitempty"`
 	Region           Region            `json:"region,omitempty"`
 	State            string            `json:"state,omitempty"`
-	Plans            Plans             `json:"plan,omitempty"`
+	Plan             Plan              `json:"plan,omitempty"`
 	AvailableRegions AvailableRegions  `json:"availableregions,omitempty"`
 	Pricing          Pricing           `json:"pricing,omitempty"`
-	IPAddresses      []IPAddresses     `json:"ip_addresses,omitempty"`
+	IPAddresses      []IPAddress       `json:"ip_addresses,omitempty"`
 	SSHKeys          []SSHKey          `json:"ssh_keys,omitempty"`
 	Tags             map[string]string `json:"tags,omitempty"`
 	Storage          BlockStorage      `json:"storage,omitempty"`

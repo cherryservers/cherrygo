@@ -2,42 +2,33 @@ package cherrygo
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 )
 
 const baseImagePath = "/v1/plans"
-const endImagePath = "images"
 
-// GetImages interface metodas isgauti team'sus
-type GetImages interface {
-	List(planID int, opts *GetOptions) ([]Images, *Response, error)
+// ImagesService is an interface for interfacing with the the Images endpoints of the CherryServers API
+// See: https://api.cherryservers.com/doc/#tag/Images
+type ImagesService interface {
+	List(plan string, opts *GetOptions) ([]Image, *Response, error)
 }
 
-// Images tai ka grazina api
-type Images struct {
+type Image struct {
 	ID      int       `json:"id,omitempty"`
 	Name    string    `json:"name,omitempty"`
+	Slug    string    `json:"slug,omitempty"`
 	Pricing []Pricing `json:"pricing,omitempty"`
 }
 
-// ImagesClient paveldi client
 type ImagesClient struct {
 	client *Client
 }
 
-// List func lists teams
-func (i *ImagesClient) List(planID int, opts *GetOptions) ([]Images, *Response, error) {
-	//root := new(teamRoot)
+// List func lists images
+func (i *ImagesClient) List(plan string, opts *GetOptions) ([]Image, *Response, error) {
+	path := opts.WithQuery(fmt.Sprintf("%s/%s/images", baseImagePath, plan))
+	var trans []Image
 
-	planIDString := strconv.Itoa(planID)
-
-	path := strings.Join([]string{baseImagePath, planIDString, endImagePath}, "/")
-	pathQuery := opts.WithQuery(path)
-
-	var trans []Images
-
-	resp, err := i.client.MakeRequest("GET", pathQuery, nil, &trans)
+	resp, err := i.client.MakeRequest("GET", path, nil, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}

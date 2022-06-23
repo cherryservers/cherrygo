@@ -34,14 +34,13 @@ type Client struct {
 	AuthToken string
 
 	Teams       GetTeams
-	Plans       GetPlans
-	Images      GetImages
+	Plans       PlansService
+	Images      ImagesService
 	Project     GetProject
 	Projects    GetProjects
 	SSHKeys     SSHKeysService
 	Servers     ServersService
-	IPAddresses GetIPS
-	IPAddress   GetIP
+	IPAddresses IpAddressesService
 	Storages    GetStorages
 	Storage     GetStorage
 }
@@ -211,8 +210,7 @@ func NewClient(opts ...ClientOpt) (*Client, error) {
 	c.Projects = &ProjectsClient{client: c}
 	c.SSHKeys = &SSHKeysClient{client: c}
 	c.Servers = &ServersClient{client: c}
-	c.IPAddresses = &IPSClient{client: c}
-	c.IPAddress = &IPClient{client: c}
+	c.IPAddresses = &IPsClient{client: c}
 	c.Storages = &StoragesClient{client: c}
 	c.Storage = &StorageClient{client: c}
 
