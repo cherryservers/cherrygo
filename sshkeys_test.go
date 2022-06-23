@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestSSHKey_List(t *testing.T) {
+func TestSSHKey_Get(t *testing.T) {
 	setup()
 	defer teardown()
 
@@ -31,7 +31,7 @@ func TestSSHKey_List(t *testing.T) {
 		fmt.Fprint(writer, response)
 	})
 
-	sshKey, _, err := client.SSHKey.List("1", nil)
+	sshKey, _, err := client.SSHKeys.Get(1, nil)
 	if err != nil {
 		t.Errorf("SSHKey.List returned %+v", err)
 	}
@@ -83,7 +83,7 @@ func TestSSHKey_Create(t *testing.T) {
 		Key:   "ssh-rsa AAAAB3NzaC1yc",
 	}
 
-	_, _, err := client.SSHKey.Create(&sshCreate)
+	_, _, err := client.SSHKeys.Create(&sshCreate)
 
 	if err != nil {
 		t.Errorf("SSHKey.Create returned %+v", err)
@@ -102,11 +102,7 @@ func TestSSHKey_Delete(t *testing.T) {
 		fmt.Fprint(writer)
 	})
 
-	sshDelete := DeleteSSHKey{
-		ID: "1",
-	}
-
-	_, _, err := client.SSHKey.Delete(&sshDelete)
+	_, _, err := client.SSHKeys.Delete(1)
 
 	if err != nil {
 		t.Errorf("SSHKey.Delete returned %+v", err)
@@ -150,7 +146,7 @@ func TestSSHKey_Update(t *testing.T) {
 		Key:   "ssh-rsa AAAAB3NzaC1ycupdated",
 	}
 
-	_, _, err := client.SSHKey.Update("1", &sshUpdate)
+	_, _, err := client.SSHKeys.Update(1, &sshUpdate)
 
 	if err != nil {
 		t.Errorf("SSHKey.Update returned %+v", err)
