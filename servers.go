@@ -38,7 +38,7 @@ type Server struct {
 	AvailableRegions AvailableRegions  `json:"availableregions,omitempty"`
 	Pricing          Pricing           `json:"pricing,omitempty"`
 	IPAddresses      []IPAddresses     `json:"ip_addresses,omitempty"`
-	SSHKeys          []SSHKeys         `json:"ssh_keys,omitempty"`
+	SSHKeys          []SSHKey          `json:"ssh_keys,omitempty"`
 	Tags             map[string]string `json:"tags,omitempty"`
 	Storage          BlockStorage      `json:"storage,omitempty"`
 	Created          string            `json:"created_at,omitempty"`
