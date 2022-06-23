@@ -34,7 +34,7 @@ type Server struct {
 	Project          Project           `json:"project,omitempty"`
 	Region           Region            `json:"region,omitempty"`
 	State            string            `json:"state,omitempty"`
-	Plans            Plans             `json:"plan,omitempty"`
+	Plan             Plan              `json:"plan,omitempty"`
 	AvailableRegions AvailableRegions  `json:"availableregions,omitempty"`
 	Pricing          Pricing           `json:"pricing,omitempty"`
 	IPAddresses      []IPAddress       `json:"ip_addresses,omitempty"`

@@ -34,7 +34,7 @@ type Client struct {
 	AuthToken string
 
 	Teams       GetTeams
-	Plans       GetPlans
+	Plans       PlansService
 	Images      ImagesService
 	Project     GetProject
 	Projects    GetProjects

@@ -2,22 +2,20 @@ package cherrygo
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 )
 
 const basePlanPath = "/v1/teams"
-const endPlanPath = "plans"
 
-// GetPlans interface metodas isgauti team'sus
-type GetPlans interface {
-	List(teamID int, opts *GetOptions) ([]Plans, *Response, error)
+// PlansService is an interface for interfacing with the Plan endpoints of the CherryServers API
+// See: https://api.cherryservers.com/doc/#tag/Plans
+type PlansService interface {
+	List(teamID int, opts *GetOptions) ([]Plan, *Response, error)
 }
 
-// Plans tai ka grazina api
-type Plans struct {
+type Plan struct {
 	ID               int                `json:"id,omitempty"`
 	Name             string             `json:"name,omitempty"`
+	Slug             string             `json:"slug,omitempty"`
 	Custom           bool               `json:"custom,omitempty"`
 	Specs            Specs              `json:"specs,omitempty"`
 	Pricing          []Pricing          `json:"pricing,omitempty"`
@@ -74,37 +72,23 @@ type Bandwidth struct {
 	Name string `json:"name,omitempty"`
 }
 
-// Pricing2 specifies fields for specs
-type Pricing2 struct {
-	Price    float32 `json:"price,omitempty"`
-	Currency string  `json:"currency,omitempty"`
-	Taxed    bool    `json:"taxed,omitempty"`
-	Unit     string  `json:"unit,omitempty"`
-}
-
-// AvailableRegions specifies fields for specs
 type AvailableRegions struct {
-	ID         int    `json:"id,omitempty"`
-	Name       string `json:"name,omitempty"`
-	RegionIso2 string `json:"region_iso_2,omitempty"`
-	StockQty   int    `json:"stock_qty,omitempty"`
+	*Region
+	StockQty int `json:"stock_qty,omitempty"`
+	SpotQty  int `json:"spot_qty,omitempty"`
 }
 
-// PlansClient paveldi client
 type PlansClient struct {
 	client *Client
 }
 
-// List func lists teams
-func (p *PlansClient) List(teamID int, opts *GetOptions) ([]Plans, *Response, error) {
-	teamIDString := strconv.Itoa(teamID)
+// List func lists plans
+func (p *PlansClient) List(teamID int, opts *GetOptions) ([]Plan, *Response, error) {
+	path := opts.WithQuery(fmt.Sprintf("%s/%d/plans", basePlanPath, teamID))
 
-	plansPath := strings.Join([]string{basePlanPath, teamIDString, endPlanPath}, "/")
-	pathQuery := opts.WithQuery(plansPath)
+	var trans []Plan
 
-	var trans []Plans
-
-	resp, err := p.client.MakeRequest("GET", pathQuery, nil, &trans)
+	resp, err := p.client.MakeRequest("GET", path, nil, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
