@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func TestServer_List(t *testing.T) {
+func TestServer_Get(t *testing.T) {
 	setup()
 	defer teardown()
 
@@ -41,13 +41,13 @@ func TestServer_List(t *testing.T) {
 		fmt.Fprint(writer, response)
 	})
 
-	server, _, err := client.Server.List("383531", nil)
+	server, _, err := client.Servers.Get(383531, nil)
 	if err != nil {
-		t.Errorf("Server.List returned %+v", err)
+		t.Errorf("Servers.Get returned %+v", err)
 	}
 
 	if !reflect.DeepEqual(server, expected) {
-		t.Errorf("Server.List returned %+v, expected %+v", server, expected)
+		t.Errorf("Servers.Get returned %+v, expected %+v", server, expected)
 	}
 }
 
@@ -68,7 +68,7 @@ func TestServer_PowerState(t *testing.T) {
 		fmt.Fprint(writer, response)
 	})
 
-	power, _, err := client.Server.PowerState("383531")
+	power, _, err := client.Servers.PowerState(383531)
 	if err != nil {
 		t.Errorf("Server.PowerState returned %+v", err)
 	}
@@ -99,10 +99,11 @@ func TestServer_Create(t *testing.T) {
 	}
 
 	requestBody := map[string]interface{}{
-		"plan_id":      "161",
+		"plan":         "e5_1620v4",
+		"project_id":   float64(projectID),
 		"hostname":     "server-hostname",
-		"image":        "Ubuntu 18.04 64bit",
-		"region":       "EU-Nord-1",
+		"image":        "ubuntu_22_04",
+		"region":       "eu_nord_1",
 		"ssh_keys":     []interface{}{"1", "2", "3"},
 		"ip_addresses": []interface{}{"e3f75899-1db3-b794-137f-78c5ee9096af"},
 		"user_data":    "dXNlcl9kYXRh",
@@ -131,17 +132,18 @@ func TestServer_Create(t *testing.T) {
 
 	tags := map[string]string{"env": "dev"}
 	serverCreate := CreateServer{
-		PlanID:      "161",
+		Plan:        "e5_1620v4",
+		ProjectID:   projectID,
 		Hostname:    "server-hostname",
-		Image:       "Ubuntu 18.04 64bit",
-		Region:      "EU-Nord-1",
+		Image:       "ubuntu_22_04",
+		Region:      "eu_nord_1",
 		SSHKeys:     []string{"1", "2", "3"},
 		IPAddresses: []string{"e3f75899-1db3-b794-137f-78c5ee9096af"},
 		UserData:    "dXNlcl9kYXRh",
 		Tags:        &tags,
 	}
 
-	server, _, err := client.Server.Create(strconv.Itoa(projectID), &serverCreate)
+	server, _, err := client.Servers.Create(&serverCreate)
 
 	if err != nil {
 		t.Errorf("Server.Create returned %+v", err)
@@ -164,11 +166,7 @@ func TestServer_Delete(t *testing.T) {
 		fmt.Fprint(writer)
 	})
 
-	serverDelete := DeleteServer{
-		ID: "383531",
-	}
-
-	_, _, err := client.Server.Delete(&serverDelete)
+	_, _, err := client.Servers.Delete(383531)
 
 	if err != nil {
 		t.Errorf("Server.Delete returned %+v", err)
@@ -205,7 +203,7 @@ func TestServer_PowerOn(t *testing.T) {
 		fmt.Fprint(writer, string(jsonBytes))
 	})
 
-	_, _, err := client.Server.PowerOn("383531")
+	_, _, err := client.Servers.PowerOn(383531)
 
 	if err != nil {
 		t.Errorf("Server.PowerOn returned %+v", err)
@@ -242,7 +240,7 @@ func TestServer_PowerOff(t *testing.T) {
 		fmt.Fprint(writer, string(jsonBytes))
 	})
 
-	_, _, err := client.Server.PowerOff("383531")
+	_, _, err := client.Servers.PowerOff(383531)
 
 	if err != nil {
 		t.Errorf("Server.PowerOff returned %+v", err)
@@ -279,7 +277,7 @@ func TestServer_Reboot(t *testing.T) {
 		fmt.Fprint(writer, string(jsonBytes))
 	})
 
-	_, _, err := client.Server.Reboot("383531")
+	_, _, err := client.Servers.Reboot(383531)
 
 	if err != nil {
 		t.Errorf("Server.Reboot returned %+v", err)
@@ -327,7 +325,7 @@ func TestServer_Update(t *testing.T) {
 		Bgp:  false,
 	}
 
-	server, _, err := client.Server.Update("383531", &serverUpdate)
+	server, _, err := client.Servers.Update(383531, &serverUpdate)
 
 	if err != nil {
 		t.Errorf("Server.Update returned %+v", err)
