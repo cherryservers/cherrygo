@@ -35,7 +35,7 @@ type Client struct {
 
 	Teams       GetTeams
 	Plans       GetPlans
-	Images      GetImages
+	Images      ImagesService
 	Project     GetProject
 	Projects    GetProjects
 	SSHKeys     SSHKeysService

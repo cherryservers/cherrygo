@@ -11,10 +11,11 @@ func TestImages_List(t *testing.T) {
 	setup()
 	defer teardown()
 
-	expected := []Images{
+	expected := []Image{
 		{
 			ID:   1,
 			Name: "CloudLinux 7 64bit",
+			Slug: "cloudlinux_7",
 			Pricing: []Pricing{
 				{
 					Price:    0.015,
@@ -27,15 +28,17 @@ func TestImages_List(t *testing.T) {
 		{
 			ID:   2,
 			Name: "Ubuntu 20.04 64bit",
+			Slug: "ubuntu_20_04",
 		},
 	}
 
-	mux.HandleFunc("/v1/plans/165/images", func(writer http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/v1/plans/e5_1620v4/images", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
 		fmt.Fprint(writer, `[
 			{
 				"id": 1,
 				"name": "CloudLinux 7 64bit",
+				"slug": "cloudlinux_7",
 				"pricing": [
 					{
 						"price": 0.015,
@@ -47,12 +50,13 @@ func TestImages_List(t *testing.T) {
 			},
 			{
 				"id": 2,
-				"name": "Ubuntu 20.04 64bit"
+				"name": "Ubuntu 20.04 64bit",
+				"slug": "ubuntu_20_04"
 			}
 		]`)
 	})
 
-	images, _, err := client.Images.List(165, nil)
+	images, _, err := client.Images.List("e5_1620v4", nil)
 	if err != nil {
 		t.Errorf("Images.List returned %+v", err)
 	}
