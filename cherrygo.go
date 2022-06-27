@@ -36,8 +36,7 @@ type Client struct {
 	Teams       GetTeams
 	Plans       PlansService
 	Images      ImagesService
-	Project     GetProject
-	Projects    GetProjects
+	Projects    ProjectsService
 	SSHKeys     SSHKeysService
 	Servers     ServersService
 	IPAddresses IpAddressesService
@@ -206,7 +205,6 @@ func NewClient(opts ...ClientOpt) (*Client, error) {
 	c.Teams = &TeamsClient{client: c}
 	c.Plans = &PlansClient{client: c}
 	c.Images = &ImagesClient{client: c}
-	c.Project = &ProjectClient{client: c}
 	c.Projects = &ProjectsClient{client: c}
 	c.SSHKeys = &SSHKeysClient{client: c}
 	c.Servers = &ServersClient{client: c}

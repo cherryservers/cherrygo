@@ -4,8 +4,6 @@ import (
 	"fmt"
 )
 
-const baseIPSPath = "/v1/projects"
-
 // IpAddressesService is an interface for interfacing with the the Server endpoints of the CherryServers API
 // See: https://api.cherryservers.com/doc/#tag/Ip-Addresses
 type IpAddressesService interface {
@@ -87,7 +85,7 @@ type UpdateIPAddress struct {
 
 // List func lists ip addresses
 func (i *IPsClient) List(projectID int, opts *GetOptions) ([]IPAddress, *Response, error) {
-	path := opts.WithQuery(fmt.Sprintf("%s/%d/ips", baseIPSPath, projectID))
+	path := opts.WithQuery(fmt.Sprintf("%s/%d/ips", baseProjectPath, projectID))
 
 	var trans []IPAddress
 
@@ -101,7 +99,7 @@ func (i *IPsClient) List(projectID int, opts *GetOptions) ([]IPAddress, *Respons
 
 // List func lists teams
 func (i *IPsClient) Get(projectID int, ipID string, opts *GetOptions) (IPAddress, *Response, error) {
-	path := opts.WithQuery(fmt.Sprintf("%s/%d/ips/%s", baseIPSPath, projectID, ipID))
+	path := opts.WithQuery(fmt.Sprintf("%s/%d/ips/%s", baseProjectPath, projectID, ipID))
 
 	var trans IPAddress
 
@@ -117,7 +115,7 @@ func (i *IPsClient) Get(projectID int, ipID string, opts *GetOptions) (IPAddress
 func (i *IPsClient) Create(projectID int, request *CreateIPAddress) (IPAddress, *Response, error) {
 	var trans IPAddress
 
-	path := fmt.Sprintf("%s/%d/ips", baseIPSPath, projectID)
+	path := fmt.Sprintf("%s/%d/ips", baseProjectPath, projectID)
 
 	resp, err := i.client.MakeRequest("POST", path, request, &trans)
 	if err != nil {
@@ -131,7 +129,7 @@ func (i *IPsClient) Create(projectID int, request *CreateIPAddress) (IPAddress, 
 func (i *IPsClient) Update(projectID int, ipID string, request *UpdateIPAddress) (IPAddress, *Response, error) {
 	var trans IPAddress
 
-	path := fmt.Sprintf("%s/%d/ips/%s", baseIPSPath, projectID, ipID)
+	path := fmt.Sprintf("%s/%d/ips/%s", baseProjectPath, projectID, ipID)
 
 	resp, err := i.client.MakeRequest("PUT", path, request, &trans)
 	if err != nil {
@@ -145,7 +143,7 @@ func (i *IPsClient) Update(projectID int, ipID string, request *UpdateIPAddress)
 func (i *IPsClient) Remove(projectID int, ipID string) (IPAddress, *Response, error) {
 	var trans IPAddress
 
-	path := fmt.Sprintf("%s/%d/ips/%s", baseIPSPath, projectID, ipID)
+	path := fmt.Sprintf("%s/%d/ips/%s", baseProjectPath, projectID, ipID)
 
 	resp, err := i.client.MakeRequest("DELETE", path, nil, &trans)
 	if err != nil {
