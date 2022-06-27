@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func TestStorage_List(t *testing.T) {
+func TestStorage_Get(t *testing.T) {
 	setup()
 	defer teardown()
 
@@ -50,7 +50,7 @@ func TestStorage_List(t *testing.T) {
 		}`)
 	})
 
-	storage, _, err := client.Storage.List(strconv.Itoa(projectID), "123", nil)
+	storage, _, err := client.Storages.Get(projectID, 123, nil)
 	if err != nil {
 		t.Errorf("Storage.List returned %+v", err)
 	}
@@ -65,7 +65,7 @@ func TestStorage_Create(t *testing.T) {
 	defer teardown()
 
 	requestBody := map[string]interface{}{
-		"project_id":  "321",
+		"project_id":  float64(321),
 		"description": "desc",
 		"size":        521.00,
 		"region":      "EU-Nord-1",
@@ -88,13 +88,13 @@ func TestStorage_Create(t *testing.T) {
 	})
 
 	createStorage := CreateStorage{
-		ProjectID:   "321",
+		ProjectID:   321,
 		Description: "desc",
 		Size:        521,
 		Region:      "EU-Nord-1",
 	}
 
-	_, _, err := client.Storage.Create(&createStorage)
+	_, _, err := client.Storages.Create(&createStorage)
 	if err != nil {
 		t.Errorf("Storage.List returned %+v", err)
 	}
@@ -111,11 +111,11 @@ func TestStorage_Delete(t *testing.T) {
 	})
 
 	deleteStorage := DeleteStorage{
-		ProjectID: "321",
-		StorageID: "123",
+		ProjectID: 321,
+		StorageID: 123,
 	}
 
-	_, err := client.Storage.Delete(&deleteStorage)
+	_, err := client.Storages.Delete(&deleteStorage)
 	if err != nil {
 		t.Errorf("Storage.Delete returned %+v", err)
 	}
@@ -126,8 +126,8 @@ func TestStorage_Attach(t *testing.T) {
 	defer teardown()
 
 	requestBody := map[string]interface{}{
-		"project_id": "321",
-		"storage_id": "123",
+		"project_id": float64(321),
+		"storage_id": float64(123),
 		"attach_to":  float64(1234),
 	}
 
@@ -148,12 +148,12 @@ func TestStorage_Attach(t *testing.T) {
 	})
 
 	attachStorage := AttachTo{
-		ProjectID: "321",
-		StorageID: "123",
+		ProjectID: 321,
+		StorageID: 123,
 		AttachTo:  1234,
 	}
 
-	_, _, err := client.Storage.Attach(&attachStorage)
+	_, _, err := client.Storages.Attach(&attachStorage)
 	if err != nil {
 		t.Errorf("Storage.Attach returned %+v", err)
 	}
@@ -170,11 +170,11 @@ func TestStorage_Detach(t *testing.T) {
 	})
 
 	detachStorage := DetachFrom{
-		ProjectID: "321",
-		StorageID: "123",
+		ProjectID: 321,
+		StorageID: 123,
 	}
 
-	_, err := client.Storage.Detach(&detachStorage)
+	_, err := client.Storages.Detach(&detachStorage)
 	if err != nil {
 		t.Errorf("Storage.Detach returned %+v", err)
 	}
