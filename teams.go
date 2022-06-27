@@ -4,18 +4,14 @@ import "fmt"
 
 const teamsPath = "/v1/teams"
 
-// GetTeams interface metodas isgauti team'sus
-type GetTeams interface {
-	List(opts *GetOptions) ([]Teams, *Response, error)
+// TeamsService is an interface for interfacing with the Teams endpoints of the CherryServers API
+// See: https://api.cherryservers.com/doc/#tag/Teams
+type TeamsService interface {
+	List(opts *GetOptions) ([]Team, *Response, error)
+	Get(teamID int, opts *GetOptions) (Team, *Response, error)
 }
 
-// Kad teamsus i slice'us irasytume
-type teamRoot struct {
-	Teams []Teams
-}
-
-// Teams tai ka grazina api
-type Teams struct {
+type Team struct {
 	ID      int     `json:"id,omitempty"`
 	Name    string  `json:"name,omitempty"`
 	Credit  Credit  `json:"credit,omitempty"`
@@ -23,33 +19,22 @@ type Teams struct {
 	Href    string  `json:"href,omitempty"`
 }
 
-// Credit fields
 type Credit struct {
-	Account   Account   `json:"account,omitempty"`
-	Promo     Promo     `json:"promo,omitempty"`
-	Resources Resources `json:"resources,omitempty"`
+	Account   CreditDetails `json:"account,omitempty"`
+	Promo     CreditDetails `json:"promo,omitempty"`
+	Resources Resources     `json:"resources,omitempty"`
 }
 
-// Account fields
-type Account struct {
+type CreditDetails struct {
 	Remaining float32 `json:"remaining,omitempty"`
 	Usage     float32 `json:"usage,omitempty"`
 	Currency  string  `json:"currency,omitempty"`
 }
 
-// Promo fields
-type Promo struct {
-	Remaining float32 `json:"remaining,omitempty"`
-	Usage     float32 `json:"usage,omitempty"`
-	Currency  string  `json:"currency,omitempty"`
-}
-
-// Resources fields
 type Resources struct {
 	Pricing Pricing `json:"pricing,omitempty"`
 }
 
-// Pricing for resources
 type Pricing struct {
 	Price    float32 `json:"price,omitempty"`
 	Taxed    bool    `json:"taxed,omitempty"`
@@ -57,10 +42,9 @@ type Pricing struct {
 	Unit     string  `json:"unit,omitempty"`
 }
 
-// Billing fields
 type Billing struct {
 	Type        string `json:"type,omitempty"`
-	CompanyName string `json:"company_name,ommitempty"`
+	CompanyName string `json:"company_name,omitempty"`
 	CompanyCode string `json:"company_code,omitempty"`
 	FirstName   string `json:"first_name,omitempty"`
 	LastName    string `json:"last_name,omitempty"`
@@ -72,24 +56,35 @@ type Billing struct {
 	Currency    string `json:"currency,omitempty"`
 }
 
-// Vat fields
 type Vat struct {
 	Amount int    `json:"amount"`
 	Number string `json:"number,omitempty"`
 	Valid  bool   `json:"valid"`
 }
 
-// TeamsClient paveldi client
 type TeamsClient struct {
 	client *Client
 }
 
 // List func lists teams
-func (t *TeamsClient) List(opts *GetOptions) ([]Teams, *Response, error) {
-	var trans []Teams
+func (t *TeamsClient) List(opts *GetOptions) ([]Team, *Response, error) {
+	var trans []Team
 
 	pathQuery := opts.WithQuery(teamsPath)
 	resp, err := t.client.MakeRequest("GET", pathQuery, nil, &trans)
+	if err != nil {
+		err = fmt.Errorf("Error: %v", err)
+	}
+
+	return trans, resp, err
+}
+
+func (p *TeamsClient) Get(teamID int, opts *GetOptions) (Team, *Response, error) {
+	path := opts.WithQuery(fmt.Sprintf("%s/%d", teamsPath, teamID))
+
+	var trans Team
+
+	resp, err := p.client.MakeRequest("GET", path, nil, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}

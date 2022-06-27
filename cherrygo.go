@@ -33,7 +33,7 @@ type Client struct {
 	UserAgent string
 	AuthToken string
 
-	Teams       GetTeams
+	Teams       TeamsService
 	Plans       PlansService
 	Images      ImagesService
 	Projects    ProjectsService
