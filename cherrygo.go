@@ -40,8 +40,7 @@ type Client struct {
 	SSHKeys     SSHKeysService
 	Servers     ServersService
 	IPAddresses IpAddressesService
-	Storages    GetStorages
-	Storage     GetStorage
+	Storages    StoragesService
 }
 
 // Response is the http response from api calls
@@ -210,7 +209,6 @@ func NewClient(opts ...ClientOpt) (*Client, error) {
 	c.Servers = &ServersClient{client: c}
 	c.IPAddresses = &IPsClient{client: c}
 	c.Storages = &StoragesClient{client: c}
-	c.Storage = &StorageClient{client: c}
 
 	return c, err
 }
