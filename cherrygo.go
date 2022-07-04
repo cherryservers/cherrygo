@@ -79,16 +79,18 @@ func (c *Client) MakeRequest(method, path string, body, v interface{}) (*Respons
 		return nil, err
 	}
 
-	if c.debug {
-		o, _ := httputil.DumpRequestOut(req, true)
-		log.Printf("\n+++++++++++++REQUEST+++++++++++++\n%s\n+++++++++++++++++++++++++++++++++", string(o))
-	}
-
 	req.Close = true
 
 	bearer := "Bearer " + c.AuthToken
 	req.Header.Add("Authorization", bearer)
 	req.Header.Set("User-Agent", c.UserAgent)
+	req.Header.Add("Content-Type", mediaType)
+	req.Header.Add("Accept", mediaType)
+
+	if c.debug {
+		o, _ := httputil.DumpRequestOut(req, true)
+		log.Printf("\n+++++++++++++REQUEST+++++++++++++\n%s\n+++++++++++++++++++++++++++++++++", string(o))
+	}
 
 	resp, err := c.client.Do(req)
 	if err != nil {
