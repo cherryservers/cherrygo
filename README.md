@@ -1,12 +1,10 @@
-# README #
+# cherrygo
 
-Cherry Servers golang API for Cherry Servers RESTful API.
+Cherry Servers golang API client library for Cherry Servers RESTful API.
 
 You can view the client API docs here: [https://pkg.go.dev/github.com/cherryservers/cherrygo](https://pkg.go.dev/github.com/cherryservers/cherrygo)
 
 You can view Cherry Servers API docs here: [https://api.cherryservers.com/doc](https://api.cherryservers.com/doc)
-
-![](https://pbs.twimg.com/profile_images/900630217630285824/p46dA56X_400x400.jpg)
 
 ## Table of Contents
 
@@ -28,14 +26,27 @@ go get github.com/cherryservers/cherrygo
 
 Then import the library in your Go code:
 ```
-import cherrygo
+import "github.com/cherryservers/cherrygo"
 ```
 
 ### Authentication
 
-In order to authenticate you need to export CHERRY_AUTH_TOKEN variable:
+To authenticate to the Cherry Servers API, you must have API token, you can create authentication tokens in the [Cherry Server client portal](https://portal.cherryservers.com). Token must be exported in env var `CHERRY_AUTH_TOKEN` or passed to client directly.
+
 ```
 export CHERRY_AUTH_TOKEN="4bdc0acb8f7af4bdc0acb8f7afe78522e6dae9b7e03b0e78522e6dae9b7e03b0"
+```
+Use exported CHERRY_AUTH_TOKEN env variable:
+```go
+func main() {
+    c, err := cherrygo.NewClient()
+}
+```
+Pass token directly to client:
+```go
+func main() {
+    c, err := cherrygo.NewClient(cherrygo.WithAuthToken("your-api-token"))
+}
 ```
 
 ### Examples ###
@@ -43,104 +54,73 @@ export CHERRY_AUTH_TOKEN="4bdc0acb8f7af4bdc0acb8f7afe78522e6dae9b7e03b0e78522e6d
 #### Get teams
 You will need team ID for later calls, for example to get projects for specified team, you will need to provide team ID.
 ```go
-c, err := cherrygo.NewClient()
-if err != nil {
-    log.Fatal(err)
-}
-
 teams, _, err := c.Teams.List(nil)
 if err != nil {
     log.Fatal("Error", err)
 }
 
 for _, t := range teams {
-
-    fmt.Fprintf("%v\t%v\t%v\t%v\t%v\n",
-        t.ID, t.Name, t.Credit.Promo.Remaining, t.Credit.Promo.Usage, t.Credit.Resources.Pricing.Price)
+    log.Println(t.ID, t.Name, t.Credit.Promo.Remaining, t.Credit.Promo.Usage, t.Credit.Resources.Pricing.Price)
 }
 ```
 
 #### Get projects
 After you have your team ID, you can list your projects. You will need your project ID to list your servers or order new ones.
 ```go
-c, err := cherrygo.NewClient()
-if err != nil {
-    log.Fatal(err)
-}
-
 projects, _, err := c.Projects.List(teamID, nil)
 if err != nil {
     log.Fatal("Error", err)
 }
 
 for _, p := range projects {
-    fmt.Fprintf(tw, "%v\t%v\t%v\n",
-        p.ID, p.Name, p.Href)
+    log.Println(p.ID, p.Name, p.Href)
 }
 ```
 
 #### Get plans
-You know your project ID, so next thing in order to get new server is to choose one, we call it plans
+Next thing in order to get new server is to choose one, we call it plans
 
 ```go
-c, err := cherrygo.NewClient()
-if err != nil {
-    log.Fatal(err)
-}
-
-plans, _, err := c.Plans.List(projectID, nil)
+plans, _, err := c.Plans.List(teamID, nil)
 if err != nil {
     log.Fatalf("Plans error: %v", err)
 }
 
 for _, p := range plans {
-
-    fmt.Fprintf(tw, "%v\t%v\t%v\t%v\n",
-        p.ID, p.Name, p.Specs.Cpus.Name, p.Specs.Memory.Total)
+    log.Println(p.Name, p.Slug)
 }
 ```
 
 #### Get images
 After you manage to know desired plan, you need to get available images for that plan
 ```go
-c, err := cherrygo.NewClient()
-if err != nil {
-    log.Fatal(err)
-}
-
-images, _, err := c.Images.List(planID, nil)
+images, _, err := c.Images.List(planSlug, nil)
 if err != nil {
     log.Fatal("Error", err)
 }
 
 for _, i := range images {
-    fmt.Fprintf(tw, "%v\t%v\t%v\n",
-        i.ID, i.Name, i.Pricing.Price)
+    log.Println(i.Name, i.Slug)
 }
 ```
 
 #### Order new server
 Now you are ready to order new server
 ```go
-c, err := cherrygo.NewClient()
-if err != nil {
-    log.Fatal(err)
-}
-
 addServerRequest := cherrygo.CreateServer{
     ProjectID:   projectID,
     Hostname:    hostname,
-    Image:       image,
-    Region:      region,
-    SSHKeys:     sshKeys,
-    IPAddresses: ipaddresses,
-    PlanID:      planID,
+    Image:       imageSlug,
+    Region:      regionSlug,
+    Plan:        planSlug,
 }
 
-server, _, err := c.Server.Create(projectID, &addServerRequest)
+server, _, err := c.Server.Create(&addServerRequest)
 if err != nil {
     log.Fatal("Error while creating new server: ", err)
 }
+
+log.Println(server.ID, server.Name, server.Hostname)
 ```
 
 ## Debug
