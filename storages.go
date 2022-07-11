@@ -4,15 +4,17 @@ import (
 	"fmt"
 )
 
+const baseStoragePath = "/v1/storages"
+
 // StoragesService is an interface for interfacing with the Storages endpoints of the CherryServers API
 // See: https://api.cherryservers.com/doc/#tag/Storage
 type StoragesService interface {
 	List(projectID int, opts *GetOptions) ([]BlockStorage, *Response, error)
-	Get(projectID int, storageID int, opts *GetOptions) (BlockStorage, *Response, error)
+	Get(storageID int, opts *GetOptions) (BlockStorage, *Response, error)
 	Create(request *CreateStorage) (BlockStorage, *Response, error)
-	Delete(request *DeleteStorage) (*Response, error)
+	Delete(storageID int) (*Response, error)
 	Attach(request *AttachTo) (BlockStorage, *Response, error)
-	Detach(*DetachFrom) (*Response, error)
+	Detach(storageID int) (*Response, error)
 }
 
 type BlockStorage struct {
@@ -41,24 +43,13 @@ type CreateStorage struct {
 	Region      string `json:"region"`
 }
 
-type DeleteStorage struct {
-	ProjectID int `json:"project_id"`
-	StorageID int `json:"storage_id"`
-}
-
 type AttachTo struct {
-	ProjectID int `json:"project_id"`
 	StorageID int `json:"storage_id"`
 	AttachTo  int `json:"attach_to"`
 }
 
 type AttachedTo struct {
 	Href string `json:"href"`
-}
-
-type DetachFrom struct {
-	ProjectID int `json:"project_id"`
-	StorageID int `json:"storage_id"`
 }
 
 type StoragesClient struct {
@@ -77,8 +68,8 @@ func (c *StoragesClient) List(projectID int, opts *GetOptions) ([]BlockStorage, 
 	return trans, resp, err
 }
 
-func (s *StoragesClient) Get(projectID int, storageID int, opts *GetOptions) (BlockStorage, *Response, error) {
-	path := opts.WithQuery(fmt.Sprintf("%s/%d/storages/%d", baseProjectPath, projectID, storageID))
+func (s *StoragesClient) Get(storageID int, opts *GetOptions) (BlockStorage, *Response, error) {
+	path := opts.WithQuery(fmt.Sprintf("%s/%d", baseStoragePath, storageID))
 
 	var trans BlockStorage
 
@@ -104,10 +95,10 @@ func (s *StoragesClient) Create(request *CreateStorage) (BlockStorage, *Response
 
 }
 
-func (s *StoragesClient) Delete(request *DeleteStorage) (*Response, error) {
-	path := fmt.Sprintf("%s/%d/storages/%d", baseProjectPath, request.ProjectID, request.StorageID)
+func (s *StoragesClient) Delete(storageID int) (*Response, error) {
+	path := fmt.Sprintf("%s/%d", baseStoragePath, storageID)
 
-	resp, err := s.client.MakeRequest("DELETE", path, request, nil)
+	resp, err := s.client.MakeRequest("DELETE", path, nil, nil)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -118,7 +109,7 @@ func (s *StoragesClient) Delete(request *DeleteStorage) (*Response, error) {
 func (s *StoragesClient) Attach(request *AttachTo) (BlockStorage, *Response, error) {
 	var trans BlockStorage
 
-	path := fmt.Sprintf("%s/%d/storages/%d/attachments", baseProjectPath, request.ProjectID, request.StorageID)
+	path := fmt.Sprintf("%s/%d/attachments", baseStoragePath, request.StorageID)
 
 	resp, err := s.client.MakeRequest("POST", path, request, &trans)
 	if err != nil {
@@ -128,8 +119,8 @@ func (s *StoragesClient) Attach(request *AttachTo) (BlockStorage, *Response, err
 	return trans, resp, err
 }
 
-func (s *StoragesClient) Detach(request *DetachFrom) (*Response, error) {
-	path := fmt.Sprintf("%s/%d/storages/%d/attachments", baseProjectPath, request.ProjectID, request.StorageID)
+func (s *StoragesClient) Detach(storageID int) (*Response, error) {
+	path := fmt.Sprintf("%s/%d/attachments", baseStoragePath, storageID)
 
 	resp, err := s.client.MakeRequest("DELETE", path, nil, nil)
 	if err != nil {
