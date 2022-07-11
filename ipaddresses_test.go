@@ -116,7 +116,7 @@ func TestIpAddress_Get(t *testing.T) {
 		Href:      "/ips/e3f75899-1db3-b794-137f-78c5ee9096af",
 	}
 
-	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID)+"/ips/"+ipUID, func(writer http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/v1/ips/"+ipUID, func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
 		fmt.Fprint(writer, `{
 			"id":"e3f75899-1db3-b794-137f-78c5ee9096af",
@@ -159,7 +159,7 @@ func TestIpAddress_Get(t *testing.T) {
 		 }`)
 	})
 
-	ip, _, err := client.IPAddresses.Get(projectID, ipUID, nil)
+	ip, _, err := client.IPAddresses.Get(ipUID, nil)
 	if err != nil {
 		t.Errorf("IPAddress.List returned %+v", err)
 	}
@@ -268,7 +268,7 @@ func TestIpAddress_Update(t *testing.T) {
 		"tags":       map[string]interface{}{"env": "dev"},
 	}
 
-	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID)+"/ips/"+ipId, func(writer http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/v1/ips/"+ipId, func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodPut)
 
 		var v map[string]interface{}
@@ -293,7 +293,7 @@ func TestIpAddress_Update(t *testing.T) {
 		Tags:      &tags,
 	}
 
-	ipAddress, _, err := client.IPAddresses.Update(projectID, ipId, &ipUpdate)
+	ipAddress, _, err := client.IPAddresses.Update(ipId, &ipUpdate)
 	if err != nil {
 		t.Errorf("IPAddress.Update returned %+v", err)
 	}
@@ -309,7 +309,7 @@ func TestIpAddress_Delete(t *testing.T) {
 
 	ipId := "e3f75899-1db3-b794-137f-78c5ee9096af"
 
-	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID)+"/ips/"+ipId, func(writer http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/v1/ips/"+ipId, func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodDelete)
 
 		writer.WriteHeader(http.StatusNoContent)
@@ -317,7 +317,7 @@ func TestIpAddress_Delete(t *testing.T) {
 		fmt.Fprint(writer)
 	})
 
-	_, _, err := client.IPAddresses.Remove(projectID, ipId)
+	_, _, err := client.IPAddresses.Remove(ipId)
 
 	if err != nil {
 		t.Errorf("IPAddress.Remove returned %+v", err)

@@ -4,14 +4,16 @@ import (
 	"fmt"
 )
 
+const baseIpPath = "/v1/ips"
+
 // IpAddressesService is an interface for interfacing with the the Server endpoints of the CherryServers API
 // See: https://api.cherryservers.com/doc/#tag/Ip-Addresses
 type IpAddressesService interface {
 	List(projectID int, opts *GetOptions) ([]IPAddress, *Response, error)
-	Get(projectID int, ipID string, opts *GetOptions) (IPAddress, *Response, error)
+	Get(ipID string, opts *GetOptions) (IPAddress, *Response, error)
 	Create(projectID int, request *CreateIPAddress) (IPAddress, *Response, error)
-	Remove(projectID int, ipID string) (IPAddress, *Response, error)
-	Update(projectID int, ipID string, request *UpdateIPAddress) (IPAddress, *Response, error)
+	Remove(ipID string) (IPAddress, *Response, error)
+	Update(ipID string, request *UpdateIPAddress) (IPAddress, *Response, error)
 }
 
 // IPAddresses fields
@@ -98,8 +100,8 @@ func (i *IPsClient) List(projectID int, opts *GetOptions) ([]IPAddress, *Respons
 }
 
 // List func lists teams
-func (i *IPsClient) Get(projectID int, ipID string, opts *GetOptions) (IPAddress, *Response, error) {
-	path := opts.WithQuery(fmt.Sprintf("%s/%d/ips/%s", baseProjectPath, projectID, ipID))
+func (i *IPsClient) Get(ipID string, opts *GetOptions) (IPAddress, *Response, error) {
+	path := opts.WithQuery(fmt.Sprintf("%s/%s", baseIpPath, ipID))
 
 	var trans IPAddress
 
@@ -126,10 +128,10 @@ func (i *IPsClient) Create(projectID int, request *CreateIPAddress) (IPAddress, 
 }
 
 // Update function updates existing IP address
-func (i *IPsClient) Update(projectID int, ipID string, request *UpdateIPAddress) (IPAddress, *Response, error) {
+func (i *IPsClient) Update(ipID string, request *UpdateIPAddress) (IPAddress, *Response, error) {
 	var trans IPAddress
 
-	path := fmt.Sprintf("%s/%d/ips/%s", baseProjectPath, projectID, ipID)
+	path := fmt.Sprintf("%s/%s", baseIpPath, ipID)
 
 	resp, err := i.client.MakeRequest("PUT", path, request, &trans)
 	if err != nil {
@@ -140,10 +142,10 @@ func (i *IPsClient) Update(projectID int, ipID string, request *UpdateIPAddress)
 }
 
 // Remove function removes existing project IP address
-func (i *IPsClient) Remove(projectID int, ipID string) (IPAddress, *Response, error) {
+func (i *IPsClient) Remove(ipID string) (IPAddress, *Response, error) {
 	var trans IPAddress
 
-	path := fmt.Sprintf("%s/%d/ips/%s", baseProjectPath, projectID, ipID)
+	path := fmt.Sprintf("%s/%s", baseIpPath, ipID)
 
 	resp, err := i.client.MakeRequest("DELETE", path, nil, &trans)
 	if err != nil {

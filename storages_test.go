@@ -30,7 +30,7 @@ func TestStorage_Get(t *testing.T) {
 		DiscoveryIP: "1.1.1.1",
 	}
 
-	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID)+"/storages/123", func(writer http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/v1/storages/123", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
 		fmt.Fprint(writer, `{
 			"id": 123,
@@ -50,7 +50,7 @@ func TestStorage_Get(t *testing.T) {
 		}`)
 	})
 
-	storage, _, err := client.Storages.Get(projectID, 123, nil)
+	storage, _, err := client.Storages.Get(123, nil)
 	if err != nil {
 		t.Errorf("Storage.List returned %+v", err)
 	}
@@ -104,18 +104,13 @@ func TestStorage_Delete(t *testing.T) {
 	setup()
 	defer teardown()
 
-	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID)+"/storages/123", func(writer http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/v1/storages/123", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodDelete)
 		writer.WriteHeader(http.StatusNoContent)
 		fmt.Fprint(writer)
 	})
 
-	deleteStorage := DeleteStorage{
-		ProjectID: 321,
-		StorageID: 123,
-	}
-
-	_, err := client.Storages.Delete(&deleteStorage)
+	_, err := client.Storages.Delete(123)
 	if err != nil {
 		t.Errorf("Storage.Delete returned %+v", err)
 	}
@@ -126,12 +121,11 @@ func TestStorage_Attach(t *testing.T) {
 	defer teardown()
 
 	requestBody := map[string]interface{}{
-		"project_id": float64(321),
 		"storage_id": float64(123),
 		"attach_to":  float64(1234),
 	}
 
-	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID)+"/storages/123/attachments", func(writer http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/v1/storages/123/attachments", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodPost)
 
 		var v map[string]interface{}
@@ -148,7 +142,6 @@ func TestStorage_Attach(t *testing.T) {
 	})
 
 	attachStorage := AttachTo{
-		ProjectID: 321,
 		StorageID: 123,
 		AttachTo:  1234,
 	}
@@ -163,18 +156,13 @@ func TestStorage_Detach(t *testing.T) {
 	setup()
 	defer teardown()
 
-	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID)+"/storages/123/attachments", func(writer http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/v1/storages/123/attachments", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodDelete)
 		writer.WriteHeader(http.StatusNoContent)
 		fmt.Fprint(writer)
 	})
 
-	detachStorage := DetachFrom{
-		ProjectID: 321,
-		StorageID: 123,
-	}
-
-	_, err := client.Storages.Detach(&detachStorage)
+	_, err := client.Storages.Detach(123)
 	if err != nil {
 		t.Errorf("Storage.Detach returned %+v", err)
 	}
