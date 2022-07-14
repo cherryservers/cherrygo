@@ -84,8 +84,12 @@ type PlansClient struct {
 
 // List func lists plans
 func (p *PlansClient) List(teamID int, opts *GetOptions) ([]Plan, *Response, error) {
-	path := opts.WithQuery(fmt.Sprintf("%s/%d/plans", basePlanPath, teamID))
+	basePath := "/v1/plans"
+	if teamID != 0 {
+		basePath = fmt.Sprintf("%s/%d/plans", basePlanPath, teamID)
+	}
 
+	path := opts.WithQuery(basePath)
 	var trans []Plan
 
 	resp, err := p.client.MakeRequest("GET", path, nil, &trans)
