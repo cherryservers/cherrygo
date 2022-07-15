@@ -167,3 +167,41 @@ func TestStorage_Detach(t *testing.T) {
 		t.Errorf("Storage.Detach returned %+v", err)
 	}
 }
+
+func TestStorage_Update(t *testing.T) {
+	setup()
+	defer teardown()
+
+	requestBody := map[string]interface{}{
+		"storage_id":  float64(123),
+		"size":        float64(500),
+		"description": "volume 1",
+	}
+
+	mux.HandleFunc("/v1/storages/123", func(writer http.ResponseWriter, request *http.Request) {
+		testMethod(t, request, http.MethodPut)
+
+		var v map[string]interface{}
+		err := json.NewDecoder(request.Body).Decode(&v)
+		if err != nil {
+			t.Fatalf("decode json: %v", err)
+		}
+
+		if !reflect.DeepEqual(v, requestBody) {
+			t.Errorf("Request body\n sent %#v\n expected %#v", v, requestBody)
+		}
+
+		fmt.Fprint(writer, `{"id": 123}`)
+	})
+
+	updateStorage := UpdateStorage{
+		StorageID:   123,
+		Size:        500,
+		Description: "volume 1",
+	}
+
+	_, _, err := client.Storages.Update(&updateStorage)
+	if err != nil {
+		t.Errorf("Storage.Update returned %+v", err)
+	}
+}

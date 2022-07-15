@@ -15,6 +15,7 @@ type StoragesService interface {
 	Delete(storageID int) (*Response, error)
 	Attach(request *AttachTo) (BlockStorage, *Response, error)
 	Detach(storageID int) (*Response, error)
+	Update(request *UpdateStorage) (BlockStorage, *Response, error)
 }
 
 type BlockStorage struct {
@@ -30,6 +31,7 @@ type BlockStorage struct {
 	VlanIP        string     `json:"vlan_ip"`
 	Initiator     string     `json:"initiator"`
 	DiscoveryIP   string     `json:"discovery_ip"`
+	Region        Region     `json:"region"`
 }
 
 type StorageClient struct {
@@ -49,7 +51,14 @@ type AttachTo struct {
 }
 
 type AttachedTo struct {
+	ID   int    `json:"id"`
 	Href string `json:"href"`
+}
+
+type UpdateStorage struct {
+	StorageID   int    `json:"storage_id"`
+	Size        int    `json:"size"`
+	Description string `json:"description,omitempty"`
 }
 
 type StoragesClient struct {
@@ -128,4 +137,17 @@ func (s *StoragesClient) Detach(storageID int) (*Response, error) {
 	}
 
 	return resp, err
+}
+
+func (s *StoragesClient) Update(request *UpdateStorage) (BlockStorage, *Response, error) {
+	var trans BlockStorage
+
+	path := fmt.Sprintf("%s/%d", baseStoragePath, request.StorageID)
+
+	resp, err := s.client.MakeRequest("PUT", path, request, &trans)
+	if err != nil {
+		err = fmt.Errorf("Error: %v", err)
+	}
+
+	return trans, resp, err
 }
