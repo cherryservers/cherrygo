@@ -85,8 +85,10 @@ type CreateServer struct {
 
 // UpdateServer fields for updating a server with specified tags
 type UpdateServer struct {
-	Tags *map[string]string `json:"tags,omitempty"`
-	Bgp  bool               `json:"bgp"`
+	Name     string             `json:"name,omitempty"`
+	Hostname string             `json:"hostname,omitempty"`
+	Tags     *map[string]string `json:"tags,omitempty"`
+	Bgp      bool               `json:"bgp"`
 }
 
 type ServersClient struct {

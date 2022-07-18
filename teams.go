@@ -9,6 +9,7 @@ const teamsPath = "/v1/teams"
 type TeamsService interface {
 	List(opts *GetOptions) ([]Team, *Response, error)
 	Get(teamID int, opts *GetOptions) (Team, *Response, error)
+	Delete(teamID int) (*Response, error)
 }
 
 type Team struct {
@@ -90,4 +91,15 @@ func (p *TeamsClient) Get(teamID int, opts *GetOptions) (Team, *Response, error)
 	}
 
 	return trans, resp, err
+}
+
+func (p *TeamsClient) Delete(teamID int) (*Response, error) {
+	path := fmt.Sprintf("%s/%d", teamsPath, teamID)
+
+	resp, err := p.client.MakeRequest("DELETE", path, nil, nil)
+	if err != nil {
+		err = fmt.Errorf("Error: %v", err)
+	}
+
+	return resp, err
 }

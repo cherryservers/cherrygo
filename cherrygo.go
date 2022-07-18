@@ -42,6 +42,7 @@ type Client struct {
 	IPAddresses IpAddressesService
 	Storages    StoragesService
 	Regions     RegionsService
+	Users       UsersService
 }
 
 // Response is the http response from api calls
@@ -197,6 +198,7 @@ func NewClient(opts ...ClientOpt) (*Client, error) {
 	c.IPAddresses = &IPsClient{client: c}
 	c.Storages = &StoragesClient{client: c}
 	c.Regions = &RegionsClient{client: c}
+	c.Users = &UsersClient{client: c}
 
 	return c, err
 }
