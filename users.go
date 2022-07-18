@@ -30,7 +30,7 @@ type UsersClient struct {
 func (s *UsersClient) CurrentUser(opts *GetOptions) (User, *Response, error) {
 	var trans User
 
-	path := opts.WithQuery(fmt.Sprintf("v1/user"))
+	path := opts.WithQuery(fmt.Sprintf("/v1/user"))
 
 	resp, err := s.client.MakeRequest("GET", path, nil, &trans)
 	if err != nil {
