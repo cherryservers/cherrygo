@@ -13,6 +13,7 @@ type ProjectsService interface {
 	Get(projectID int, opts *GetOptions) (Project, *Response, error)
 	Create(teamID int, request *CreateProject) (Project, *Response, error)
 	Update(projectID int, request *UpdateProject) (Project, *Response, error)
+	ListSSHKeys(projectID int, opts *GetOptions) ([]SSHKey, *Response, error)
 	Delete(projectID int) (*Response, error)
 }
 
@@ -104,4 +105,17 @@ func (p *ProjectsClient) Delete(projectID int) (*Response, error) {
 	}
 
 	return resp, err
+}
+
+func (p *ProjectsClient) ListSSHKeys(projectID int, opts *GetOptions) ([]SSHKey, *Response, error) {
+	path := opts.WithQuery(fmt.Sprintf("/v1/projects/%d/ssh-keys", projectID))
+
+	var trans []SSHKey
+
+	resp, err := p.client.MakeRequest("GET", path, nil, &trans)
+	if err != nil {
+		err = fmt.Errorf("Error: %v", err)
+	}
+
+	return trans, resp, err
 }
