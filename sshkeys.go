@@ -20,6 +20,7 @@ type SSHKey struct {
 	Label       string `json:"label,omitempty"`
 	Key         string `json:"key,omitempty"`
 	Fingerprint string `json:"fingerprint,omitempty"`
+	User        User   `json:"user,omitempty"`
 	Updated     string `json:"updated,omitempty"`
 	Created     string `json:"created,omitempty"`
 	Href        string `json:"href,omitempty"`
@@ -37,8 +38,8 @@ type CreateSSHKey struct {
 
 // UpdateSSHKey fields for label or key update
 type UpdateSSHKey struct {
-	Label string `json:"label,omitempty"`
-	Key   string `json:"key,omitempty"`
+	Label *string `json:"label,omitempty"`
+	Key   *string `json:"key,omitempty"`
 }
 
 // List all available ssh keys
