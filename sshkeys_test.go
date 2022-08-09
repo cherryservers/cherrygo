@@ -141,9 +141,11 @@ func TestSSHKey_Update(t *testing.T) {
 		fmt.Fprint(writer, string(jsonBytes))
 	})
 
+	label := "updated label"
+	key := "ssh-rsa AAAAB3NzaC1ycupdated"
 	sshUpdate := UpdateSSHKey{
-		Label: "updated label",
-		Key:   "ssh-rsa AAAAB3NzaC1ycupdated",
+		Label: &label,
+		Key:   &key,
 	}
 
 	_, _, err := client.SSHKeys.Update(1, &sshUpdate)
