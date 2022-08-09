@@ -51,8 +51,9 @@ type AttachTo struct {
 }
 
 type AttachedTo struct {
-	ID   int    `json:"id"`
-	Href string `json:"href"`
+	ID       int    `json:"id"`
+	Hostname string `json:"hostname,omitempty"`
+	Href     string `json:"href"`
 }
 
 type UpdateStorage struct {

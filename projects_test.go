@@ -166,9 +166,12 @@ func TestProject_Update(t *testing.T) {
 		fmt.Fprint(writer, `{"id": 321}`)
 	})
 
+	name := "My Updated Project"
+	bgp := true
+
 	projectUpdate := UpdateProject{
-		Name: "My Updated Project",
-		Bgp:  true,
+		Name: &name,
+		Bgp:  &bgp,
 	}
 
 	_, _, err := client.Projects.Update(projectID, &projectUpdate)
