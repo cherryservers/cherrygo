@@ -32,8 +32,8 @@ type CreateProject struct {
 
 // UpdateProject fields for updating a project with specified name
 type UpdateProject struct {
-	Name string `json:"name,omitempty"`
-	Bgp  bool   `json:"bgp,omitempty"`
+	Name *string `json:"name,omitempty"`
+	Bgp  *bool   `json:"bgp,omitempty"`
 }
 
 type ProjectsClient struct {
