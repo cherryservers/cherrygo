@@ -20,6 +20,7 @@ type ServersService interface {
 	Reboot(serverID int) (Server, *Response, error)
 	Update(serverID int, request *UpdateServer) (Server, *Response, error)
 	Reinstall(serverID int, fields *ReinstallServerFields) (Server, *Response, error)
+	ListSSHKeys(serverID int, opts *GetOptions) ([]SSHKey, *Response, error)
 }
 
 // Server response object
@@ -212,6 +213,18 @@ func (s *ServersClient) Delete(serverID int) (Server, *Response, error) {
 	path := fmt.Sprintf("%s/%d", baseServerPath, serverID)
 	resp, err := s.client.MakeRequest("DELETE", path, nil, &trans)
 
+	if err != nil {
+		err = fmt.Errorf("Error: %v", err)
+	}
+
+	return trans, resp, err
+}
+
+func (s *ServersClient) ListSSHKeys(serverID int, opts *GetOptions) ([]SSHKey, *Response, error) {
+	path := opts.WithQuery(fmt.Sprintf("%s/%d/ssh-keys", baseServerPath, serverID))
+
+	var trans []SSHKey
+	resp, err := s.client.MakeRequest("GET", path, nil, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}

@@ -9,6 +9,8 @@ const teamsPath = "/v1/teams"
 type TeamsService interface {
 	List(opts *GetOptions) ([]Team, *Response, error)
 	Get(teamID int, opts *GetOptions) (Team, *Response, error)
+	Create(request *CreateTeam) (Team, *Response, error)
+	Update(teamID int, request *UpdateTeam) (Team, *Response, error)
 	Delete(teamID int) (*Response, error)
 }
 
@@ -67,6 +69,18 @@ type TeamsClient struct {
 	client *Client
 }
 
+type CreateTeam struct {
+	Name     string `json:"name,omitempty"`
+	Type     string `json:"type,omitempty"`
+	Currency string `json:"currency,omitempty"`
+}
+
+type UpdateTeam struct {
+	Name     *string `json:"name,omitempty"`
+	Type     *string `json:"type,omitempty"`
+	Currency *string `json:"currency,omitempty"`
+}
+
 // List func lists teams
 func (t *TeamsClient) List(opts *GetOptions) ([]Team, *Response, error) {
 	var trans []Team
@@ -86,6 +100,32 @@ func (p *TeamsClient) Get(teamID int, opts *GetOptions) (Team, *Response, error)
 	var trans Team
 
 	resp, err := p.client.MakeRequest("GET", path, nil, &trans)
+	if err != nil {
+		err = fmt.Errorf("Error: %v", err)
+	}
+
+	return trans, resp, err
+}
+
+func (p *TeamsClient) Create(request *CreateTeam) (Team, *Response, error) {
+	path := fmt.Sprintf("%s", teamsPath)
+
+	var trans Team
+
+	resp, err := p.client.MakeRequest("POST", path, request, &trans)
+	if err != nil {
+		err = fmt.Errorf("Error: %v", err)
+	}
+
+	return trans, resp, err
+}
+
+func (p *TeamsClient) Update(teamID int, request *UpdateTeam) (Team, *Response, error) {
+	path := fmt.Sprintf(fmt.Sprintf("%s/%d", teamsPath, teamID))
+
+	var trans Team
+
+	resp, err := p.client.MakeRequest("PUT", path, request, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
