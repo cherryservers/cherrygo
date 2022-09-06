@@ -289,7 +289,9 @@ func TestServer_Update(t *testing.T) {
 	defer teardown()
 
 	response := Server{
-		ID: 383531,
+		ID:       383531,
+		Name:     "prod server",
+		Hostname: "cherry.prod",
 		BGP: ServerBGP{
 			Enabled: false,
 		},
@@ -306,8 +308,10 @@ func TestServer_Update(t *testing.T) {
 		}
 
 		expected := map[string]interface{}{
-			"tags": map[string]interface{}{"env": "dev"},
-			"bgp":  false,
+			"name":     "prod server",
+			"hostname": "cherry.prod",
+			"tags":     map[string]interface{}{"env": "dev"},
+			"bgp":      false,
 		}
 
 		if !reflect.DeepEqual(v, expected) {
@@ -321,8 +325,10 @@ func TestServer_Update(t *testing.T) {
 
 	tags := map[string]string{"env": "dev"}
 	serverUpdate := UpdateServer{
-		Tags: &tags,
-		Bgp:  false,
+		Tags:     &tags,
+		Bgp:      false,
+		Name:     "prod server",
+		Hostname: "cherry.prod",
 	}
 
 	server, _, err := client.Servers.Update(383531, &serverUpdate)

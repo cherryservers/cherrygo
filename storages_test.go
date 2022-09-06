@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func TestStorage_List(t *testing.T) {
+func TestStorage_Get(t *testing.T) {
 	setup()
 	defer teardown()
 
@@ -30,7 +30,7 @@ func TestStorage_List(t *testing.T) {
 		DiscoveryIP: "1.1.1.1",
 	}
 
-	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID)+"/storages/123", func(writer http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/v1/storages/123", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
 		fmt.Fprint(writer, `{
 			"id": 123,
@@ -50,7 +50,7 @@ func TestStorage_List(t *testing.T) {
 		}`)
 	})
 
-	storage, _, err := client.Storage.List(strconv.Itoa(projectID), "123", nil)
+	storage, _, err := client.Storages.Get(123, nil)
 	if err != nil {
 		t.Errorf("Storage.List returned %+v", err)
 	}
@@ -65,7 +65,7 @@ func TestStorage_Create(t *testing.T) {
 	defer teardown()
 
 	requestBody := map[string]interface{}{
-		"project_id":  "321",
+		"project_id":  float64(321),
 		"description": "desc",
 		"size":        521.00,
 		"region":      "EU-Nord-1",
@@ -88,13 +88,13 @@ func TestStorage_Create(t *testing.T) {
 	})
 
 	createStorage := CreateStorage{
-		ProjectID:   "321",
+		ProjectID:   321,
 		Description: "desc",
 		Size:        521,
 		Region:      "EU-Nord-1",
 	}
 
-	_, _, err := client.Storage.Create(&createStorage)
+	_, _, err := client.Storages.Create(&createStorage)
 	if err != nil {
 		t.Errorf("Storage.List returned %+v", err)
 	}
@@ -104,18 +104,13 @@ func TestStorage_Delete(t *testing.T) {
 	setup()
 	defer teardown()
 
-	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID)+"/storages/123", func(writer http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/v1/storages/123", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodDelete)
 		writer.WriteHeader(http.StatusNoContent)
 		fmt.Fprint(writer)
 	})
 
-	deleteStorage := DeleteStorage{
-		ProjectID: "321",
-		StorageID: "123",
-	}
-
-	_, err := client.Storage.Delete(&deleteStorage)
+	_, err := client.Storages.Delete(123)
 	if err != nil {
 		t.Errorf("Storage.Delete returned %+v", err)
 	}
@@ -126,12 +121,11 @@ func TestStorage_Attach(t *testing.T) {
 	defer teardown()
 
 	requestBody := map[string]interface{}{
-		"project_id": "321",
-		"storage_id": "123",
+		"storage_id": float64(123),
 		"attach_to":  float64(1234),
 	}
 
-	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID)+"/storages/123/attachments", func(writer http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/v1/storages/123/attachments", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodPost)
 
 		var v map[string]interface{}
@@ -148,12 +142,11 @@ func TestStorage_Attach(t *testing.T) {
 	})
 
 	attachStorage := AttachTo{
-		ProjectID: "321",
-		StorageID: "123",
+		StorageID: 123,
 		AttachTo:  1234,
 	}
 
-	_, _, err := client.Storage.Attach(&attachStorage)
+	_, _, err := client.Storages.Attach(&attachStorage)
 	if err != nil {
 		t.Errorf("Storage.Attach returned %+v", err)
 	}
@@ -163,19 +156,52 @@ func TestStorage_Detach(t *testing.T) {
 	setup()
 	defer teardown()
 
-	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID)+"/storages/123/attachments", func(writer http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/v1/storages/123/attachments", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodDelete)
 		writer.WriteHeader(http.StatusNoContent)
 		fmt.Fprint(writer)
 	})
 
-	detachStorage := DetachFrom{
-		ProjectID: "321",
-		StorageID: "123",
-	}
-
-	_, err := client.Storage.Detach(&detachStorage)
+	_, err := client.Storages.Detach(123)
 	if err != nil {
 		t.Errorf("Storage.Detach returned %+v", err)
+	}
+}
+
+func TestStorage_Update(t *testing.T) {
+	setup()
+	defer teardown()
+
+	requestBody := map[string]interface{}{
+		"storage_id":  float64(123),
+		"size":        float64(500),
+		"description": "volume 1",
+	}
+
+	mux.HandleFunc("/v1/storages/123", func(writer http.ResponseWriter, request *http.Request) {
+		testMethod(t, request, http.MethodPut)
+
+		var v map[string]interface{}
+		err := json.NewDecoder(request.Body).Decode(&v)
+		if err != nil {
+			t.Fatalf("decode json: %v", err)
+		}
+
+		if !reflect.DeepEqual(v, requestBody) {
+			t.Errorf("Request body\n sent %#v\n expected %#v", v, requestBody)
+		}
+
+		fmt.Fprint(writer, `{"id": 123}`)
+	})
+
+	updateStorage := UpdateStorage{
+		StorageID:   123,
+		Size:        500,
+		Description: "volume 1",
+	}
+
+	_, _, err := client.Storages.Update(&updateStorage)
+	if err != nil {
+		t.Errorf("Storage.Update returned %+v", err)
 	}
 }

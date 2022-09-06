@@ -166,9 +166,12 @@ func TestProject_Update(t *testing.T) {
 		fmt.Fprint(writer, `{"id": 321}`)
 	})
 
+	name := "My Updated Project"
+	bgp := true
+
 	projectUpdate := UpdateProject{
-		Name: "My Updated Project",
-		Bgp:  true,
+		Name: &name,
+		Bgp:  &bgp,
 	}
 
 	_, _, err := client.Projects.Update(projectID, &projectUpdate)
@@ -193,5 +196,40 @@ func TestProject_Delete(t *testing.T) {
 
 	if err != nil {
 		t.Errorf("Project.Delete returned %+v", err)
+	}
+}
+
+func TestProjectSSHKeys_List(t *testing.T) {
+	setup()
+	defer teardown()
+
+	expected := []SSHKey{
+		{
+			ID:          1,
+			Label:       "test",
+			Key:         "ssh-rsa AAAAB3NzaC1yc",
+			Fingerprint: "fb:f0:21:33:e9:26:y3:2e:2e:b4:5c:8a:a6:26:64:ae",
+			Updated:     "2021-04-20 16:40:54",
+			Created:     "2021-04-20 13:40:43",
+			Href:        "/ssh-keys/1",
+		},
+	}
+
+	mux.HandleFunc("/v1/projects/123/ssh-keys", func(writer http.ResponseWriter, request *http.Request) {
+		testMethod(t, request, http.MethodGet)
+
+		jsonBytes, _ := json.Marshal(expected)
+		response := string(jsonBytes)
+
+		fmt.Fprint(writer, response)
+	})
+
+	sshKeys, _, err := client.Projects.ListSSHKeys(123, nil)
+	if err != nil {
+		t.Errorf("Projects.ListSSHKeys returned %+v", err)
+	}
+
+	if !reflect.DeepEqual(sshKeys, expected) {
+		t.Errorf("Projects.ListSSHKeys returned %+v, expected %+v", sshKeys, expected)
 	}
 }

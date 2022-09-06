@@ -116,7 +116,7 @@ func TestIpAddress_Get(t *testing.T) {
 		Href:      "/ips/e3f75899-1db3-b794-137f-78c5ee9096af",
 	}
 
-	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID)+"/ips/"+ipUID, func(writer http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/v1/ips/"+ipUID, func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
 		fmt.Fprint(writer, `{
 			"id":"e3f75899-1db3-b794-137f-78c5ee9096af",
@@ -159,7 +159,7 @@ func TestIpAddress_Get(t *testing.T) {
 		 }`)
 	})
 
-	ip, _, err := client.IPAddresses.Get(projectID, ipUID, nil)
+	ip, _, err := client.IPAddresses.Get(ipUID, nil)
 	if err != nil {
 		t.Errorf("IPAddress.List returned %+v", err)
 	}
@@ -173,6 +173,7 @@ func TestIpAddress_Create(t *testing.T) {
 	setup()
 	defer teardown()
 
+	tags := map[string]string{"env": "dev"}
 	expected := IPAddress{
 		ID:            "e3f75899-1db3-b794-137f-78c5ee9096af",
 		Address:       "5.199.171.0",
@@ -201,7 +202,7 @@ func TestIpAddress_Create(t *testing.T) {
 		},
 		PtrRecord: "ptr-r",
 		ARecord:   "a-r",
-		Tags:      map[string]string{"env": "dev"},
+		Tags:      &tags,
 		Href:      "/ips/e3f75899-1db3-b794-137f-78c5ee9096af",
 	}
 
@@ -231,7 +232,6 @@ func TestIpAddress_Create(t *testing.T) {
 		fmt.Fprint(writer, response)
 	})
 
-	tags := map[string]string{"env": "dev"}
 	ipCreate := CreateIPAddress{
 		Region:    "EU-Nord-1",
 		PtrRecord: "ptr",
@@ -255,11 +255,12 @@ func TestIpAddress_Update(t *testing.T) {
 	defer teardown()
 
 	ipId := "e3f75899-1db3-b794-137f-78c5ee9096af"
+	tags := map[string]string{"env": "dev"}
 	expected := IPAddress{
 		ID:        "e3f75899-1db3-b794-137f-78c5ee9096af",
 		PtrRecord: "ptr-new",
 		ARecord:   "a-new",
-		Tags:      map[string]string{"env": "dev"},
+		Tags:      &tags,
 	}
 
 	requestBody := map[string]interface{}{
@@ -268,7 +269,7 @@ func TestIpAddress_Update(t *testing.T) {
 		"tags":       map[string]interface{}{"env": "dev"},
 	}
 
-	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID)+"/ips/"+ipId, func(writer http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/v1/ips/"+ipId, func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodPut)
 
 		var v map[string]interface{}
@@ -286,14 +287,13 @@ func TestIpAddress_Update(t *testing.T) {
 		fmt.Fprint(writer, response)
 	})
 
-	tags := map[string]string{"env": "dev"}
 	ipUpdate := UpdateIPAddress{
 		PtrRecord: "ptr-new",
 		ARecord:   "a-new",
 		Tags:      &tags,
 	}
 
-	ipAddress, _, err := client.IPAddresses.Update(projectID, ipId, &ipUpdate)
+	ipAddress, _, err := client.IPAddresses.Update(ipId, &ipUpdate)
 	if err != nil {
 		t.Errorf("IPAddress.Update returned %+v", err)
 	}
@@ -309,7 +309,7 @@ func TestIpAddress_Delete(t *testing.T) {
 
 	ipId := "e3f75899-1db3-b794-137f-78c5ee9096af"
 
-	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID)+"/ips/"+ipId, func(writer http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/v1/ips/"+ipId, func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodDelete)
 
 		writer.WriteHeader(http.StatusNoContent)
@@ -317,7 +317,7 @@ func TestIpAddress_Delete(t *testing.T) {
 		fmt.Fprint(writer)
 	})
 
-	_, _, err := client.IPAddresses.Remove(projectID, ipId)
+	_, err := client.IPAddresses.Remove(ipId)
 
 	if err != nil {
 		t.Errorf("IPAddress.Remove returned %+v", err)

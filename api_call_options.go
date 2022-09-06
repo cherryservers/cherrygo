@@ -13,6 +13,8 @@ type GetOptions struct {
 	Offset int      `url:"offset,omitempty"`
 	Type   []string `url:"type,ommitempty"`
 	Status []string `url:"status,ommitempty"`
+	// QueryParams for API URL, used for arbitrary filters
+	QueryParams map[string]string `url:"-"`
 }
 
 func (g *GetOptions) WithQuery(apiPath string) string {
@@ -32,6 +34,12 @@ func (g *GetOptions) Encode() string {
 		v.Add("fields", strings.Join(g.Fields, ","))
 	}
 
+	if g.QueryParams != nil {
+		for k, val := range g.QueryParams {
+			v.Add(k, val)
+		}
+	}
+
 	if g.Type != nil && len(g.Type) > 0 {
 		for _, el := range g.Type {
 			v.Add("type[]", el)
@@ -44,8 +52,13 @@ func (g *GetOptions) Encode() string {
 		}
 	}
 
-	v.Add("limit", strconv.Itoa(g.Limit))
-	v.Add("offset", strconv.Itoa(g.Offset))
+	if g.Limit != 0 {
+		v.Add("limit", strconv.Itoa(g.Limit))
+	}
+
+	if g.Offset != 0 {
+		v.Add("offset", strconv.Itoa(g.Offset))
+	}
 
 	return v.Encode()
 }

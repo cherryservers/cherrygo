@@ -40,8 +40,9 @@ type Client struct {
 	SSHKeys     SSHKeysService
 	Servers     ServersService
 	IPAddresses IpAddressesService
-	Storages    GetStorages
-	Storage     GetStorage
+	Storages    StoragesService
+	Regions     RegionsService
+	Users       UsersService
 }
 
 // Response is the http response from api calls
@@ -74,16 +75,9 @@ func (c *Client) MakeRequest(method, path string, body, v interface{}) (*Respons
 		}
 	}
 
-	//fmt.Printf("\nBODY: %v\n", buf)
-
 	req, err := http.NewRequest(method, u.String(), buf)
 	if err != nil {
 		return nil, err
-	}
-
-	if c.debug {
-		o, _ := httputil.DumpRequestOut(req, true)
-		log.Printf("\n+++++++++++++REQUEST+++++++++++++\n%s\n+++++++++++++++++++++++++++++++++", string(o))
 	}
 
 	req.Close = true
@@ -91,10 +85,14 @@ func (c *Client) MakeRequest(method, path string, body, v interface{}) (*Respons
 	bearer := "Bearer " + c.AuthToken
 	req.Header.Add("Authorization", bearer)
 	req.Header.Set("User-Agent", c.UserAgent)
+	req.Header.Add("Content-Type", mediaType)
+	req.Header.Add("Accept", mediaType)
 
-	// New request cia baigiasi
+	if c.debug {
+		o, _ := httputil.DumpRequestOut(req, true)
+		log.Printf("\n+++++++++++++REQUEST+++++++++++++\n%s\n+++++++++++++++++++++++++++++++++", string(o))
+	}
 
-	// cia darom jau realu kvietima i api
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
@@ -102,7 +100,6 @@ func (c *Client) MakeRequest(method, path string, body, v interface{}) (*Respons
 
 	defer resp.Body.Close()
 
-	// inicializuojam responsa reikiamo tipo grazinimui
 	response := Response{Response: resp}
 	response.populateTotal()
 
@@ -112,7 +109,6 @@ func (c *Client) MakeRequest(method, path string, body, v interface{}) (*Respons
 	}
 
 	if sc := response.StatusCode; sc >= 299 {
-
 		type ErrorResponse struct {
 			Response *http.Response
 			Code     int    `json:"code"`
@@ -129,19 +125,11 @@ func (c *Client) MakeRequest(method, path string, body, v interface{}) (*Respons
 		if err != nil {
 			return nil, err
 		}
-		// jei reikia viso, tai printinti response.Response
+
 		err = fmt.Errorf("Error response from API: %v (error code: %v)", errorResponse.Message, errorResponse.Code)
 
 		return &response, err
 	}
-
-	// errR := &ErrorResponse{Response: resp}
-	// data, err := ioutil.ReadAll(resp.Body)
-	// if err == nil && len(data) > 0 {
-	// 	json.Unmarshal(data, errR)
-	// }
-
-	// fmt.Printf("BBB: %v", errR.Response)
 
 	// Handling delete requests which EOF is not an error
 	if method == "DELETE" && response.StatusCode == 204 {
@@ -200,7 +188,6 @@ func NewClient(opts ...ClientOpt) (*Client, error) {
 
 	c := &Client{client: parsedOpts.client, AuthToken: parsedOpts.authToken, BaseURL: url, UserAgent: parsedOpts.userAgent}
 
-	// I teamsClient atiduotu cca turiu apie client'a
 	c.debug = os.Getenv(cherryDebugVar) != ""
 	c.Teams = &TeamsClient{client: c}
 	c.Plans = &PlansClient{client: c}
@@ -210,7 +197,8 @@ func NewClient(opts ...ClientOpt) (*Client, error) {
 	c.Servers = &ServersClient{client: c}
 	c.IPAddresses = &IPsClient{client: c}
 	c.Storages = &StoragesClient{client: c}
-	c.Storage = &StorageClient{client: c}
+	c.Regions = &RegionsClient{client: c}
+	c.Users = &UsersClient{client: c}
 
 	return c, err
 }
