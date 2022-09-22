@@ -15,11 +15,13 @@ type TeamsService interface {
 }
 
 type Team struct {
-	ID      int     `json:"id,omitempty"`
-	Name    string  `json:"name,omitempty"`
-	Credit  Credit  `json:"credit,omitempty"`
-	Billing Billing `json:"billing,omitempty"`
-	Href    string  `json:"href,omitempty"`
+	ID          int          `json:"id,omitempty"`
+	Name        string       `json:"name,omitempty"`
+	Credit      Credit       `json:"credit,omitempty"`
+	Billing     Billing      `json:"billing,omitempty"`
+	Projects    []Project    `json:"projects,omitempty"`
+	Memberships []Membership `json:"memberships,omitempty"`
+	Href        string       `json:"href,omitempty"`
 }
 
 type Credit struct {
@@ -35,7 +37,13 @@ type CreditDetails struct {
 }
 
 type Resources struct {
-	Pricing Pricing `json:"pricing,omitempty"`
+	Pricing   Pricing       `json:"pricing,omitempty"`
+	Remaining RemainingTime `json:"remaining,omitempty"`
+}
+
+type RemainingTime struct {
+	Time int    `json:"time,omitempty"`
+	Unit string `json:"unit,omitempty"`
 }
 
 type Pricing struct {

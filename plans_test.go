@@ -27,6 +27,7 @@ func TestPlans_List(t *testing.T) {
 		ID:         1,
 		Name:       "EU-Nord-1",
 		RegionIso2: "LT",
+		Location:   "Lithuania, Vilnius",
 	}
 
 	expected := []Plan{

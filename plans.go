@@ -17,6 +17,7 @@ type Plan struct {
 	Name             string             `json:"name,omitempty"`
 	Slug             string             `json:"slug,omitempty"`
 	Custom           bool               `json:"custom,omitempty"`
+	Type             string             `json:"type,omitempty"`
 	Specs            Specs              `json:"specs,omitempty"`
 	Pricing          []Pricing          `json:"pricing,omitempty"`
 	AvailableRegions []AvailableRegions `json:"available_regions,omitempty"`
