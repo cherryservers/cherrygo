@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	libraryVersion     = "3.0.0"
+	libraryVersion     = "3.1.0"
 	apiURL             = "https://api.cherryservers.com/v1/"
 	cherryAuthTokenVar = "CHERRY_AUTH_TOKEN"
 	mediaType          = "application/json"
@@ -43,6 +43,7 @@ type Client struct {
 	Storages    StoragesService
 	Regions     RegionsService
 	Users       UsersService
+	Backups     BackupsService
 }
 
 // Response is the http response from api calls
@@ -199,6 +200,7 @@ func NewClient(opts ...ClientOpt) (*Client, error) {
 	c.Storages = &StoragesClient{client: c}
 	c.Regions = &RegionsClient{client: c}
 	c.Users = &UsersClient{client: c}
+	c.Backups = &BackupsClient{client: c}
 
 	return c, err
 }

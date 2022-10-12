@@ -42,6 +42,7 @@ type Server struct {
 	SSHKeys          []SSHKey          `json:"ssh_keys,omitempty"`
 	Tags             map[string]string `json:"tags,omitempty"`
 	Storage          BlockStorage      `json:"storage,omitempty"`
+	Backup           BackupStorage     `json:"backup_storage,omitempty"`
 	Created          string            `json:"created_at,omitempty"`
 	TerminationDate  string            `json:"termination_date,omitempty"`
 }
