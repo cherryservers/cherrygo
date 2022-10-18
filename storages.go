@@ -102,7 +102,6 @@ func (s *StoragesClient) Create(request *CreateStorage) (BlockStorage, *Response
 	}
 
 	return trans, resp, err
-
 }
 
 func (s *StoragesClient) Delete(storageID int) (*Response, error) {
