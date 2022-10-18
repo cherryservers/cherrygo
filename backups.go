@@ -5,12 +5,12 @@ import "fmt"
 const baseBackupPath = "/v1/backup-storages"
 
 type BackupsService interface {
-	ListPlans(serverID int, opts *GetOptions) ([]BackupStoragePlan, *Response, error)
+	ListPlans(opts *GetOptions) ([]BackupStoragePlan, *Response, error)
 	ListBackups(projectID int, opts *GetOptions) ([]BackupStorage, *Response, error)
 	Get(backupID int, opts *GetOptions) (BackupStorage, *Response, error)
 	Create(request *CreateBackup) (BackupStorage, *Response, error)
 	Update(request *UpdateBackupStorage) (BackupStorage, *Response, error)
-	UpdateBackupService(request *UpdateBackupService) ([]ServiceProtocol, *Response, error)
+	UpdateBackupMethod(request *UpdateBackupMethod) ([]BackupMethod, *Response, error)
 	Delete(backupID int) (*Response, error)
 }
 
@@ -29,24 +29,24 @@ type BackupStoragePlan struct {
 }
 
 type BackupStorage struct {
-	ID                   int               `json:"id,omitempty"`
-	Status               string            `json:"status,omitempty"`
-	State                string            `json:"state,omitempty"`
-	PrivateIP            string            `json:"private_ip,omitempty"`
-	PublicIP             string            `json:"public_ip,omitempty"`
-	SizeGigabytes        int               `json:"size_gigabytes,omitempty"`
-	UsedGigabytes        int               `json:"used_gigabytes,omitempty"`
-	AttachedTo           AttachedTo        `json:"attached_to,omitempty"`
-	Services             []ServiceProtocol `json:"services,omitempty"`
-	AvailableIPAddresses []IPAddress       `json:"available_addresses,omitempty"`
-	Rules                []Rule            `json:"rules,omitempty"`
-	Plan                 Plan              `json:"plan,omitempty"`
-	Pricing              Pricing           `json:"pricing,omitempty"`
-	Region               Region            `json:"region,omitempty"`
-	Href                 string            `json:"href,omitempty"`
+	ID                   int            `json:"id,omitempty"`
+	Status               string         `json:"status,omitempty"`
+	State                string         `json:"state,omitempty"`
+	PrivateIP            string         `json:"private_ip,omitempty"`
+	PublicIP             string         `json:"public_ip,omitempty"`
+	SizeGigabytes        int            `json:"size_gigabytes,omitempty"`
+	UsedGigabytes        int            `json:"used_gigabytes,omitempty"`
+	AttachedTo           AttachedTo     `json:"attached_to,omitempty"`
+	Methods              []BackupMethod `json:"methods,omitempty"`
+	AvailableIPAddresses []IPAddress    `json:"available_addresses,omitempty"`
+	Rules                []Rule         `json:"rules,omitempty"`
+	Plan                 Plan           `json:"plan,omitempty"`
+	Pricing              Pricing        `json:"pricing,omitempty"`
+	Region               Region         `json:"region,omitempty"`
+	Href                 string         `json:"href,omitempty"`
 }
 
-type ServiceProtocol struct {
+type BackupMethod struct {
 	Name       string   `json:"name,omitempty"`
 	Username   string   `json:"username,omitempty"`
 	Password   string   `json:"password,omitempty"`
@@ -59,11 +59,11 @@ type ServiceProtocol struct {
 }
 
 type Rule struct {
-	IPAddress       IPAddress       `json:"ip,omitempty"`
-	EnabledServices EnabledServices `json:"services,omitempty"`
+	IPAddress      IPAddress      `json:"ip,omitempty"`
+	EnabledMethods EnabledMethods `json:"methods,omitempty"`
 }
 
-type EnabledServices struct {
+type EnabledMethods struct {
 	BORG bool `json:"borg,omitempty"`
 	FTP  bool `json:"ftp,omitempty"`
 	NFS  bool `json:"nfs,omitempty"`
@@ -84,15 +84,15 @@ type UpdateBackupStorage struct {
 	SSHKey          string `json:"ssh_key,omitempty"`
 }
 
-type UpdateBackupService struct {
-	BackupStorageID   int      `json:"id"`
-	BackupServiceName string   `json:"name"`
-	Enabled           bool     `json:"enabled"`
-	Whitelist         []string `json:"whitelist"`
+type UpdateBackupMethod struct {
+	BackupStorageID  int      `json:"id"`
+	BackupMethodName string   `json:"name"`
+	Enabled          bool     `json:"enabled"`
+	Whitelist        []string `json:"whitelist"`
 }
 
-func (s *BackupsClient) ListPlans(serverID int, opts *GetOptions) ([]BackupStoragePlan, *Response, error) {
-	path := opts.WithQuery(fmt.Sprintf("/v1/servers/%d/backup-storage-plans", serverID))
+func (s *BackupsClient) ListPlans(opts *GetOptions) ([]BackupStoragePlan, *Response, error) {
+	path := opts.WithQuery(fmt.Sprintf("/v1/backup-storage-plans"))
 
 	var trans []BackupStoragePlan
 	resp, err := s.client.MakeRequest("GET", path, nil, &trans)
@@ -152,11 +152,10 @@ func (s *BackupsClient) Update(request *UpdateBackupStorage) (BackupStorage, *Re
 	return trans, resp, err
 }
 
-// Kuris teisingas endpoint whitelistinti? Kodel PATCH?
-func (s *BackupsClient) UpdateBackupService(request *UpdateBackupService) ([]ServiceProtocol, *Response, error) {
-	var trans []ServiceProtocol
+func (s *BackupsClient) UpdateBackupMethod(request *UpdateBackupMethod) ([]BackupMethod, *Response, error) {
+	var trans []BackupMethod
 
-	path := fmt.Sprintf("%s/%d/services/%s", baseBackupPath, request.BackupStorageID, request.BackupServiceName)
+	path := fmt.Sprintf("%s/%d/methods/%s", baseBackupPath, request.BackupStorageID, request.BackupMethodName)
 	resp, err := s.client.MakeRequest("PATCH", path, request, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)

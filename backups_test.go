@@ -78,7 +78,6 @@ func TestBackupStorage_ListPlans(t *testing.T) {
 	setup()
 	defer teardown()
 
-	serverID := 312
 	expected := []BackupStoragePlan{
 		{
 			ID:            123,
@@ -89,7 +88,7 @@ func TestBackupStorage_ListPlans(t *testing.T) {
 		{ID: 321},
 	}
 
-	mux.HandleFunc("/v1/servers/"+strconv.Itoa(serverID)+"/backup-storage-plans", func(writer http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/v1/backup-storage-plans", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
 		fmt.Fprint(writer, `[
 			{
@@ -102,7 +101,7 @@ func TestBackupStorage_ListPlans(t *testing.T) {
 		]`)
 	})
 
-	backupPlans, _, err := client.Backups.ListPlans(serverID, nil)
+	backupPlans, _, err := client.Backups.ListPlans(nil)
 
 	if err != nil {
 		t.Errorf("Backups.ListPlans returned %+v", err)
@@ -192,19 +191,19 @@ func TestBackupStorage_Update(t *testing.T) {
 	}
 }
 
-func TestBackupStorage_UpdateService(t *testing.T) {
+func TestBackupStorage_UpdateMethod(t *testing.T) {
 	setup()
 	defer teardown()
 
-	serviceName := "FTP"
+	methodName := "FTP"
 	requestBody := map[string]interface{}{
 		"id":        float64(123),
-		"name":      serviceName,
+		"name":      methodName,
 		"enabled":   true,
 		"whitelist": []interface{}{"1.1.1.1", "2.2.2.2"},
 	}
 
-	mux.HandleFunc("/v1/backup-storages/123/services/"+serviceName, func(writer http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/v1/backup-storages/123/methods/"+methodName, func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodPatch)
 
 		var v map[string]interface{}
@@ -227,16 +226,16 @@ func TestBackupStorage_UpdateService(t *testing.T) {
 			}]`)
 	})
 
-	updateBackupService := UpdateBackupService{
-		BackupStorageID:   123,
-		BackupServiceName: serviceName,
-		Enabled:           true,
-		Whitelist:         []string{"1.1.1.1", "2.2.2.2"},
+	updateBackupMethod := UpdateBackupMethod{
+		BackupStorageID:  123,
+		BackupMethodName: methodName,
+		Enabled:          true,
+		Whitelist:        []string{"1.1.1.1", "2.2.2.2"},
 	}
 
-	_, _, err := client.Backups.UpdateBackupService(&updateBackupService)
+	_, _, err := client.Backups.UpdateBackupMethod(&updateBackupMethod)
 	if err != nil {
-		t.Errorf("Backups.UpdateBackupService returned %+v", err)
+		t.Errorf("Backups.UpdateBackupMethod returned %+v", err)
 	}
 }
 
