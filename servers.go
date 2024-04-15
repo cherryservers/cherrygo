@@ -28,7 +28,10 @@ type Server struct {
 	ID               int               `json:"id,omitempty"`
 	Name             string            `json:"name,omitempty"`
 	Href             string            `json:"href,omitempty"`
+	BMC              BMC               `json:"bmc,omitempty"`
 	Hostname         string            `json:"hostname,omitempty"`
+	Username         string            `json:"username,omitempty"`
+	Password         string            `json:"password"`
 	Image            string            `json:"image,omitempty"`
 	SpotInstance     bool              `json:"spot_instance"`
 	BGP              ServerBGP         `json:"bgp,omitempty"`
@@ -45,6 +48,11 @@ type Server struct {
 	Backup           BackupStorage     `json:"backup_storage,omitempty"`
 	Created          string            `json:"created_at,omitempty"`
 	TerminationDate  string            `json:"termination_date,omitempty"`
+}
+
+type BMC struct {
+	User     string `json:"user,omitempty"`
+	Password string `json:"password,omitempty"`
 }
 
 type ReinstallServer struct {
