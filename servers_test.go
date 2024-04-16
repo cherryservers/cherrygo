@@ -290,6 +290,41 @@ func TestServer_Reboot(t *testing.T) {
 	}
 }
 
+func TestServer_Rescue(t *testing.T) {
+	setup()
+	defer teardown()
+
+	expected := map[string]interface{}{
+		"type":     "rescue",
+		"password": "abcdef",
+	}
+
+	mux.HandleFunc("/v1/servers/383531/actions", func(writer http.ResponseWriter, request *http.Request) {
+		testMethod(t, request, http.MethodPost)
+
+		var v map[string]interface{}
+		err := json.NewDecoder(request.Body).Decode(&v)
+		if err != nil {
+			t.Fatalf("decode json: %v", err)
+		}
+
+		if !reflect.DeepEqual(v, expected) {
+			t.Errorf("Request body\n sent %#v\n expected %#v", v, expected)
+		}
+
+		jsonBytes, _ := json.Marshal(expected)
+		response := string(jsonBytes)
+
+		fmt.Fprint(writer, response)
+	})
+
+	_, _, err := client.Servers.Rescue(383531, &RescueServerFields{Password: "abcdef"})
+
+	if err != nil {
+		t.Errorf("Server.Rescue returned %+v", err)
+	}
+}
+
 func TestServersClient_ResetBMCPassword(t *testing.T) {
 	setup()
 	defer teardown()
