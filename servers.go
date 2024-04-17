@@ -21,6 +21,7 @@ type ServersService interface {
 	Update(serverID int, request *UpdateServer) (Server, *Response, error)
 	Reinstall(serverID int, fields *ReinstallServerFields) (Server, *Response, error)
 	ListSSHKeys(serverID int, opts *GetOptions) ([]SSHKey, *Response, error)
+	ResetBMCPassword(serverID int) (Server, *Response, error)
 }
 
 // Server response object
@@ -154,6 +155,14 @@ func (s *ServersClient) PowerOn(serverID int) (Server, *Response, error) {
 func (s *ServersClient) Reboot(serverID int) (Server, *Response, error) {
 	action := ServerAction{
 		Type: "reboot",
+	}
+
+	return s.action(serverID, action)
+}
+
+func (s *ServersClient) ResetBMCPassword(serverID int) (Server, *Response, error) {
+	action := ServerAction{
+		Type: "reset-bmc-password",
 	}
 
 	return s.action(serverID, action)
