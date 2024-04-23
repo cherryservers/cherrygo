@@ -14,10 +14,16 @@ func TestServer_Get(t *testing.T) {
 	defer teardown()
 
 	expected := Server{
-		ID:       383531,
-		Name:     "E5-1620v4",
-		Href:     "/servers/383531",
+		ID:   383531,
+		Name: "E5-1620v4",
+		Href: "/servers/383531",
+		BMC: BMC{
+			User:     "kuser",
+			Password: "d564!h#4s8",
+		},
 		Hostname: "server-hostname",
+		Username: "user",
+		Password: "hjas345dgf54",
 		Image:    "Ubuntu 18.04 64bit",
 		Region: Region{
 			ID:         1,
