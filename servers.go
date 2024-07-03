@@ -18,6 +18,7 @@ type ServersService interface {
 	Delete(serverID int) (Server, *Response, error)
 	PowerState(serverID int) (PowerState, *Response, error)
 	Reboot(serverID int) (Server, *Response, error)
+	Rescue(serverID int, fields *RescueServerFields) (Server, *Response, error)
 	Update(serverID int, request *UpdateServer) (Server, *Response, error)
 	Reinstall(serverID int, fields *ReinstallServerFields) (Server, *Response, error)
 	ListSSHKeys(serverID int, opts *GetOptions) ([]SSHKey, *Response, error)
@@ -68,6 +69,15 @@ type ReinstallServerFields struct {
 	SSHKeys         []string `json:"ssh_key,omitempty"`
 	UserData        string   `json:"user_data,omitempty"`
 	OSPartitionSize int      `json:"os_partition_size,omitempty"`
+}
+
+type RescueServer struct {
+	ServerAction
+	*RescueServerFields
+}
+
+type RescueServerFields struct {
+	Password string `json:"password"`
 }
 
 // ServerAction fields for performed action on server
@@ -167,6 +177,16 @@ func (s *ServersClient) Reboot(serverID int) (Server, *Response, error) {
 	}
 
 	return s.action(serverID, action)
+}
+
+func (s *ServersClient) Rescue(serverID int, fields *RescueServerFields) (Server, *Response, error) {
+	var trans Server
+
+	request := &RescueServer{ServerAction{Type: "rescue"}, fields}
+	path := fmt.Sprintf("%s/%d/actions", baseServerPath, serverID)
+	resp, err := s.client.MakeRequest("POST", path, request, &trans)
+
+	return trans, resp, err
 }
 
 func (s *ServersClient) ResetBMCPassword(serverID int) (Server, *Response, error) {
