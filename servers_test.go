@@ -290,13 +290,18 @@ func TestServer_Reboot(t *testing.T) {
 	}
 }
 
-func TestServer_Rescue(t *testing.T) {
+func TestServer_EnterRescueMode(t *testing.T) {
 	setup()
 	defer teardown()
 
-	expected := map[string]interface{}{
-		"type":     "rescue",
+	requestBody := map[string]interface{}{
+		"type":     "enter-rescue-mode",
 		"password": "abcdef",
+	}
+
+	expected := Server{
+		ID:     383531,
+		Status: "rescue mode",
 	}
 
 	mux.HandleFunc("/v1/servers/383531/actions", func(writer http.ResponseWriter, request *http.Request) {
@@ -308,8 +313,8 @@ func TestServer_Rescue(t *testing.T) {
 			t.Fatalf("decode json: %v", err)
 		}
 
-		if !reflect.DeepEqual(v, expected) {
-			t.Errorf("Request body\n sent %#v\n expected %#v", v, expected)
+		if !reflect.DeepEqual(v, requestBody) {
+			t.Errorf("Request body\n sent %#v\n expected %#v", v, requestBody)
 		}
 
 		jsonBytes, _ := json.Marshal(expected)
@@ -318,10 +323,47 @@ func TestServer_Rescue(t *testing.T) {
 		fmt.Fprint(writer, response)
 	})
 
-	_, _, err := client.Servers.Rescue(383531, &RescueServerFields{Password: "abcdef"})
-
+	_, _, err := client.Servers.EnterRescueMode(383531, &RescueServerFields{Password: "abcdef"})
 	if err != nil {
-		t.Errorf("Server.Rescue returned %+v", err)
+		t.Errorf("Server.EnterRescueMode returned %+v", err)
+	}
+}
+
+func TestServer_ExitRescueMode(t *testing.T) {
+	setup()
+	defer teardown()
+
+	requestBody := map[string]interface{}{
+		"type": "exit-rescue-mode",
+	}
+
+	expected := Server{
+		ID:     383531,
+		Status: "deployed",
+	}
+
+	mux.HandleFunc("/v1/servers/383531/actions", func(writer http.ResponseWriter, request *http.Request) {
+		testMethod(t, request, http.MethodPost)
+
+		var v map[string]interface{}
+		err := json.NewDecoder(request.Body).Decode(&v)
+		if err != nil {
+			t.Fatalf("decode json: %v", err)
+		}
+
+		if !reflect.DeepEqual(v, requestBody) {
+			t.Errorf("Request body\n sent %#v\n expected %#v", v, requestBody)
+		}
+
+		jsonBytes, _ := json.Marshal(expected)
+		response := string(jsonBytes)
+
+		fmt.Fprint(writer, response)
+	})
+
+	_, _, err := client.Servers.ExitRescueMode(383531)
+	if err != nil {
+		t.Errorf("Server.ExitRescueMode returned %+v", err)
 	}
 }
 

@@ -7,7 +7,7 @@ import (
 const baseServerPath = "/v1/servers"
 const endServersPath = "servers"
 
-// ServersService is an interface for interfacing with the the Server endpoints of the CherryServers API
+// ServersService is an interface for interfacing with the Server endpoints of the CherryServers API
 // See: https://api.cherryservers.com/doc/#tag/Servers
 type ServersService interface {
 	List(projectID int, opts *GetOptions) ([]Server, *Response, error)
@@ -18,7 +18,8 @@ type ServersService interface {
 	Delete(serverID int) (Server, *Response, error)
 	PowerState(serverID int) (PowerState, *Response, error)
 	Reboot(serverID int) (Server, *Response, error)
-	Rescue(serverID int, fields *RescueServerFields) (Server, *Response, error)
+	EnterRescueMode(serverID int, fields *RescueServerFields) (Server, *Response, error)
+	ExitRescueMode(serverID int) (Server, *Response, error)
 	Update(serverID int, request *UpdateServer) (Server, *Response, error)
 	Reinstall(serverID int, fields *ReinstallServerFields) (Server, *Response, error)
 	ListSSHKeys(serverID int, opts *GetOptions) ([]SSHKey, *Response, error)
@@ -40,6 +41,7 @@ type Server struct {
 	Project          Project           `json:"project,omitempty"`
 	Region           Region            `json:"region,omitempty"`
 	State            string            `json:"state,omitempty"`
+	Status           string            `json:"status,omitempty"`
 	Plan             Plan              `json:"plan,omitempty"`
 	AvailableRegions AvailableRegions  `json:"availableregions,omitempty"`
 	Pricing          Pricing           `json:"pricing,omitempty"`
@@ -179,14 +181,22 @@ func (s *ServersClient) Reboot(serverID int) (Server, *Response, error) {
 	return s.action(serverID, action)
 }
 
-func (s *ServersClient) Rescue(serverID int, fields *RescueServerFields) (Server, *Response, error) {
+func (s *ServersClient) EnterRescueMode(serverID int, fields *RescueServerFields) (Server, *Response, error) {
 	var trans Server
 
-	request := &RescueServer{ServerAction{Type: "rescue"}, fields}
+	request := &RescueServer{ServerAction{Type: "enter-rescue-mode"}, fields}
 	path := fmt.Sprintf("%s/%d/actions", baseServerPath, serverID)
 	resp, err := s.client.MakeRequest("POST", path, request, &trans)
 
 	return trans, resp, err
+}
+
+func (s *ServersClient) ExitRescueMode(serverID int) (Server, *Response, error) {
+	action := ServerAction{
+		Type: "exit-rescue-mode",
+	}
+
+	return s.action(serverID, action)
 }
 
 func (s *ServersClient) ResetBMCPassword(serverID int) (Server, *Response, error) {
