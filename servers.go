@@ -68,7 +68,7 @@ type ReinstallServerFields struct {
 	Image           string   `json:"image"`
 	Hostname        string   `json:"hostname,omitempty"`
 	Password        string   `json:"password"`
-	SSHKeys         []string `json:"ssh_key,omitempty"`
+	SSHKeys         []string `json:"ssh_keys,omitempty"`
 	UserData        string   `json:"user_data,omitempty"`
 	OSPartitionSize int      `json:"os_partition_size,omitempty"`
 }
