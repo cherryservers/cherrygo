@@ -105,6 +105,7 @@ type CreateServer struct {
 	Tags            *map[string]string `json:"tags,omitempty"`
 	SpotInstance    bool               `json:"spot_market"`
 	OSPartitionSize int                `json:"os_partition_size,omitempty"`
+	StorageID       int                `json:"storage_id,omitempty"`
 }
 
 // UpdateServer fields for updating a server with specified tags
