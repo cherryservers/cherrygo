@@ -19,14 +19,9 @@ You can view Cherry Servers API docs here: [https://api.cherryservers.com/doc](h
 
 ## Installation
 
-Download the library to your GOPATH:
+Add the library as a dependency to your project:
 ```
 go get github.com/cherryservers/cherrygo/v3
-```
-
-Then import the library in your Go code:
-```
-import "github.com/cherryservers/cherrygo/v3
 ```
 
 ### Authentication
