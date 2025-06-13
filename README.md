@@ -119,7 +119,7 @@ log.Println(server.ID, server.Name, server.Hostname)
 
 ## Debug
 
-If you want to debug this library, set the CHERRY_DEBUG environment variable to true, which enable full API request and response logging.
+If you want to debug this library, set the CHERRY_DEBUG environment variable to true, which enables full API request and response logging.
 ```
 export CHERRY_DEBUG="true"
 ```
