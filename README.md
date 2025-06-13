@@ -19,19 +19,14 @@ You can view Cherry Servers API docs here: [https://api.cherryservers.com/doc](h
 
 ## Installation
 
-Download the library to your GOPATH:
+Add the library as a dependency to your project:
 ```
 go get github.com/cherryservers/cherrygo/v3
 ```
 
-Then import the library in your Go code:
-```
-import "github.com/cherryservers/cherrygo/v3
-```
-
 ### Authentication
 
-To authenticate to the Cherry Servers API, you must have an API token. You can create API tokens in the [Cherry Servers client portal](https://portal.cherryservers.com). Tokens must be exported in the `CHERRY_AUTH_TOKEN` environment variable or passed to the client directly.
+To authenticate to the Cherry Servers API, you must have an API token. You can create API tokens in the [Cherry Servers client portal](https://portal.cherryservers.com/settings/api-keys). Tokens must be exported in the `CHERRY_AUTH_TOKEN` environment variable or passed to the client directly.
 
 Use an exported CHERRY_AUTH_TOKEN environment variable:
 ```
@@ -124,7 +119,7 @@ log.Println(server.ID, server.Name, server.Hostname)
 
 ## Debug
 
-If you want to debug this library, set the CHERRY_DEBUG environment variable to true, which enable full API request and response logging.
+If you want to debug this library, set the CHERRY_DEBUG environment variable to true, which enables full API request and response logging.
 ```
 export CHERRY_DEBUG="true"
 ```
