@@ -129,6 +129,10 @@ Unset the variable to stop debugging.
 unset CHERRY_DEBUG
 ```
 
+## Release process
+
+Before release, the `libraryVersion` constant in `cherrygo.go` should be set to the correct version.
+
 ## License
 
 See the [LICENSE](LICENSE.md) file for license rights and limitations.
