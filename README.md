@@ -26,7 +26,7 @@ go get github.com/cherryservers/cherrygo/v3
 
 ### Authentication
 
-To authenticate to the Cherry Servers API, you must have an API token. You can create API tokens in the [Cherry Servers client portal](https://portal.cherryservers.com). Tokens must be exported in the `CHERRY_AUTH_TOKEN` environment variable or passed to the client directly.
+To authenticate to the Cherry Servers API, you must have an API token. You can create API tokens in the [Cherry Servers client portal](https://portal.cherryservers.com/settings/api-keys). Tokens must be exported in the `CHERRY_AUTH_TOKEN` environment variable or passed to the client directly.
 
 Use an exported CHERRY_AUTH_TOKEN environment variable:
 ```
