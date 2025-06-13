@@ -129,7 +129,7 @@ func (p *TeamsClient) Create(request *CreateTeam) (Team, *Response, error) {
 }
 
 func (p *TeamsClient) Update(teamID int, request *UpdateTeam) (Team, *Response, error) {
-	path := fmt.Sprintf(fmt.Sprintf("%s/%d", teamsPath, teamID))
+	path := fmt.Sprintf("%s/%d", teamsPath, teamID)
 
 	var trans Team
 
