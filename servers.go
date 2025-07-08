@@ -24,6 +24,7 @@ type ServersService interface {
 	Reinstall(serverID int, fields *ReinstallServerFields) (Server, *Response, error)
 	ListSSHKeys(serverID int, opts *GetOptions) ([]SSHKey, *Response, error)
 	ResetBMCPassword(serverID int) (Server, *Response, error)
+	ListCycles(opts *GetOptions) ([]ServerCycle, *Response, error)
 }
 
 // Server response object
@@ -106,6 +107,7 @@ type CreateServer struct {
 	SpotInstance    bool               `json:"spot_market"`
 	OSPartitionSize int                `json:"os_partition_size,omitempty"`
 	StorageID       int                `json:"storage_id,omitempty"`
+	Cycle           string             `json:"cycle,omitempty"`
 }
 
 // UpdateServer fields for updating a server with specified tags
@@ -114,6 +116,12 @@ type UpdateServer struct {
 	Hostname string             `json:"hostname,omitempty"`
 	Tags     *map[string]string `json:"tags,omitempty"`
 	Bgp      bool               `json:"bgp"`
+}
+
+type ServerCycle struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+	Slug string `json:"slug"`
 }
 
 type ServersClient struct {
@@ -281,3 +289,16 @@ func (s *ServersClient) ListSSHKeys(serverID int, opts *GetOptions) ([]SSHKey, *
 
 	return trans, resp, err
 }
+
+func (s *ServersClient) ListCycles(opts *GetOptions) ([]ServerCycle, *Response, error) {
+	path := opts.WithQuery("cycles")
+
+	var trans []ServerCycle
+	resp, err := s.client.MakeRequest("GET", path, nil, &trans)
+	if err != nil {
+		err = fmt.Errorf("Error: %v", err)
+	}
+
+	return trans, resp, err
+}
+	
