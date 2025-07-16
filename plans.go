@@ -21,6 +21,17 @@ type Plan struct {
 	Specs            Specs              `json:"specs,omitempty"`
 	Pricing          []Pricing          `json:"pricing,omitempty"`
 	AvailableRegions []AvailableRegions `json:"available_regions,omitempty"`
+	Category         string             `json:"category"`
+	Softwares        []SoftwareImage    `json:"softwares"`
+}
+
+type SoftwareImage struct {
+	Image SoftwareImageSpecs `json:"image"`
+}
+
+type SoftwareImageSpecs struct {
+	Name string `json:"name"`
+	Slug string `json:"slug"`
 }
 
 // Specs specifies fields for specs
