@@ -4,12 +4,15 @@ import (
 	"fmt"
 )
 
-const basePlanPath = "/v1/teams"
+const teamPlanPath = "/v1/teams"
+const basePlanPath = "/v1/plans"
 
 // PlansService is an interface for interfacing with the Plan endpoints of the CherryServers API
 // See: https://api.cherryservers.com/doc/#tag/Plans
 type PlansService interface {
 	List(teamID int, opts *GetOptions) ([]Plan, *Response, error)
+	GetBySlug(slug string, opts *GetOptions) (Plan, *Response, error)
+	GetByID(id int, opts *GetOptions) (Plan, *Response, error)
 }
 
 type Plan struct {
@@ -21,6 +24,17 @@ type Plan struct {
 	Specs            Specs              `json:"specs,omitempty"`
 	Pricing          []Pricing          `json:"pricing,omitempty"`
 	AvailableRegions []AvailableRegions `json:"available_regions,omitempty"`
+	Category         string             `json:"category"`
+	Softwares        []SoftwareImage    `json:"softwares"`
+}
+
+type SoftwareImage struct {
+	Image SoftwareImageSpecs `json:"image"`
+}
+
+type SoftwareImageSpecs struct {
+	Name string `json:"name"`
+	Slug string `json:"slug"`
 }
 
 // Specs specifies fields for specs
@@ -85,9 +99,9 @@ type PlansClient struct {
 
 // List func lists plans
 func (p *PlansClient) List(teamID int, opts *GetOptions) ([]Plan, *Response, error) {
-	basePath := "/v1/plans"
+	basePath := basePlanPath
 	if teamID != 0 {
-		basePath = fmt.Sprintf("%s/%d/plans", basePlanPath, teamID)
+		basePath = fmt.Sprintf("%s/%d/plans", teamPlanPath, teamID)
 	}
 
 	path := opts.WithQuery(basePath)
@@ -99,4 +113,27 @@ func (p *PlansClient) List(teamID int, opts *GetOptions) ([]Plan, *Response, err
 	}
 
 	return trans, resp, err
+}
+
+func (p *PlansClient) get(path string, opts *GetOptions) (Plan, *Response, error) {
+	var trans Plan
+
+	resp, err := p.client.MakeRequest("GET", path, nil, &trans)
+	if err != nil {
+		err = fmt.Errorf("error: %v", err)
+	}
+
+	return trans, resp, err
+}
+
+func (p *PlansClient) GetByID(id int, opts *GetOptions) (Plan, *Response, error) {
+	path := opts.WithQuery(fmt.Sprintf("%s/%d", basePlanPath, id))
+
+	return p.get(path, opts)
+}
+
+func (p *PlansClient) GetBySlug(slug string, opts *GetOptions) (Plan, *Response, error) {
+	path := opts.WithQuery(fmt.Sprintf("%s/%s", basePlanPath, slug))
+
+	return p.get(path, opts)
 }
