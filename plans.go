@@ -4,7 +4,8 @@ import (
 	"fmt"
 )
 
-const basePlanPath = "/v1/teams"
+const teamPlanPath = "/v1/teams"
+const basePlanPath = "/v1/plans"
 
 // PlansService is an interface for interfacing with the Plan endpoints of the CherryServers API
 // See: https://api.cherryservers.com/doc/#tag/Plans
@@ -96,9 +97,9 @@ type PlansClient struct {
 
 // List func lists plans
 func (p *PlansClient) List(teamID int, opts *GetOptions) ([]Plan, *Response, error) {
-	basePath := "/v1/plans"
+	basePath := basePlanPath
 	if teamID != 0 {
-		basePath = fmt.Sprintf("%s/%d/plans", basePlanPath, teamID)
+		basePath = fmt.Sprintf("%s/%d/plans", teamPlanPath, teamID)
 	}
 
 	path := opts.WithQuery(basePath)
