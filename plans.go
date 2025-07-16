@@ -11,6 +11,8 @@ const basePlanPath = "/v1/plans"
 // See: https://api.cherryservers.com/doc/#tag/Plans
 type PlansService interface {
 	List(teamID int, opts *GetOptions) ([]Plan, *Response, error)
+	GetBySlug(slug string, opts *GetOptions) (Plan, *Response, error)
+	GetByID(id int, opts *GetOptions) (Plan, *Response, error)
 }
 
 type Plan struct {
@@ -111,4 +113,27 @@ func (p *PlansClient) List(teamID int, opts *GetOptions) ([]Plan, *Response, err
 	}
 
 	return trans, resp, err
+}
+
+func (p *PlansClient) get(path string, opts *GetOptions) (Plan, *Response, error) {
+	var trans Plan
+
+	resp, err := p.client.MakeRequest("GET", path, nil, &trans)
+	if err != nil {
+		err = fmt.Errorf("error: %v", err)
+	}
+
+	return trans, resp, err
+}
+
+func (p *PlansClient) GetByID(id int, opts *GetOptions) (Plan, *Response, error) {
+	path := opts.WithQuery(fmt.Sprintf("%s/%d", basePlanPath, id))
+
+	return p.get(path, opts)
+}
+
+func (p *PlansClient) GetBySlug(slug string, opts *GetOptions) (Plan, *Response, error) {
+	path := opts.WithQuery(fmt.Sprintf("%s/%s", basePlanPath, slug))
+
+	return p.get(path, opts)
 }
