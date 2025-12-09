@@ -108,6 +108,7 @@ type CreateServer struct {
 	OSPartitionSize int                `json:"os_partition_size,omitempty"`
 	StorageID       int                `json:"storage_id,omitempty"`
 	Cycle           string             `json:"cycle,omitempty"`
+	DiscountCode    string             `json:"discount,omitempty"`
 }
 
 // UpdateServer fields for updating a server with specified tags
@@ -301,4 +302,3 @@ func (s *ServersClient) ListCycles(opts *GetOptions) ([]ServerCycle, *Response, 
 
 	return trans, resp, err
 }
-	
