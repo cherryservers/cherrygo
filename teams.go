@@ -47,10 +47,11 @@ type RemainingTime struct {
 }
 
 type Pricing struct {
-	Price    float32 `json:"price,omitempty"`
-	Taxed    bool    `json:"taxed,omitempty"`
-	Currency string  `json:"currency,omitempty"`
-	Unit     string  `json:"unit,omitempty"`
+	Price     float32 `json:"price,omitempty"`
+	UnitPrice float32 `json:"unit_price"`
+	Taxed     bool    `json:"taxed,omitempty"`
+	Currency  string  `json:"currency,omitempty"`
+	Unit      string  `json:"unit,omitempty"`
 }
 
 type Billing struct {
