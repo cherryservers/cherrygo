@@ -36,7 +36,7 @@ func TestUser_Current(t *testing.T) {
 			 }`)
 	})
 
-	user, _, err := client.Users.CurrentUser(nil)
+	user, _, err := testClient.Users.CurrentUser(nil)
 	if err != nil {
 		t.Errorf("Users.CurrentUser returned %+v", err)
 	}

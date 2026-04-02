@@ -67,7 +67,7 @@ func TestIpAddresses_List(t *testing.T) {
 		fmt.Fprint(writer, response)
 	})
 
-	ips, _, err := client.IPAddresses.List(projectID, nil)
+	ips, _, err := testClient.IPAddresses.List(projectID, nil)
 
 	if err != nil {
 		t.Errorf("IPAddresses.List returned %+v", err)
@@ -160,7 +160,7 @@ func TestIpAddress_Get(t *testing.T) {
 		 }`)
 	})
 
-	ip, _, err := client.IPAddresses.Get(ipUID, nil)
+	ip, _, err := testClient.IPAddresses.Get(ipUID, nil)
 	if err != nil {
 		t.Errorf("IPAddress.List returned %+v", err)
 	}
@@ -241,7 +241,7 @@ func TestIpAddress_Create(t *testing.T) {
 		Tags:      &tags,
 	}
 
-	ipAddress, _, err := client.IPAddresses.Create(projectID, &ipCreate)
+	ipAddress, _, err := testClient.IPAddresses.Create(projectID, &ipCreate)
 	if err != nil {
 		t.Errorf("IPAddress.Create returned %+v", err)
 	}
@@ -294,7 +294,7 @@ func TestIpAddress_Update(t *testing.T) {
 		Tags:      &tags,
 	}
 
-	ipAddress, _, err := client.IPAddresses.Update(ipId, &ipUpdate)
+	ipAddress, _, err := testClient.IPAddresses.Update(ipId, &ipUpdate)
 	if err != nil {
 		t.Errorf("IPAddress.Update returned %+v", err)
 	}
@@ -318,7 +318,7 @@ func TestIpAddress_Delete(t *testing.T) {
 		fmt.Fprint(writer)
 	})
 
-	_, err := client.IPAddresses.Remove(ipId)
+	_, err := testClient.IPAddresses.Remove(ipId)
 
 	if err != nil {
 		t.Errorf("IPAddress.Remove returned %+v", err)

@@ -43,7 +43,7 @@ func TestProjects_List(t *testing.T) {
 		fmt.Fprint(writer, response)
 	})
 
-	projects, _, err := client.Projects.List(teamID, nil)
+	projects, _, err := testClient.Projects.List(teamID, nil)
 
 	if err != nil {
 		t.Errorf("Projects.List returned %+v", err)
@@ -81,7 +81,7 @@ func TestProject_Get(t *testing.T) {
 		}`)
 	})
 
-	project, _, err := client.Projects.Get(projectID, nil)
+	project, _, err := testClient.Projects.Get(projectID, nil)
 	if err != nil {
 		t.Errorf("Project.List returned %+v", err)
 	}
@@ -131,7 +131,7 @@ func TestProject_Create(t *testing.T) {
 		Name: "My Custom Project",
 	}
 
-	project, _, err := client.Projects.Create(teamID, &projectCreate)
+	project, _, err := testClient.Projects.Create(teamID, &projectCreate)
 	if err != nil {
 		t.Errorf("Project.Create returned %+v", err)
 	}
@@ -174,7 +174,7 @@ func TestProject_Update(t *testing.T) {
 		Bgp:  &bgp,
 	}
 
-	_, _, err := client.Projects.Update(projectID, &projectUpdate)
+	_, _, err := testClient.Projects.Update(projectID, &projectUpdate)
 	if err != nil {
 		t.Errorf("Project.Update returned %+v", err)
 	}
@@ -192,7 +192,7 @@ func TestProject_Delete(t *testing.T) {
 		fmt.Fprint(writer)
 	})
 
-	_, err := client.Projects.Delete(projectID)
+	_, err := testClient.Projects.Delete(projectID)
 
 	if err != nil {
 		t.Errorf("Project.Delete returned %+v", err)
@@ -224,7 +224,7 @@ func TestProjectSSHKeys_List(t *testing.T) {
 		fmt.Fprint(writer, response)
 	})
 
-	sshKeys, _, err := client.Projects.ListSSHKeys(123, nil)
+	sshKeys, _, err := testClient.Projects.ListSSHKeys(123, nil)
 	if err != nil {
 		t.Errorf("Projects.ListSSHKeys returned %+v", err)
 	}
