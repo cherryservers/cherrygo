@@ -8,14 +8,18 @@ You can view Cherry Servers API docs here: [https://api.cherryservers.com/doc](h
 
 ## Table of Contents
 
-- [Installation](#installation)
-- [Authentication](#authentication)
-- [Examples](#examples)
-  - [Get teams](#get-teams)
-  - [Get projects](#get-projects)
-  - [Get plans](#get-plans)
-  - [Get images](#get-images)
-  - [Request new server](#request-new-server)
+- [cherrygo](#cherrygo)
+  - [Table of Contents](#table-of-contents)
+  - [Installation](#installation)
+    - [Authentication](#authentication)
+    - [Examples](#examples)
+      - [Get teams](#get-teams)
+      - [Get projects](#get-projects)
+      - [Get plans](#get-plans)
+      - [Get images](#get-images)
+      - [Request new server](#request-new-server)
+  - [Debug](#debug)
+  - [License](#license)
 
 ## Installation
 
@@ -128,10 +132,6 @@ Unset the variable to stop debugging.
 ```
 unset CHERRY_DEBUG
 ```
-
-## Release process
-
-Before release, the `libraryVersion` constant in `cherrygo.go` should be set to the correct version.
 
 ## License
 
