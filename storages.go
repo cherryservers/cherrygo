@@ -1,7 +1,9 @@
 package cherrygo
 
 import (
+	"context"
 	"fmt"
+	"net/http"
 )
 
 const baseStoragePath = "/v1/storages"
@@ -9,13 +11,13 @@ const baseStoragePath = "/v1/storages"
 // StoragesService is an interface for interfacing with the Storages endpoints of the CherryServers API
 // See: https://api.cherryservers.com/doc/#tag/Storage
 type StoragesService interface {
-	List(projectID int, opts *GetOptions) ([]BlockStorage, *Response, error)
-	Get(storageID int, opts *GetOptions) (BlockStorage, *Response, error)
-	Create(request *CreateStorage) (BlockStorage, *Response, error)
-	Delete(storageID int) (*Response, error)
-	Attach(request *AttachTo) (BlockStorage, *Response, error)
-	Detach(storageID int) (*Response, error)
-	Update(request *UpdateStorage) (BlockStorage, *Response, error)
+	List(ctx context.Context, projectID int, opts *GetOptions) ([]BlockStorage, *Response, error)
+	Get(ctx context.Context, storageID int, opts *GetOptions) (BlockStorage, *Response, error)
+	Create(ctx context.Context, request *CreateStorage) (BlockStorage, *Response, error)
+	Delete(ctx context.Context, storageID int) (*Response, error)
+	Attach(ctx context.Context, request *AttachTo) (BlockStorage, *Response, error)
+	Detach(ctx context.Context, storageID int) (*Response, error)
+	Update(ctx context.Context, request *UpdateStorage) (BlockStorage, *Response, error)
 }
 
 type BlockStorage struct {
@@ -66,11 +68,16 @@ type StoragesClient struct {
 	client *Client
 }
 
-func (c *StoragesClient) List(projectID int, opts *GetOptions) ([]BlockStorage, *Response, error) {
+func (s *StoragesClient) List(ctx context.Context, projectID int, opts *GetOptions) ([]BlockStorage, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("%s/%d/storages", baseProjectPath, projectID))
-
 	var trans []BlockStorage
-	resp, err := c.client.MakeRequest("GET", path, nil, &trans)
+
+	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -78,12 +85,16 @@ func (c *StoragesClient) List(projectID int, opts *GetOptions) ([]BlockStorage, 
 	return trans, resp, err
 }
 
-func (s *StoragesClient) Get(storageID int, opts *GetOptions) (BlockStorage, *Response, error) {
+func (s *StoragesClient) Get(ctx context.Context, storageID int, opts *GetOptions) (BlockStorage, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("%s/%d", baseStoragePath, storageID))
-
 	var trans BlockStorage
 
-	resp, err := s.client.MakeRequest("GET", path, nil, &trans)
+	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return BlockStorage{}, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -91,12 +102,16 @@ func (s *StoragesClient) Get(storageID int, opts *GetOptions) (BlockStorage, *Re
 	return trans, resp, err
 }
 
-func (s *StoragesClient) Create(request *CreateStorage) (BlockStorage, *Response, error) {
+func (s *StoragesClient) Create(ctx context.Context, request *CreateStorage) (BlockStorage, *Response, error) {
 	var trans BlockStorage
-
 	path := fmt.Sprintf("%s/%d/storages", baseProjectPath, request.ProjectID)
 
-	resp, err := s.client.MakeRequest("POST", path, request, &trans)
+	req, err := s.client.NewRequest(ctx, http.MethodPost, path, request)
+	if err != nil {
+		return BlockStorage{}, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -104,10 +119,15 @@ func (s *StoragesClient) Create(request *CreateStorage) (BlockStorage, *Response
 	return trans, resp, err
 }
 
-func (s *StoragesClient) Delete(storageID int) (*Response, error) {
+func (s *StoragesClient) Delete(ctx context.Context, storageID int) (*Response, error) {
 	path := fmt.Sprintf("%s/%d", baseStoragePath, storageID)
 
-	resp, err := s.client.MakeRequest("DELETE", path, nil, nil)
+	req, err := s.client.NewRequest(ctx, http.MethodDelete, path, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := s.client.Do(req, nil)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -115,12 +135,16 @@ func (s *StoragesClient) Delete(storageID int) (*Response, error) {
 	return resp, err
 }
 
-func (s *StoragesClient) Attach(request *AttachTo) (BlockStorage, *Response, error) {
+func (s *StoragesClient) Attach(ctx context.Context, request *AttachTo) (BlockStorage, *Response, error) {
 	var trans BlockStorage
-
 	path := fmt.Sprintf("%s/%d/attachments", baseStoragePath, request.StorageID)
 
-	resp, err := s.client.MakeRequest("POST", path, request, &trans)
+	req, err := s.client.NewRequest(ctx, http.MethodPost, path, request)
+	if err != nil {
+		return BlockStorage{}, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -128,10 +152,15 @@ func (s *StoragesClient) Attach(request *AttachTo) (BlockStorage, *Response, err
 	return trans, resp, err
 }
 
-func (s *StoragesClient) Detach(storageID int) (*Response, error) {
+func (s *StoragesClient) Detach(ctx context.Context, storageID int) (*Response, error) {
 	path := fmt.Sprintf("%s/%d/attachments", baseStoragePath, storageID)
 
-	resp, err := s.client.MakeRequest("DELETE", path, nil, nil)
+	req, err := s.client.NewRequest(ctx, http.MethodDelete, path, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := s.client.Do(req, nil)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -139,12 +168,16 @@ func (s *StoragesClient) Detach(storageID int) (*Response, error) {
 	return resp, err
 }
 
-func (s *StoragesClient) Update(request *UpdateStorage) (BlockStorage, *Response, error) {
+func (s *StoragesClient) Update(ctx context.Context, request *UpdateStorage) (BlockStorage, *Response, error) {
 	var trans BlockStorage
-
 	path := fmt.Sprintf("%s/%d", baseStoragePath, request.StorageID)
 
-	resp, err := s.client.MakeRequest("PUT", path, request, &trans)
+	req, err := s.client.NewRequest(ctx, http.MethodPut, path, request)
+	if err != nil {
+		return BlockStorage{}, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}

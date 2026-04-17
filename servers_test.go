@@ -47,7 +47,7 @@ func TestServer_Get(t *testing.T) {
 		fmt.Fprint(writer, response)
 	})
 
-	server, _, err := testClient.Servers.Get(383531, nil)
+	server, _, err := testClient.Servers.Get(t.Context(), 383531, nil)
 	if err != nil {
 		t.Errorf("Servers.Get returned %+v", err)
 	}
@@ -74,7 +74,7 @@ func TestServer_PowerState(t *testing.T) {
 		fmt.Fprint(writer, response)
 	})
 
-	power, _, err := testClient.Servers.PowerState(383531)
+	power, _, err := testClient.Servers.PowerState(t.Context(), 383531)
 	if err != nil {
 		t.Errorf("Server.PowerState returned %+v", err)
 	}
@@ -149,7 +149,7 @@ func TestServer_Create(t *testing.T) {
 		Tags:        &tags,
 	}
 
-	server, _, err := testClient.Servers.Create(&serverCreate)
+	server, _, err := testClient.Servers.Create(t.Context(), &serverCreate)
 
 	if err != nil {
 		t.Errorf("Server.Create returned %+v", err)
@@ -172,7 +172,7 @@ func TestServer_Delete(t *testing.T) {
 		fmt.Fprint(writer)
 	})
 
-	_, _, err := testClient.Servers.Delete(383531)
+	_, _, err := testClient.Servers.Delete(t.Context(), 383531)
 
 	if err != nil {
 		t.Errorf("Server.Delete returned %+v", err)
@@ -209,7 +209,7 @@ func TestServer_PowerOn(t *testing.T) {
 		fmt.Fprint(writer, string(jsonBytes))
 	})
 
-	_, _, err := testClient.Servers.PowerOn(383531)
+	_, _, err := testClient.Servers.PowerOn(t.Context(), 383531)
 
 	if err != nil {
 		t.Errorf("Server.PowerOn returned %+v", err)
@@ -246,7 +246,7 @@ func TestServer_PowerOff(t *testing.T) {
 		fmt.Fprint(writer, string(jsonBytes))
 	})
 
-	_, _, err := testClient.Servers.PowerOff(383531)
+	_, _, err := testClient.Servers.PowerOff(t.Context(), 383531)
 
 	if err != nil {
 		t.Errorf("Server.PowerOff returned %+v", err)
@@ -283,7 +283,7 @@ func TestServer_Reboot(t *testing.T) {
 		fmt.Fprint(writer, string(jsonBytes))
 	})
 
-	_, _, err := testClient.Servers.Reboot(383531)
+	_, _, err := testClient.Servers.Reboot(t.Context(), 383531)
 
 	if err != nil {
 		t.Errorf("Server.Reboot returned %+v", err)
@@ -323,7 +323,7 @@ func TestServer_EnterRescueMode(t *testing.T) {
 		fmt.Fprint(writer, response)
 	})
 
-	_, _, err := testClient.Servers.EnterRescueMode(383531, &RescueServerFields{Password: "abcdef"})
+	_, _, err := testClient.Servers.EnterRescueMode(t.Context(), 383531, &RescueServerFields{Password: "abcdef"})
 	if err != nil {
 		t.Errorf("Server.EnterRescueMode returned %+v", err)
 	}
@@ -361,7 +361,7 @@ func TestServer_ExitRescueMode(t *testing.T) {
 		fmt.Fprint(writer, response)
 	})
 
-	_, _, err := testClient.Servers.ExitRescueMode(383531)
+	_, _, err := testClient.Servers.ExitRescueMode(t.Context(), 383531)
 	if err != nil {
 		t.Errorf("Server.ExitRescueMode returned %+v", err)
 	}
@@ -396,7 +396,7 @@ func TestServersClient_ResetBMCPassword(t *testing.T) {
 		fmt.Fprint(writer, string(jsonBytes))
 	})
 
-	if _, _, err := testClient.Servers.ResetBMCPassword(383531); err != nil {
+	if _, _, err := testClient.Servers.ResetBMCPassword(t.Context(), 383531); err != nil {
 		t.Errorf("Servers.ResetBMCPassword returned %+v", err)
 	}
 }
@@ -448,7 +448,7 @@ func TestServer_Update(t *testing.T) {
 		Hostname: "cherry.prod",
 	}
 
-	server, _, err := testClient.Servers.Update(383531, &serverUpdate)
+	server, _, err := testClient.Servers.Update(t.Context(), 383531, &serverUpdate)
 
 	if err != nil {
 		t.Errorf("Server.Update returned %+v", err)

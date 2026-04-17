@@ -1,14 +1,18 @@
 package cherrygo
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+	"net/http"
+)
 
 const baseUserPath = "/v1/users"
 
 // UsersService is an interface for interfacing with the the User endpoints of the CherryServers API
 // See: https://api.cherryservers.com/doc/#tag/Users
 type UsersService interface {
-	CurrentUser(opts *GetOptions) (User, *Response, error)
-	Get(userID int, opts *GetOptions) (User, *Response, error)
+	CurrentUser(ctx context.Context, opts *GetOptions) (User, *Response, error)
+	Get(ctx context.Context, userID int, opts *GetOptions) (User, *Response, error)
 }
 
 type User struct {
@@ -27,12 +31,16 @@ type UsersClient struct {
 	client *Client
 }
 
-func (s *UsersClient) CurrentUser(opts *GetOptions) (User, *Response, error) {
+func (s *UsersClient) CurrentUser(ctx context.Context, opts *GetOptions) (User, *Response, error) {
 	var trans User
-
 	path := opts.WithQuery(fmt.Sprintf("/v1/user"))
 
-	resp, err := s.client.MakeRequest("GET", path, nil, &trans)
+	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return User{}, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -40,12 +48,16 @@ func (s *UsersClient) CurrentUser(opts *GetOptions) (User, *Response, error) {
 	return trans, resp, err
 }
 
-func (s *UsersClient) Get(userID int, opts *GetOptions) (User, *Response, error) {
+func (s *UsersClient) Get(ctx context.Context, userID int, opts *GetOptions) (User, *Response, error) {
 	var trans User
-
 	path := opts.WithQuery(fmt.Sprintf("%s/%d", baseUserPath, userID))
 
-	resp, err := s.client.MakeRequest("GET", path, nil, &trans)
+	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return User{}, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}

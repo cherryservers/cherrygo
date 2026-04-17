@@ -80,7 +80,10 @@ func TestErrorResponse(t *testing.T) {
 		}`)
 	})
 
-	_, err := testClient.MakeRequest(http.MethodGet, "/", nil, nil)
+	req, err := testClient.NewRequest(t.Context(), http.MethodGet, "/", nil)
+	require.NoError(t, err)
+
+	_, err = testClient.Do(req, nil)
 
 	expectedErr := "Error response from API: Bad Request (error code: 400)"
 	if err.Error() != expectedErr {
@@ -107,7 +110,7 @@ func TestDebug(t *testing.T) {
 	setup()
 	defer teardown()
 
-	mux.HandleFunc("/debug", func(w http.ResponseWriter, _ *http.Request) {
+	mux.HandleFunc("/test", func(w http.ResponseWriter, _ *http.Request) {
 		_, err := fmt.Fprintf(w, `{"id": 1}`)
 		require.NoError(t, err)
 	})
@@ -117,7 +120,10 @@ func TestDebug(t *testing.T) {
 	c, err := NewClient(WithAuthToken("HIDDEN"), WithDebug(buf), WithURL(server.URL))
 	require.NoError(t, err)
 
-	_, err = c.MakeRequest("GET", "/debug", nil, &struct {
+	req, err := c.NewRequest(t.Context(), http.MethodGet, "/test", nil)
+	require.NoError(t, err)
+
+	_, err = c.Do(req, &struct {
 		ID int `json:"id"`
 	}{})
 	require.NoError(t, err)

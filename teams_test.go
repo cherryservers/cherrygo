@@ -16,7 +16,7 @@ func TestTeam_Delete(t *testing.T) {
 		fmt.Fprint(writer)
 	})
 
-	_, err := testClient.Teams.Delete(123)
+	_, err := testClient.Teams.Delete(t.Context(), 123)
 	if err != nil {
 		t.Errorf("Teams.Delete returned %+v", err)
 	}

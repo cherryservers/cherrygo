@@ -1,17 +1,21 @@
 package cherrygo
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+	"net/http"
+)
 
 const teamsPath = "/v1/teams"
 
 // TeamsService is an interface for interfacing with the Teams endpoints of the CherryServers API
 // See: https://api.cherryservers.com/doc/#tag/Teams
 type TeamsService interface {
-	List(opts *GetOptions) ([]Team, *Response, error)
-	Get(teamID int, opts *GetOptions) (Team, *Response, error)
-	Create(request *CreateTeam) (Team, *Response, error)
-	Update(teamID int, request *UpdateTeam) (Team, *Response, error)
-	Delete(teamID int) (*Response, error)
+	List(ctx context.Context, opts *GetOptions) ([]Team, *Response, error)
+	Get(ctx context.Context, teamID int, opts *GetOptions) (Team, *Response, error)
+	Create(ctx context.Context, request *CreateTeam) (Team, *Response, error)
+	Update(ctx context.Context, teamID int, request *UpdateTeam) (Team, *Response, error)
+	Delete(ctx context.Context, teamID int) (*Response, error)
 }
 
 type Team struct {
@@ -91,11 +95,16 @@ type UpdateTeam struct {
 }
 
 // List func lists teams
-func (t *TeamsClient) List(opts *GetOptions) ([]Team, *Response, error) {
+func (c *TeamsClient) List(ctx context.Context, opts *GetOptions) ([]Team, *Response, error) {
 	var trans []Team
-
 	pathQuery := opts.WithQuery(teamsPath)
-	resp, err := t.client.MakeRequest("GET", pathQuery, nil, &trans)
+
+	req, err := c.client.NewRequest(ctx, http.MethodGet, pathQuery, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := c.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -103,12 +112,16 @@ func (t *TeamsClient) List(opts *GetOptions) ([]Team, *Response, error) {
 	return trans, resp, err
 }
 
-func (p *TeamsClient) Get(teamID int, opts *GetOptions) (Team, *Response, error) {
+func (c *TeamsClient) Get(ctx context.Context, teamID int, opts *GetOptions) (Team, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("%s/%d", teamsPath, teamID))
-
 	var trans Team
 
-	resp, err := p.client.MakeRequest("GET", path, nil, &trans)
+	req, err := c.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return Team{}, nil, err
+	}
+
+	resp, err := c.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -116,12 +129,16 @@ func (p *TeamsClient) Get(teamID int, opts *GetOptions) (Team, *Response, error)
 	return trans, resp, err
 }
 
-func (p *TeamsClient) Create(request *CreateTeam) (Team, *Response, error) {
+func (c *TeamsClient) Create(ctx context.Context, request *CreateTeam) (Team, *Response, error) {
 	path := fmt.Sprintf("%s", teamsPath)
-
 	var trans Team
 
-	resp, err := p.client.MakeRequest("POST", path, request, &trans)
+	req, err := c.client.NewRequest(ctx, http.MethodPost, path, request)
+	if err != nil {
+		return Team{}, nil, err
+	}
+
+	resp, err := c.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -129,12 +146,16 @@ func (p *TeamsClient) Create(request *CreateTeam) (Team, *Response, error) {
 	return trans, resp, err
 }
 
-func (p *TeamsClient) Update(teamID int, request *UpdateTeam) (Team, *Response, error) {
+func (c *TeamsClient) Update(ctx context.Context, teamID int, request *UpdateTeam) (Team, *Response, error) {
 	path := fmt.Sprintf("%s/%d", teamsPath, teamID)
-
 	var trans Team
 
-	resp, err := p.client.MakeRequest("PUT", path, request, &trans)
+	req, err := c.client.NewRequest(ctx, http.MethodPut, path, request)
+	if err != nil {
+		return Team{}, nil, err
+	}
+
+	resp, err := c.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -142,10 +163,15 @@ func (p *TeamsClient) Update(teamID int, request *UpdateTeam) (Team, *Response, 
 	return trans, resp, err
 }
 
-func (p *TeamsClient) Delete(teamID int) (*Response, error) {
+func (c *TeamsClient) Delete(ctx context.Context, teamID int) (*Response, error) {
 	path := fmt.Sprintf("%s/%d", teamsPath, teamID)
 
-	resp, err := p.client.MakeRequest("DELETE", path, nil, nil)
+	req, err := c.client.NewRequest(ctx, http.MethodDelete, path, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.client.Do(req, nil)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}

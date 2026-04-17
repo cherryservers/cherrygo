@@ -1,7 +1,9 @@
 package cherrygo
 
 import (
+	"context"
 	"fmt"
+	"net/http"
 )
 
 const baseIpPath = "/v1/ips"
@@ -9,13 +11,13 @@ const baseIpPath = "/v1/ips"
 // IpAddressesService is an interface for interfacing with the the Server endpoints of the CherryServers API
 // See: https://api.cherryservers.com/doc/#tag/Ip-Addresses
 type IpAddressesService interface {
-	List(projectID int, opts *GetOptions) ([]IPAddress, *Response, error)
-	Get(ipID string, opts *GetOptions) (IPAddress, *Response, error)
-	Create(projectID int, request *CreateIPAddress) (IPAddress, *Response, error)
-	Remove(ipID string) (*Response, error)
-	Update(ipID string, request *UpdateIPAddress) (IPAddress, *Response, error)
-	Assign(ipID string, request *AssignIPAddress) (IPAddress, *Response, error)
-	Unassign(ipID string) (*Response, error)
+	List(ctx context.Context, projectID int, opts *GetOptions) ([]IPAddress, *Response, error)
+	Get(ctx context.Context, ipID string, opts *GetOptions) (IPAddress, *Response, error)
+	Create(ctx context.Context, projectID int, request *CreateIPAddress) (IPAddress, *Response, error)
+	Remove(ctx context.Context, ipID string) (*Response, error)
+	Update(ctx context.Context, ipID string, request *UpdateIPAddress) (IPAddress, *Response, error)
+	Assign(ctx context.Context, ipID string, request *AssignIPAddress) (IPAddress, *Response, error)
+	Unassign(ctx context.Context, ipID string) (*Response, error)
 }
 
 // IPAddresses fields
@@ -96,12 +98,16 @@ type AssignIPAddress struct {
 }
 
 // List func lists ip addresses
-func (i *IPsClient) List(projectID int, opts *GetOptions) ([]IPAddress, *Response, error) {
+func (i *IPsClient) List(ctx context.Context, projectID int, opts *GetOptions) ([]IPAddress, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("%s/%d/ips", baseProjectPath, projectID))
-
 	var trans []IPAddress
 
-	resp, err := i.client.MakeRequest("GET", path, nil, &trans)
+	req, err := i.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := i.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -110,12 +116,16 @@ func (i *IPsClient) List(projectID int, opts *GetOptions) ([]IPAddress, *Respons
 }
 
 // List func lists teams
-func (i *IPsClient) Get(ipID string, opts *GetOptions) (IPAddress, *Response, error) {
+func (i *IPsClient) Get(ctx context.Context, ipID string, opts *GetOptions) (IPAddress, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("%s/%s", baseIpPath, ipID))
-
 	var trans IPAddress
 
-	resp, err := i.client.MakeRequest("GET", path, nil, &trans)
+	req, err := i.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return IPAddress{}, nil, err
+	}
+
+	resp, err := i.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -124,12 +134,16 @@ func (i *IPsClient) Get(ipID string, opts *GetOptions) (IPAddress, *Response, er
 }
 
 // Create function orders new floating IP address
-func (i *IPsClient) Create(projectID int, request *CreateIPAddress) (IPAddress, *Response, error) {
+func (i *IPsClient) Create(ctx context.Context, projectID int, request *CreateIPAddress) (IPAddress, *Response, error) {
 	var trans IPAddress
-
 	path := fmt.Sprintf("%s/%d/ips", baseProjectPath, projectID)
 
-	resp, err := i.client.MakeRequest("POST", path, request, &trans)
+	req, err := i.client.NewRequest(ctx, http.MethodPost, path, request)
+	if err != nil {
+		return IPAddress{}, nil, err
+	}
+
+	resp, err := i.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -138,12 +152,16 @@ func (i *IPsClient) Create(projectID int, request *CreateIPAddress) (IPAddress, 
 }
 
 // Update function updates existing IP address
-func (i *IPsClient) Update(ipID string, request *UpdateIPAddress) (IPAddress, *Response, error) {
+func (i *IPsClient) Update(ctx context.Context, ipID string, request *UpdateIPAddress) (IPAddress, *Response, error) {
 	var trans IPAddress
-
 	path := fmt.Sprintf("%s/%s", baseIpPath, ipID)
 
-	resp, err := i.client.MakeRequest("PUT", path, request, &trans)
+	req, err := i.client.NewRequest(ctx, http.MethodPut, path, request)
+	if err != nil {
+		return IPAddress{}, nil, err
+	}
+
+	resp, err := i.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -152,10 +170,15 @@ func (i *IPsClient) Update(ipID string, request *UpdateIPAddress) (IPAddress, *R
 }
 
 // Remove function removes existing project IP address
-func (i *IPsClient) Remove(ipID string) (*Response, error) {
+func (i *IPsClient) Remove(ctx context.Context, ipID string) (*Response, error) {
 	path := fmt.Sprintf("%s/%s", baseIpPath, ipID)
 
-	resp, err := i.client.MakeRequest("DELETE", path, nil, nil)
+	req, err := i.client.NewRequest(ctx, http.MethodDelete, path, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := i.client.Do(req, nil)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -163,12 +186,16 @@ func (i *IPsClient) Remove(ipID string) (*Response, error) {
 	return resp, err
 }
 
-func (i *IPsClient) Assign(ipID string, request *AssignIPAddress) (IPAddress, *Response, error) {
+func (i *IPsClient) Assign(ctx context.Context, ipID string, request *AssignIPAddress) (IPAddress, *Response, error) {
 	var trans IPAddress
-
 	path := fmt.Sprintf("%s/%s", baseIpPath, ipID)
 
-	resp, err := i.client.MakeRequest("PUT", path, request, &trans)
+	req, err := i.client.NewRequest(ctx, http.MethodPut, path, request)
+	if err != nil {
+		return IPAddress{}, nil, err
+	}
+
+	resp, err := i.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -176,15 +203,18 @@ func (i *IPsClient) Assign(ipID string, request *AssignIPAddress) (IPAddress, *R
 	return trans, resp, err
 }
 
-func (i *IPsClient) Unassign(ipID string) (*Response, error) {
-	var trans IPAddress
-
+func (i *IPsClient) Unassign(ctx context.Context, ipID string) (*Response, error) {
 	path := fmt.Sprintf("%s/%s", baseIpPath, ipID)
 	request := UpdateIPAddress{
 		TargetedTo: "0",
 	}
 
-	resp, err := i.client.MakeRequest("PUT", path, request, &trans)
+	req, err := i.client.NewRequest(ctx, http.MethodPut, path, request)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := i.client.Do(req, nil)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}

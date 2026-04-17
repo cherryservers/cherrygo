@@ -1,14 +1,18 @@
 package cherrygo
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+	"net/http"
+)
 
 const baseRegionPath = "/v1/regions"
 
 // RegionsService is an interface for interfacing with the the Images endpoints of the CherryServers API
 // See: https://api.cherryservers.com/doc/#tag/Regions
 type RegionsService interface {
-	List(opts *GetOptions) ([]Region, *Response, error)
-	Get(region string, opts *GetOptions) (Region, *Response, error)
+	List(ctx context.Context, opts *GetOptions) ([]Region, *Response, error)
+	Get(ctx context.Context, region string, opts *GetOptions) (Region, *Response, error)
 }
 
 // Region fields
@@ -26,11 +30,16 @@ type RegionsClient struct {
 	client *Client
 }
 
-func (i *RegionsClient) List(opts *GetOptions) ([]Region, *Response, error) {
+func (i *RegionsClient) List(ctx context.Context, opts *GetOptions) ([]Region, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("%s", baseRegionPath))
 	var trans []Region
 
-	resp, err := i.client.MakeRequest("GET", path, nil, &trans)
+	req, err := i.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := i.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -38,11 +47,16 @@ func (i *RegionsClient) List(opts *GetOptions) ([]Region, *Response, error) {
 	return trans, resp, err
 }
 
-func (i *RegionsClient) Get(region string, opts *GetOptions) (Region, *Response, error) {
+func (i *RegionsClient) Get(ctx context.Context, region string, opts *GetOptions) (Region, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("%s/%s", baseRegionPath, region))
 	var trans Region
 
-	resp, err := i.client.MakeRequest("GET", path, nil, &trans)
+	req, err := i.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return Region{}, nil, err
+	}
+
+	resp, err := i.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}

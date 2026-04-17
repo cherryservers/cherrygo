@@ -1,31 +1,35 @@
 package cherrygo
 
 import (
+	"context"
 	"fmt"
+	"net/http"
 )
 
-const baseServerPath = "/v1/servers"
-const endServersPath = "servers"
+const (
+	baseServerPath = "/v1/servers"
+	endServersPath = "servers"
+)
 
 // ServersService is an interface for interfacing with the Server endpoints of the CherryServers API
 // See: https://api.cherryservers.com/doc/#tag/Servers
 type ServersService interface {
-	List(projectID int, opts *GetOptions) ([]Server, *Response, error)
-	Get(serverID int, opts *GetOptions) (Server, *Response, error)
-	PowerOff(serverID int) (Server, *Response, error)
-	PowerOn(serverID int) (Server, *Response, error)
-	Create(request *CreateServer) (Server, *Response, error)
-	Delete(serverID int) (Server, *Response, error)
-	PowerState(serverID int) (PowerState, *Response, error)
-	Reboot(serverID int) (Server, *Response, error)
-	EnterRescueMode(serverID int, fields *RescueServerFields) (Server, *Response, error)
-	ExitRescueMode(serverID int) (Server, *Response, error)
-	Update(serverID int, request *UpdateServer) (Server, *Response, error)
-	Reinstall(serverID int, fields *ReinstallServerFields) (Server, *Response, error)
-	ListSSHKeys(serverID int, opts *GetOptions) ([]SSHKey, *Response, error)
-	ResetBMCPassword(serverID int) (Server, *Response, error)
-	ListCycles(opts *GetOptions) ([]ServerCycle, *Response, error)
-	Upgrade(serverID int, plan string) (Server, *Response, error)
+	List(ctx context.Context, projectID int, opts *GetOptions) ([]Server, *Response, error)
+	Get(ctx context.Context, serverID int, opts *GetOptions) (Server, *Response, error)
+	PowerOff(ctx context.Context, serverID int) (Server, *Response, error)
+	PowerOn(ctx context.Context, serverID int) (Server, *Response, error)
+	Create(ctx context.Context, request *CreateServer) (Server, *Response, error)
+	Delete(ctx context.Context, serverID int) (Server, *Response, error)
+	PowerState(ctx context.Context, serverID int) (PowerState, *Response, error)
+	Reboot(ctx context.Context, serverID int) (Server, *Response, error)
+	EnterRescueMode(ctx context.Context, serverID int, fields *RescueServerFields) (Server, *Response, error)
+	ExitRescueMode(ctx context.Context, serverID int) (Server, *Response, error)
+	Update(ctx context.Context, serverID int, request *UpdateServer) (Server, *Response, error)
+	Reinstall(ctx context.Context, serverID int, fields *ReinstallServerFields) (Server, *Response, error)
+	ListSSHKeys(ctx context.Context, serverID int, opts *GetOptions) ([]SSHKey, *Response, error)
+	ResetBMCPassword(ctx context.Context, serverID int) (Server, *Response, error)
+	ListCycles(ctx context.Context, opts *GetOptions) ([]ServerCycle, *Response, error)
+	Upgrade(ctx context.Context, serverID int, plan string) (Server, *Response, error)
 }
 
 // Server response object
@@ -144,11 +148,16 @@ type ServersClient struct {
 }
 
 // List func lists teams
-func (s *ServersClient) List(projectID int, opts *GetOptions) ([]Server, *Response, error) {
+func (s *ServersClient) List(ctx context.Context, projectID int, opts *GetOptions) ([]Server, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("/v1/projects/%d/servers", projectID))
-
 	var trans []Server
-	resp, err := s.client.MakeRequest("GET", path, nil, &trans)
+
+	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -156,12 +165,16 @@ func (s *ServersClient) List(projectID int, opts *GetOptions) ([]Server, *Respon
 	return trans, resp, err
 }
 
-func (s *ServersClient) Get(serverID int, opts *GetOptions) (Server, *Response, error) {
+func (s *ServersClient) Get(ctx context.Context, serverID int, opts *GetOptions) (Server, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("%s/%d", baseServerPath, serverID))
-
 	var trans Server
 
-	resp, err := s.client.MakeRequest("GET", path, nil, &trans)
+	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return Server{}, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -169,97 +182,129 @@ func (s *ServersClient) Get(serverID int, opts *GetOptions) (Server, *Response, 
 	return trans, resp, err
 }
 
-func (s *ServersClient) action(serverID int, serverAction ServerAction) (Server, *Response, error) {
+func (s *ServersClient) action(ctx context.Context, serverID int, serverAction ServerAction) (Server, *Response, error) {
 	var trans Server
-
 	path := fmt.Sprintf("%s/%d/actions", baseServerPath, serverID)
-	resp, err := s.client.MakeRequest("POST", path, serverAction, &trans)
 
+	req, err := s.client.NewRequest(ctx, http.MethodPost, path, serverAction)
+	if err != nil {
+		return Server{}, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	return trans, resp, err
 }
 
 // PowerOff function turns server off
-func (s *ServersClient) PowerOff(serverID int) (Server, *Response, error) {
+func (s *ServersClient) PowerOff(ctx context.Context, serverID int) (Server, *Response, error) {
 	action := ServerAction{
 		Type: "power_off",
 	}
 
-	return s.action(serverID, action)
+	return s.action(ctx, serverID, action)
 }
 
 // PowerOn function turns server on
-func (s *ServersClient) PowerOn(serverID int) (Server, *Response, error) {
+func (s *ServersClient) PowerOn(ctx context.Context, serverID int) (Server, *Response, error) {
 	action := ServerAction{
 		Type: "power_on",
 	}
 
-	return s.action(serverID, action)
+	return s.action(ctx, serverID, action)
 }
 
 // Reboot function restarts desired server
-func (s *ServersClient) Reboot(serverID int) (Server, *Response, error) {
+func (s *ServersClient) Reboot(ctx context.Context, serverID int) (Server, *Response, error) {
 	action := ServerAction{
 		Type: "reboot",
 	}
 
-	return s.action(serverID, action)
+	return s.action(ctx, serverID, action)
 }
 
-func (s *ServersClient) EnterRescueMode(serverID int, fields *RescueServerFields) (Server, *Response, error) {
+func (s *ServersClient) EnterRescueMode(ctx context.Context, serverID int, fields *RescueServerFields) (Server, *Response, error) {
 	var trans Server
-
 	request := &RescueServer{ServerAction{Type: "enter-rescue-mode"}, fields}
 	path := fmt.Sprintf("%s/%d/actions", baseServerPath, serverID)
-	resp, err := s.client.MakeRequest("POST", path, request, &trans)
+
+	req, err := s.client.NewRequest(ctx, http.MethodPost, path, request)
+	if err != nil {
+		return Server{}, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
+	if err != nil {
+		err = fmt.Errorf("Error: %v", err)
+	}
 
 	return trans, resp, err
 }
 
-func (s *ServersClient) ExitRescueMode(serverID int) (Server, *Response, error) {
+func (s *ServersClient) ExitRescueMode(ctx context.Context, serverID int) (Server, *Response, error) {
 	action := ServerAction{
 		Type: "exit-rescue-mode",
 	}
 
-	return s.action(serverID, action)
+	return s.action(ctx, serverID, action)
 }
 
-func (s *ServersClient) ResetBMCPassword(serverID int) (Server, *Response, error) {
+func (s *ServersClient) ResetBMCPassword(ctx context.Context, serverID int) (Server, *Response, error) {
 	action := ServerAction{
 		Type: "reset-bmc-password",
 	}
 
-	return s.action(serverID, action)
+	return s.action(ctx, serverID, action)
 }
 
-func (s *ServersClient) Reinstall(serverID int, fields *ReinstallServerFields) (Server, *Response, error) {
+func (s *ServersClient) Reinstall(ctx context.Context, serverID int, fields *ReinstallServerFields) (Server, *Response, error) {
 	var trans Server
-
 	request := &ReinstallServer{ServerAction{Type: "reinstall"}, fields}
 	path := fmt.Sprintf("%s/%d/actions", baseServerPath, serverID)
-	resp, err := s.client.MakeRequest("POST", path, request, &trans)
+
+	req, err := s.client.NewRequest(ctx, http.MethodPost, path, request)
+	if err != nil {
+		return Server{}, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
+	if err != nil {
+		err = fmt.Errorf("Error: %v", err)
+	}
 
 	return trans, resp, err
 }
 
-func (s *ServersClient) Upgrade(serverID int, plan string) (Server, *Response, error) {
+func (s *ServersClient) Upgrade(ctx context.Context, serverID int, plan string) (Server, *Response, error) {
 	var trans Server
-
 	request := &UpgradeServer{
 		ServerAction: ServerAction{Type: "upgrade"},
 		Plan:         plan,
 	}
 	path := fmt.Sprintf("%s/%d/actions", baseServerPath, serverID)
-	resp, err := s.client.MakeRequest("POST", path, request, &trans)
+
+	req, err := s.client.NewRequest(ctx, http.MethodPost, path, request)
+	if err != nil {
+		return Server{}, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
+	if err != nil {
+		err = fmt.Errorf("Error: %v", err)
+	}
 
 	return trans, resp, err
 }
 
-func (s *ServersClient) PowerState(serverID int) (PowerState, *Response, error) {
+func (s *ServersClient) PowerState(ctx context.Context, serverID int) (PowerState, *Response, error) {
 	path := fmt.Sprintf("%s/%d?fields=power", baseServerPath, serverID)
-
 	var trans PowerState
 
-	resp, err := s.client.MakeRequest("GET", path, nil, &trans)
+	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return PowerState{}, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -267,12 +312,16 @@ func (s *ServersClient) PowerState(serverID int) (PowerState, *Response, error) 
 	return trans, resp, err
 }
 
-func (s *ServersClient) Create(request *CreateServer) (Server, *Response, error) {
+func (s *ServersClient) Create(ctx context.Context, request *CreateServer) (Server, *Response, error) {
 	var trans Server
-
 	path := fmt.Sprintf("/v1/projects/%d/servers", request.ProjectID)
-	resp, err := s.client.MakeRequest("POST", path, request, &trans)
 
+	req, err := s.client.NewRequest(ctx, http.MethodPost, path, request)
+	if err != nil {
+		return Server{}, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -280,12 +329,16 @@ func (s *ServersClient) Create(request *CreateServer) (Server, *Response, error)
 	return trans, resp, err
 }
 
-func (s *ServersClient) Update(serverID int, request *UpdateServer) (Server, *Response, error) {
+func (s *ServersClient) Update(ctx context.Context, serverID int, request *UpdateServer) (Server, *Response, error) {
 	var trans Server
-
 	path := fmt.Sprintf("%s/%d", baseServerPath, serverID)
-	resp, err := s.client.MakeRequest("PUT", path, request, &trans)
 
+	req, err := s.client.NewRequest(ctx, http.MethodPut, path, request)
+	if err != nil {
+		return Server{}, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -293,12 +346,16 @@ func (s *ServersClient) Update(serverID int, request *UpdateServer) (Server, *Re
 	return trans, resp, err
 }
 
-func (s *ServersClient) Delete(serverID int) (Server, *Response, error) {
+func (s *ServersClient) Delete(ctx context.Context, serverID int) (Server, *Response, error) {
 	var trans Server
-
 	path := fmt.Sprintf("%s/%d", baseServerPath, serverID)
-	resp, err := s.client.MakeRequest("DELETE", path, nil, &trans)
 
+	req, err := s.client.NewRequest(ctx, http.MethodDelete, path, nil)
+	if err != nil {
+		return Server{}, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -306,11 +363,16 @@ func (s *ServersClient) Delete(serverID int) (Server, *Response, error) {
 	return trans, resp, err
 }
 
-func (s *ServersClient) ListSSHKeys(serverID int, opts *GetOptions) ([]SSHKey, *Response, error) {
+func (s *ServersClient) ListSSHKeys(ctx context.Context, serverID int, opts *GetOptions) ([]SSHKey, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("%s/%d/ssh-keys", baseServerPath, serverID))
-
 	var trans []SSHKey
-	resp, err := s.client.MakeRequest("GET", path, nil, &trans)
+
+	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -318,11 +380,16 @@ func (s *ServersClient) ListSSHKeys(serverID int, opts *GetOptions) ([]SSHKey, *
 	return trans, resp, err
 }
 
-func (s *ServersClient) ListCycles(opts *GetOptions) ([]ServerCycle, *Response, error) {
+func (s *ServersClient) ListCycles(ctx context.Context, opts *GetOptions) ([]ServerCycle, *Response, error) {
 	path := opts.WithQuery("cycles")
-
 	var trans []ServerCycle
-	resp, err := s.client.MakeRequest("GET", path, nil, &trans)
+
+	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}

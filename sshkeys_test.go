@@ -31,7 +31,7 @@ func TestSSHKey_Get(t *testing.T) {
 		fmt.Fprint(writer, response)
 	})
 
-	sshKey, _, err := testClient.SSHKeys.Get(1, nil)
+	sshKey, _, err := testClient.SSHKeys.Get(t.Context(), 1, nil)
 	if err != nil {
 		t.Errorf("SSHKey.List returned %+v", err)
 	}
@@ -83,7 +83,7 @@ func TestSSHKey_Create(t *testing.T) {
 		Key:   "ssh-rsa AAAAB3NzaC1yc",
 	}
 
-	_, _, err := testClient.SSHKeys.Create(&sshCreate)
+	_, _, err := testClient.SSHKeys.Create(t.Context(), &sshCreate)
 
 	if err != nil {
 		t.Errorf("SSHKey.Create returned %+v", err)
@@ -102,7 +102,7 @@ func TestSSHKey_Delete(t *testing.T) {
 		fmt.Fprint(writer)
 	})
 
-	_, _, err := testClient.SSHKeys.Delete(1)
+	_, _, err := testClient.SSHKeys.Delete(t.Context(), 1)
 
 	if err != nil {
 		t.Errorf("SSHKey.Delete returned %+v", err)
@@ -148,7 +148,7 @@ func TestSSHKey_Update(t *testing.T) {
 		Key:   &key,
 	}
 
-	_, _, err := testClient.SSHKeys.Update(1, &sshUpdate)
+	_, _, err := testClient.SSHKeys.Update(t.Context(), 1, &sshUpdate)
 
 	if err != nil {
 		t.Errorf("SSHKey.Update returned %+v", err)

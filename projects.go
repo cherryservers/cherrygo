@@ -1,7 +1,9 @@
 package cherrygo
 
 import (
+	"context"
 	"fmt"
+	"net/http"
 )
 
 const baseProjectPath = "/v1/projects"
@@ -9,12 +11,12 @@ const baseProjectPath = "/v1/projects"
 // ProjectsService is an interface for interfacing with the Projects endpoints of the CherryServers API
 // See: https://api.cherryservers.com/doc/#tag/Projects
 type ProjectsService interface {
-	List(teamID int, opts *GetOptions) ([]Project, *Response, error)
-	Get(projectID int, opts *GetOptions) (Project, *Response, error)
-	Create(teamID int, request *CreateProject) (Project, *Response, error)
-	Update(projectID int, request *UpdateProject) (Project, *Response, error)
-	ListSSHKeys(projectID int, opts *GetOptions) ([]SSHKey, *Response, error)
-	Delete(projectID int) (*Response, error)
+	List(ctx context.Context, teamID int, opts *GetOptions) ([]Project, *Response, error)
+	Get(ctx context.Context, projectID int, opts *GetOptions) (Project, *Response, error)
+	Create(ctx context.Context, teamID int, request *CreateProject) (Project, *Response, error)
+	Update(ctx context.Context, projectID int, request *UpdateProject) (Project, *Response, error)
+	ListSSHKeys(ctx context.Context, projectID int, opts *GetOptions) ([]SSHKey, *Response, error)
+	Delete(ctx context.Context, projectID int) (*Response, error)
 }
 
 type Project struct {
@@ -41,12 +43,16 @@ type ProjectsClient struct {
 }
 
 // List func lists projects
-func (p *ProjectsClient) List(teamID int, opts *GetOptions) ([]Project, *Response, error) {
+func (p *ProjectsClient) List(ctx context.Context, teamID int, opts *GetOptions) ([]Project, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("/v1/teams/%d/projects", teamID))
-
 	var trans []Project
 
-	resp, err := p.client.MakeRequest("GET", path, nil, &trans)
+	req, err := p.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := p.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -54,12 +60,16 @@ func (p *ProjectsClient) List(teamID int, opts *GetOptions) ([]Project, *Respons
 	return trans, resp, err
 }
 
-func (p *ProjectsClient) Get(projectID int, opts *GetOptions) (Project, *Response, error) {
+func (p *ProjectsClient) Get(ctx context.Context, projectID int, opts *GetOptions) (Project, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("%s/%d", baseProjectPath, projectID))
-
 	var trans Project
 
-	resp, err := p.client.MakeRequest("GET", path, nil, &trans)
+	req, err := p.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return Project{}, nil, err
+	}
+
+	resp, err := p.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -68,12 +78,16 @@ func (p *ProjectsClient) Get(projectID int, opts *GetOptions) (Project, *Respons
 }
 
 // Create func will create new Project for specified team
-func (p *ProjectsClient) Create(teamID int, request *CreateProject) (Project, *Response, error) {
+func (p *ProjectsClient) Create(ctx context.Context, teamID int, request *CreateProject) (Project, *Response, error) {
 	var trans Project
-
 	path := fmt.Sprintf("/v1/teams/%d/projects", teamID)
 
-	resp, err := p.client.MakeRequest("POST", path, request, &trans)
+	req, err := p.client.NewRequest(ctx, http.MethodPost, path, request)
+	if err != nil {
+		return Project{}, nil, err
+	}
+
+	resp, err := p.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -82,12 +96,16 @@ func (p *ProjectsClient) Create(teamID int, request *CreateProject) (Project, *R
 }
 
 // Update func will update a project
-func (p *ProjectsClient) Update(projectID int, request *UpdateProject) (Project, *Response, error) {
+func (p *ProjectsClient) Update(ctx context.Context, projectID int, request *UpdateProject) (Project, *Response, error) {
 	var trans Project
-
 	path := fmt.Sprintf("%s/%d", baseProjectPath, projectID)
 
-	resp, err := p.client.MakeRequest("PUT", path, request, &trans)
+	req, err := p.client.NewRequest(ctx, http.MethodPut, path, request)
+	if err != nil {
+		return Project{}, nil, err
+	}
+
+	resp, err := p.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -96,10 +114,15 @@ func (p *ProjectsClient) Update(projectID int, request *UpdateProject) (Project,
 }
 
 // Delete func will delete a project
-func (p *ProjectsClient) Delete(projectID int) (*Response, error) {
+func (p *ProjectsClient) Delete(ctx context.Context, projectID int) (*Response, error) {
 	path := fmt.Sprintf("%s/%d", baseProjectPath, projectID)
 
-	resp, err := p.client.MakeRequest("DELETE", path, nil, nil)
+	req, err := p.client.NewRequest(ctx, http.MethodDelete, path, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := p.client.Do(req, nil)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -107,12 +130,16 @@ func (p *ProjectsClient) Delete(projectID int) (*Response, error) {
 	return resp, err
 }
 
-func (p *ProjectsClient) ListSSHKeys(projectID int, opts *GetOptions) ([]SSHKey, *Response, error) {
+func (p *ProjectsClient) ListSSHKeys(ctx context.Context, projectID int, opts *GetOptions) ([]SSHKey, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("/v1/projects/%d/ssh-keys", projectID))
-
 	var trans []SSHKey
 
-	resp, err := p.client.MakeRequest("GET", path, nil, &trans)
+	req, err := p.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := p.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
