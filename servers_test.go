@@ -7,7 +7,54 @@ import (
 	"reflect"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func TestServer_List(t *testing.T) {
+	setup()
+	defer teardown()
+
+	expected := []Server{{
+		ID:   383531,
+		Name: "E5-1620v4",
+		Href: "/servers/383531",
+		BMC: BMC{
+			User:     "kuser",
+			Password: "d564!h#4s8",
+		},
+		Hostname: "server-hostname",
+		Username: "user",
+		Password: "hjas345dgf54",
+		Image:    "Ubuntu 18.04 64bit",
+		Region: Region{
+			ID:         1,
+			Name:       "EU-Nord-1",
+			RegionIso2: "LT",
+			Href:       "/regions/1",
+		},
+		BGP: ServerBGP{
+			Enabled: true,
+		},
+		State: "active",
+		Tags:  map[string]string{"env": "dev"},
+	}}
+
+	mux.HandleFunc("GET /v1/projects/123/servers", func(writer http.ResponseWriter, request *http.Request) {
+		testMethod(t, request, http.MethodGet)
+
+		jsonBytes, _ := json.Marshal(expected)
+		response := string(jsonBytes)
+
+		fmt.Fprint(writer, response)
+	})
+
+	servers, _, err := testClient.Servers.List(t.Context(), 123, nil)
+	require.NoError(t, err)
+
+	assert.Equal(t, expected, servers)
+}
 
 func TestServer_Get(t *testing.T) {
 	setup()
@@ -150,7 +197,6 @@ func TestServer_Create(t *testing.T) {
 	}
 
 	server, _, err := testClient.Servers.Create(t.Context(), &serverCreate)
-
 	if err != nil {
 		t.Errorf("Server.Create returned %+v", err)
 	}
@@ -173,7 +219,6 @@ func TestServer_Delete(t *testing.T) {
 	})
 
 	_, _, err := testClient.Servers.Delete(t.Context(), 383531)
-
 	if err != nil {
 		t.Errorf("Server.Delete returned %+v", err)
 	}
@@ -210,7 +255,6 @@ func TestServer_PowerOn(t *testing.T) {
 	})
 
 	_, _, err := testClient.Servers.PowerOn(t.Context(), 383531)
-
 	if err != nil {
 		t.Errorf("Server.PowerOn returned %+v", err)
 	}
@@ -247,7 +291,6 @@ func TestServer_PowerOff(t *testing.T) {
 	})
 
 	_, _, err := testClient.Servers.PowerOff(t.Context(), 383531)
-
 	if err != nil {
 		t.Errorf("Server.PowerOff returned %+v", err)
 	}
@@ -284,7 +327,6 @@ func TestServer_Reboot(t *testing.T) {
 	})
 
 	_, _, err := testClient.Servers.Reboot(t.Context(), 383531)
-
 	if err != nil {
 		t.Errorf("Server.Reboot returned %+v", err)
 	}
@@ -449,7 +491,6 @@ func TestServer_Update(t *testing.T) {
 	}
 
 	server, _, err := testClient.Servers.Update(t.Context(), 383531, &serverUpdate)
-
 	if err != nil {
 		t.Errorf("Server.Update returned %+v", err)
 	}
@@ -457,4 +498,105 @@ func TestServer_Update(t *testing.T) {
 	if !reflect.DeepEqual(server, response) {
 		t.Errorf("Server.List returned %+v, expected %+v", server, response)
 	}
+}
+
+func TestServer_Reinstall(t *testing.T) {
+	setup()
+	defer teardown()
+
+	reinstallRequest := ReinstallServerFields{
+		Image:           "test-img",
+		Hostname:        "test-host",
+		Password:        "test-pass",
+		IPXE:            "test-ipxe",
+		SSHKeys:         []string{"123"},
+		UserData:        "test-user-data",
+		OSPartitionSize: 1,
+	}
+
+	mux.HandleFunc("POST /v1/servers/123/actions", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, http.MethodPost)
+
+		v := new(ReinstallServerFields)
+		err := json.NewDecoder(r.Body).Decode(v)
+		require.NoError(t, err)
+
+		assert.Equal(t, reinstallRequest, *v)
+
+		w.WriteHeader(http.StatusCreated)
+		fmt.Fprint(w, `{"id": 123, "deployed_image": {"slug": "test-img"}}`)
+	})
+
+	server, _, err := testClient.Servers.Reinstall(t.Context(), 123, &reinstallRequest)
+	require.NoError(t, err)
+
+	assert.Equal(t, 123, server.ID)
+	assert.Equal(t, "test-img", server.DeployedImage.Slug)
+}
+
+func TestServer_ListSSHKeys(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("GET /v1/servers/123/ssh-keys", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, http.MethodGet)
+
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, `[{"id": 123, "label": "test-key"}]`)
+	})
+
+	keys, _, err := testClient.Servers.ListSSHKeys(t.Context(), 123, nil)
+	require.NoError(t, err)
+
+	assert.Equal(t, 123, keys[0].ID)
+	assert.Equal(t, "test-key", keys[0].Label)
+}
+
+func TestServer_ListCycles(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("GET /cycles", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, http.MethodGet)
+
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, `[{"id": 123, "name": "test-name", "slug": "test-slug"}]`)
+	})
+
+	cycles, _, err := testClient.Servers.ListCycles(t.Context(), nil)
+	require.NoError(t, err)
+
+	assert.Equal(t, 123, cycles[0].ID)
+	assert.Equal(t, "test-name", cycles[0].Name)
+	assert.Equal(t, "test-slug", cycles[0].Slug)
+}
+
+func TestServer_Upgrade(t *testing.T) {
+	setup()
+	defer teardown()
+
+	want := UpgradeServer{
+		ServerAction: ServerAction{Type: "upgrade"},
+		Plan:         "test-plan",
+	}
+
+	mux.HandleFunc("POST /v1/servers/123/actions", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, http.MethodPost)
+
+		w.WriteHeader(http.StatusCreated)
+
+		v := new(UpgradeServer)
+		err := json.NewDecoder(r.Body).Decode(v)
+		require.NoError(t, err)
+
+		assert.Equal(t, want, *v)
+
+		fmt.Fprint(w, `{"id": 123, "plan":{"id": 123, "slug": "test-plan"}}`)
+	})
+
+	server, _, err := testClient.Servers.Upgrade(t.Context(), 123, "test-plan")
+	require.NoError(t, err)
+
+	assert.Equal(t, 123, server.ID)
+	assert.Equal(t, want.Plan, server.Plan.Slug)
 }

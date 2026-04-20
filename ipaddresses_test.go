@@ -7,6 +7,9 @@ import (
 	"reflect"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestIpAddresses_List(t *testing.T) {
@@ -68,7 +71,6 @@ func TestIpAddresses_List(t *testing.T) {
 	})
 
 	ips, _, err := testClient.IPAddresses.List(t.Context(), projectID, nil)
-
 	if err != nil {
 		t.Errorf("IPAddresses.List returned %+v", err)
 	}
@@ -319,8 +321,54 @@ func TestIpAddress_Delete(t *testing.T) {
 	})
 
 	_, err := testClient.IPAddresses.Remove(t.Context(), ipId)
-
 	if err != nil {
 		t.Errorf("IPAddress.Remove returned %+v", err)
 	}
+}
+
+func TestIPAddress_Assign(t *testing.T) {
+	setup()
+	defer teardown()
+
+	assignRequest := AssignIPAddress{
+		ServerID: 123,
+	}
+
+	mux.HandleFunc("PUT /v1/ips/abc123", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, http.MethodPut)
+
+		v := new(AssignIPAddress)
+		err := json.NewDecoder(r.Body).Decode(v)
+		require.NoError(t, err)
+
+		assert.Equal(t, assignRequest, *v)
+
+		fmt.Fprint(w, `{"id": "abc123", "address": "127.0.0.1"}`)
+	})
+
+	ip, _, err := testClient.IPAddresses.Assign(t.Context(), "abc123", &assignRequest)
+	require.NoError(t, err)
+
+	assert.Equal(t, "abc123", ip.ID)
+	assert.Equal(t, "127.0.0.1", ip.Address)
+}
+
+func TestIPAddress_Unassign(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("PUT /v1/ips/abc123", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, http.MethodPut)
+
+		v := new(UpdateIPAddress)
+		err := json.NewDecoder(r.Body).Decode(v)
+		require.NoError(t, err)
+
+		assert.Equal(t, "0", v.TargetedTo)
+
+		fmt.Fprint(w, `{"id": "abc123", "address": "127.0.0.1"}`)
+	})
+
+	_, err := testClient.IPAddresses.Unassign(t.Context(), "abc123")
+	require.NoError(t, err)
 }

@@ -6,6 +6,9 @@ import (
 	"reflect"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPlans_List(t *testing.T) {
@@ -56,7 +59,7 @@ func TestPlans_List(t *testing.T) {
 					Size:  20,
 					Unit:  "GB",
 				}},
-				//Raid: Raid{},
+				// Raid: Raid{},
 				Nics: Nics{
 					Name: "1Gbps",
 				},
@@ -78,11 +81,13 @@ func TestPlans_List(t *testing.T) {
 				},
 			},
 			Category: "Shared resources",
-			Softwares: []SoftwareImage{{
-				Image: SoftwareImageSpecs{
-					Name: "Ubuntu 24.04 64bit",
-					Slug: "ubuntu_24_04_64bit",
-				}},
+			Softwares: []SoftwareImage{
+				{
+					Image: SoftwareImageSpecs{
+						Name: "Ubuntu 24.04 64bit",
+						Slug: "ubuntu_24_04_64bit",
+					},
+				},
 			},
 		},
 	}
@@ -90,4 +95,42 @@ func TestPlans_List(t *testing.T) {
 	if !reflect.DeepEqual(plans, expected) {
 		t.Errorf("Plans.List  plans returned %+v, expected %+v", plans, expected)
 	}
+}
+
+func TestPlans_GetByID(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("GET /v1/plans/123", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, http.MethodGet)
+
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, `{"id": 123, "name": "test-name", "slug": "test-slug"}`)
+	})
+
+	plan, _, err := testClient.Plans.GetByID(t.Context(), 123, nil)
+	require.NoError(t, err)
+
+	assert.Equal(t, 123, plan.ID)
+	assert.Equal(t, "test-name", plan.Name)
+	assert.Equal(t, "test-slug", plan.Slug)
+}
+
+func TestPlans_GetBySlug(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("GET /v1/plans/test-plan", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, http.MethodGet)
+
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, `{"id": 123, "name": "test-name", "slug": "test-slug"}`)
+	})
+
+	plan, _, err := testClient.Plans.GetBySlug(t.Context(), "test-plan", nil)
+	require.NoError(t, err)
+
+	assert.Equal(t, 123, plan.ID)
+	assert.Equal(t, "test-name", plan.Name)
+	assert.Equal(t, "test-slug", plan.Slug)
 }
