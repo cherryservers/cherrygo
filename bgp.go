@@ -1,10 +1,12 @@
 package cherrygo
 
+// ProjectBGP data.
 type ProjectBGP struct {
 	Enabled  bool `json:"enabled,omitempty"`
 	LocalASN int  `json:"local_asn,omitempty"`
 }
 
+// ServerBGP data.
 type ServerBGP struct {
 	Enabled   bool       `json:"enabled"`
 	Available bool       `json:"available,omitempty"`
@@ -17,6 +19,7 @@ type ServerBGP struct {
 	Updated   string     `json:"updated,omitempty"`
 }
 
+// BGPRoute data.
 type BGPRoute struct {
 	Subnet  string `json:"subnet,omitempty"`
 	Active  bool   `json:"active,omitempty"`
@@ -25,6 +28,7 @@ type BGPRoute struct {
 	Updated string `json:"updated,omitempty"`
 }
 
+// RegionBGP data.
 type RegionBGP struct {
 	Hosts []string `json:"hosts,omitempty"`
 	Asn   int      `json:"asn,omitempty"`

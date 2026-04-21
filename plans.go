@@ -19,6 +19,7 @@ type PlansService interface {
 	GetByID(ctx context.Context, id int, opts *GetOptions) (Plan, *Response, error)
 }
 
+// Plan data.
 type Plan struct {
 	ID               int                `json:"id,omitempty"`
 	Name             string             `json:"name,omitempty"`
@@ -32,10 +33,12 @@ type Plan struct {
 	Softwares        []SoftwareImage    `json:"softwares"`
 }
 
+// SoftwareImage data.
 type SoftwareImage struct {
 	Image SoftwareImageSpecs `json:"image"`
 }
 
+// SoftwareImageSpecs data.
 type SoftwareImageSpecs struct {
 	Name string `json:"name"`
 	Slug string `json:"slug"`
@@ -91,12 +94,14 @@ type Bandwidth struct {
 	Name string `json:"name,omitempty"`
 }
 
+// AvailableRegions data.
 type AvailableRegions struct {
 	*Region
 	StockQty int `json:"stock_qty,omitempty"`
 	SpotQty  int `json:"spot_qty,omitempty"`
 }
 
+// PlansClient makes plan related API requests.
 type PlansClient struct {
 	client *Client
 }
@@ -120,7 +125,7 @@ func (p *PlansClient) List(ctx context.Context, teamID int, opts *GetOptions) ([
 	return trans, resp, err
 }
 
-func (p *PlansClient) get(ctx context.Context, path string, opts *GetOptions) (Plan, *Response, error) {
+func (p *PlansClient) get(ctx context.Context, path string) (Plan, *Response, error) {
 	var trans Plan
 
 	req, err := p.client.NewRequest(ctx, http.MethodGet, path, nil)
@@ -132,14 +137,16 @@ func (p *PlansClient) get(ctx context.Context, path string, opts *GetOptions) (P
 	return trans, resp, err
 }
 
+// GetByID retrieves server plan by ID.
 func (p *PlansClient) GetByID(ctx context.Context, id int, opts *GetOptions) (Plan, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("%s/%d", basePlanPath, id))
 
-	return p.get(ctx, path, opts)
+	return p.get(ctx, path)
 }
 
+// GetBySlug retrieves server plan by slug.
 func (p *PlansClient) GetBySlug(ctx context.Context, slug string, opts *GetOptions) (Plan, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("%s/%s", basePlanPath, slug))
 
-	return p.get(ctx, path, opts)
+	return p.get(ctx, path)
 }

@@ -257,7 +257,7 @@ func TestIpAddress_Update(t *testing.T) {
 	setup()
 	defer teardown()
 
-	ipId := "e3f75899-1db3-b794-137f-78c5ee9096af"
+	ipID := "e3f75899-1db3-b794-137f-78c5ee9096af"
 	tags := map[string]string{"env": "dev"}
 	expected := IPAddress{
 		ID:        "e3f75899-1db3-b794-137f-78c5ee9096af",
@@ -272,7 +272,7 @@ func TestIpAddress_Update(t *testing.T) {
 		"tags":       map[string]interface{}{"env": "dev"},
 	}
 
-	mux.HandleFunc("/v1/ips/"+ipId, func(writer http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/v1/ips/"+ipID, func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodPut)
 
 		var v map[string]interface{}
@@ -296,7 +296,7 @@ func TestIpAddress_Update(t *testing.T) {
 		Tags:      &tags,
 	}
 
-	ipAddress, _, err := testClient.IPAddresses.Update(t.Context(), ipId, &ipUpdate)
+	ipAddress, _, err := testClient.IPAddresses.Update(t.Context(), ipID, &ipUpdate)
 	if err != nil {
 		t.Errorf("IPAddress.Update returned %+v", err)
 	}
@@ -310,9 +310,9 @@ func TestIpAddress_Delete(t *testing.T) {
 	setup()
 	defer teardown()
 
-	ipId := "e3f75899-1db3-b794-137f-78c5ee9096af"
+	ipID := "e3f75899-1db3-b794-137f-78c5ee9096af"
 
-	mux.HandleFunc("/v1/ips/"+ipId, func(writer http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/v1/ips/"+ipID, func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodDelete)
 
 		writer.WriteHeader(http.StatusNoContent)
@@ -320,7 +320,7 @@ func TestIpAddress_Delete(t *testing.T) {
 		fmt.Fprint(writer)
 	})
 
-	_, err := testClient.IPAddresses.Remove(t.Context(), ipId)
+	_, err := testClient.IPAddresses.Remove(t.Context(), ipID)
 	if err != nil {
 		t.Errorf("IPAddress.Remove returned %+v", err)
 	}

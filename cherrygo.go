@@ -1,3 +1,5 @@
+// Package cherrygo provides a client that can
+// manage Cherry Servers infrastructure resources.
 package cherrygo
 
 import (
@@ -42,7 +44,7 @@ type Client struct {
 	Projects    ProjectsService
 	SSHKeys     SSHKeysService
 	Servers     ServersService
-	IPAddresses IpAddressesService
+	IPAddresses IPAddressesService
 	Storages    StoragesService
 	Regions     RegionsService
 	Users       UsersService
@@ -55,6 +57,7 @@ type Response struct {
 	Meta
 }
 
+// Meta is the response metadata.
 type Meta struct {
 	Total int
 }

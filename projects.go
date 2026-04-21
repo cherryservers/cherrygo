@@ -19,6 +19,7 @@ type ProjectsService interface {
 	Delete(ctx context.Context, projectID int) (*Response, error)
 }
 
+// Project data.
 type Project struct {
 	ID   int        `json:"id,omitempty"`
 	Name string     `json:"name,omitempty"`
@@ -38,6 +39,7 @@ type UpdateProject struct {
 	Bgp  *bool   `json:"bgp,omitempty"`
 }
 
+// ProjectsClient makes project related API requests.
 type ProjectsClient struct {
 	client *Client
 }
@@ -56,6 +58,7 @@ func (p *ProjectsClient) List(ctx context.Context, teamID int, opts *GetOptions)
 	return trans, resp, err
 }
 
+// Get project.
 func (p *ProjectsClient) Get(ctx context.Context, projectID int, opts *GetOptions) (Project, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("%s/%d", baseProjectPath, projectID))
 	var trans Project
@@ -110,6 +113,7 @@ func (p *ProjectsClient) Delete(ctx context.Context, projectID int) (*Response, 
 	return resp, err
 }
 
+// ListSSHKeys available for project.
 func (p *ProjectsClient) ListSSHKeys(ctx context.Context, projectID int, opts *GetOptions) ([]SSHKey, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("/v1/projects/%d/ssh-keys", projectID))
 	var trans []SSHKey

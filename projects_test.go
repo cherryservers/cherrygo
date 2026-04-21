@@ -44,7 +44,6 @@ func TestProjects_List(t *testing.T) {
 	})
 
 	projects, _, err := testClient.Projects.List(t.Context(), teamID, nil)
-
 	if err != nil {
 		t.Errorf("Projects.List returned %+v", err)
 	}
@@ -193,7 +192,6 @@ func TestProject_Delete(t *testing.T) {
 	})
 
 	_, err := testClient.Projects.Delete(t.Context(), projectID)
-
 	if err != nil {
 		t.Errorf("Project.Delete returned %+v", err)
 	}

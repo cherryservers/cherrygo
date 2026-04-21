@@ -18,6 +18,7 @@ type TeamsService interface {
 	Delete(ctx context.Context, teamID int) (*Response, error)
 }
 
+// Team data.
 type Team struct {
 	ID          int          `json:"id,omitempty"`
 	Name        string       `json:"name,omitempty"`
@@ -28,28 +29,33 @@ type Team struct {
 	Href        string       `json:"href,omitempty"`
 }
 
+// Credit data.
 type Credit struct {
 	Account   CreditDetails `json:"account,omitempty"`
 	Promo     CreditDetails `json:"promo,omitempty"`
 	Resources Resources     `json:"resources,omitempty"`
 }
 
+// CreditDetails data.
 type CreditDetails struct {
 	Remaining float32 `json:"remaining,omitempty"`
 	Usage     float32 `json:"usage,omitempty"`
 	Currency  string  `json:"currency,omitempty"`
 }
 
+// Resources represents billable resources.
 type Resources struct {
 	Pricing   Pricing       `json:"pricing,omitempty"`
 	Remaining RemainingTime `json:"remaining,omitempty"`
 }
 
+// RemainingTime holds resource remaining time data.
 type RemainingTime struct {
 	Time int    `json:"time,omitempty"`
 	Unit string `json:"unit,omitempty"`
 }
 
+// Pricing data.
 type Pricing struct {
 	Price     float32 `json:"price,omitempty"`
 	UnitPrice float32 `json:"unit_price"`
@@ -58,6 +64,7 @@ type Pricing struct {
 	Unit      string  `json:"unit,omitempty"`
 }
 
+// Billing data.
 type Billing struct {
 	Type        string `json:"type,omitempty"`
 	CompanyName string `json:"company_name,omitempty"`
@@ -72,22 +79,26 @@ type Billing struct {
 	Currency    string `json:"currency,omitempty"`
 }
 
+// Vat billing data.
 type Vat struct {
 	Amount int    `json:"amount"`
 	Number string `json:"number,omitempty"`
 	Valid  bool   `json:"valid"`
 }
 
+// TeamsClient makes team related API requests.
 type TeamsClient struct {
 	client *Client
 }
 
+// CreateTeam is the team creation request body.
 type CreateTeam struct {
 	Name     string `json:"name,omitempty"`
 	Type     string `json:"type,omitempty"`
 	Currency string `json:"currency,omitempty"`
 }
 
+// UpdateTeam is the team update request body.
 type UpdateTeam struct {
 	Name     *string `json:"name,omitempty"`
 	Type     *string `json:"type,omitempty"`
@@ -108,6 +119,7 @@ func (c *TeamsClient) List(ctx context.Context, opts *GetOptions) ([]Team, *Resp
 	return trans, resp, err
 }
 
+// Get a team.
 func (c *TeamsClient) Get(ctx context.Context, teamID int, opts *GetOptions) (Team, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("%s/%d", teamsPath, teamID))
 	var trans Team
@@ -121,6 +133,7 @@ func (c *TeamsClient) Get(ctx context.Context, teamID int, opts *GetOptions) (Te
 	return trans, resp, err
 }
 
+// Create a team.
 func (c *TeamsClient) Create(ctx context.Context, request *CreateTeam) (Team, *Response, error) {
 	path := teamsPath
 	var trans Team
@@ -134,6 +147,7 @@ func (c *TeamsClient) Create(ctx context.Context, request *CreateTeam) (Team, *R
 	return trans, resp, err
 }
 
+// Update a team.
 func (c *TeamsClient) Update(ctx context.Context, teamID int, request *UpdateTeam) (Team, *Response, error) {
 	path := fmt.Sprintf("%s/%d", teamsPath, teamID)
 	var trans Team
@@ -147,6 +161,7 @@ func (c *TeamsClient) Update(ctx context.Context, teamID int, request *UpdateTea
 	return trans, resp, err
 }
 
+// Delete a team.
 func (c *TeamsClient) Delete(ctx context.Context, teamID int) (*Response, error) {
 	path := fmt.Sprintf("%s/%d", teamsPath, teamID)
 

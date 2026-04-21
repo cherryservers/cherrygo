@@ -15,6 +15,7 @@ type UsersService interface {
 	Get(ctx context.Context, userID int, opts *GetOptions) (User, *Response, error)
 }
 
+// User is the Cherry Servers user account.
 type User struct {
 	ID                    int    `json:"id,omitempty"`
 	FirstName             string `json:"first_name,omitempty"`
@@ -27,10 +28,12 @@ type User struct {
 	Href                  string `json:"href,omitempty"`
 }
 
+// UsersClient makes user related API requests.
 type UsersClient struct {
 	client *Client
 }
 
+// CurrentUser gets current user based on the bearer token.
 func (s *UsersClient) CurrentUser(ctx context.Context, opts *GetOptions) (User, *Response, error) {
 	var trans User
 	path := opts.WithQuery("v1/user")
@@ -44,6 +47,7 @@ func (s *UsersClient) CurrentUser(ctx context.Context, opts *GetOptions) (User, 
 	return trans, resp, err
 }
 
+// Get a user.
 func (s *UsersClient) Get(ctx context.Context, userID int, opts *GetOptions) (User, *Response, error) {
 	var trans User
 	path := opts.WithQuery(fmt.Sprintf("%s/%d", baseUserPath, userID))

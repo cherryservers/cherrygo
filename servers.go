@@ -61,21 +61,24 @@ type Server struct {
 	TerminationDate  string            `json:"termination_date,omitempty"`
 }
 
+// BMC data.
 type BMC struct {
 	User     string `json:"user,omitempty"`
 	Password string `json:"password,omitempty"`
 }
 
+// DeployedImage data.
 type DeployedImage struct {
 	Name string `json:"name,omitempty"`
 	Slug string `json:"slug,omitempty"`
 }
 
-type ReinstallServer struct {
+type reinstallRequest struct {
 	ServerAction
 	*ReinstallServerFields
 }
 
+// ReinstallServerFields holds the fields for a server reinstall request.
 type ReinstallServerFields struct {
 	Image           string   `json:"image"`
 	Hostname        string   `json:"hostname,omitempty"`
@@ -86,11 +89,12 @@ type ReinstallServerFields struct {
 	OSPartitionSize int      `json:"os_partition_size,omitempty"`
 }
 
-type RescueServer struct {
+type rescueServer struct {
 	ServerAction
 	*RescueServerFields
 }
 
+// RescueServerFields holds the fields for a server rescue request.
 type RescueServerFields struct {
 	Password string `json:"password"`
 }
@@ -105,6 +109,7 @@ type PowerState struct {
 	Power string `json:"power"`
 }
 
+// UpgradeServer action request body.
 type UpgradeServer struct {
 	ServerAction
 	Plan string `json:"plan"`
@@ -137,12 +142,14 @@ type UpdateServer struct {
 	Bgp      bool               `json:"bgp"`
 }
 
+// ServerCycle data.
 type ServerCycle struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
 	Slug string `json:"slug"`
 }
 
+// ServersClient makes server related API requests.
 type ServersClient struct {
 	client *Client
 }
@@ -161,6 +168,7 @@ func (s *ServersClient) List(ctx context.Context, projectID int, opts *GetOption
 	return trans, resp, err
 }
 
+// Get server.
 func (s *ServersClient) Get(ctx context.Context, serverID int, opts *GetOptions) (Server, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("%s/%d", baseServerPath, serverID))
 	var trans Server
@@ -214,9 +222,10 @@ func (s *ServersClient) Reboot(ctx context.Context, serverID int) (Server, *Resp
 	return s.action(ctx, serverID, action)
 }
 
+// EnterRescueMode on server.
 func (s *ServersClient) EnterRescueMode(ctx context.Context, serverID int, fields *RescueServerFields) (Server, *Response, error) {
 	var trans Server
-	request := &RescueServer{ServerAction{Type: "enter-rescue-mode"}, fields}
+	request := &rescueServer{ServerAction{Type: "enter-rescue-mode"}, fields}
 	path := fmt.Sprintf("%s/%d/actions", baseServerPath, serverID)
 
 	req, err := s.client.NewRequest(ctx, http.MethodPost, path, request)
@@ -228,6 +237,7 @@ func (s *ServersClient) EnterRescueMode(ctx context.Context, serverID int, field
 	return trans, resp, err
 }
 
+// ExitRescueMode on server.
 func (s *ServersClient) ExitRescueMode(ctx context.Context, serverID int) (Server, *Response, error) {
 	action := ServerAction{
 		Type: "exit-rescue-mode",
@@ -236,6 +246,7 @@ func (s *ServersClient) ExitRescueMode(ctx context.Context, serverID int) (Serve
 	return s.action(ctx, serverID, action)
 }
 
+// ResetBMCPassword for bare metal server.
 func (s *ServersClient) ResetBMCPassword(ctx context.Context, serverID int) (Server, *Response, error) {
 	action := ServerAction{
 		Type: "reset-bmc-password",
@@ -244,9 +255,10 @@ func (s *ServersClient) ResetBMCPassword(ctx context.Context, serverID int) (Ser
 	return s.action(ctx, serverID, action)
 }
 
+// Reinstall server OS.
 func (s *ServersClient) Reinstall(ctx context.Context, serverID int, fields *ReinstallServerFields) (Server, *Response, error) {
 	var trans Server
-	request := &ReinstallServer{ServerAction{Type: "reinstall"}, fields}
+	request := &reinstallRequest{ServerAction{Type: "reinstall"}, fields}
 	path := fmt.Sprintf("%s/%d/actions", baseServerPath, serverID)
 
 	req, err := s.client.NewRequest(ctx, http.MethodPost, path, request)
@@ -258,6 +270,7 @@ func (s *ServersClient) Reinstall(ctx context.Context, serverID int, fields *Rei
 	return trans, resp, err
 }
 
+// Upgrade virtual server plan.
 func (s *ServersClient) Upgrade(ctx context.Context, serverID int, plan string) (Server, *Response, error) {
 	var trans Server
 	request := &UpgradeServer{
@@ -275,6 +288,7 @@ func (s *ServersClient) Upgrade(ctx context.Context, serverID int, plan string) 
 	return trans, resp, err
 }
 
+// PowerState retrieves server power state.
 func (s *ServersClient) PowerState(ctx context.Context, serverID int) (PowerState, *Response, error) {
 	path := fmt.Sprintf("%s/%d?fields=power", baseServerPath, serverID)
 	var trans PowerState
@@ -288,6 +302,7 @@ func (s *ServersClient) PowerState(ctx context.Context, serverID int) (PowerStat
 	return trans, resp, err
 }
 
+// Create server.
 func (s *ServersClient) Create(ctx context.Context, request *CreateServer) (Server, *Response, error) {
 	var trans Server
 	path := fmt.Sprintf("/v1/projects/%d/servers", request.ProjectID)
@@ -301,6 +316,7 @@ func (s *ServersClient) Create(ctx context.Context, request *CreateServer) (Serv
 	return trans, resp, err
 }
 
+// Update server.
 func (s *ServersClient) Update(ctx context.Context, serverID int, request *UpdateServer) (Server, *Response, error) {
 	var trans Server
 	path := fmt.Sprintf("%s/%d", baseServerPath, serverID)
@@ -314,6 +330,7 @@ func (s *ServersClient) Update(ctx context.Context, serverID int, request *Updat
 	return trans, resp, err
 }
 
+// Delete server.
 func (s *ServersClient) Delete(ctx context.Context, serverID int) (Server, *Response, error) {
 	var trans Server
 	path := fmt.Sprintf("%s/%d", baseServerPath, serverID)
@@ -327,6 +344,7 @@ func (s *ServersClient) Delete(ctx context.Context, serverID int) (Server, *Resp
 	return trans, resp, err
 }
 
+// ListSSHKeys list SSH keys assigned to the server.
 func (s *ServersClient) ListSSHKeys(ctx context.Context, serverID int, opts *GetOptions) ([]SSHKey, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("%s/%d/ssh-keys", baseServerPath, serverID))
 	var trans []SSHKey
@@ -340,6 +358,7 @@ func (s *ServersClient) ListSSHKeys(ctx context.Context, serverID int, opts *Get
 	return trans, resp, err
 }
 
+// ListCycles lists available billing cycles.
 func (s *ServersClient) ListCycles(ctx context.Context, opts *GetOptions) ([]ServerCycle, *Response, error) {
 	path := opts.WithQuery("cycles")
 	var trans []ServerCycle

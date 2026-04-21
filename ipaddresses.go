@@ -6,11 +6,11 @@ import (
 	"net/http"
 )
 
-const baseIpPath = "/v1/ips"
+const baseIPPath = "/v1/ips"
 
-// IpAddressesService is an interface for interfacing with the the Server endpoints of the CherryServers API
+// IPAddressesService is an interface for interfacing with the the Server endpoints of the CherryServers API
 // See: https://api.cherryservers.com/doc/#tag/Ip-Addresses
-type IpAddressesService interface {
+type IPAddressesService interface {
 	List(ctx context.Context, projectID int, opts *GetOptions) ([]IPAddress, *Response, error)
 	Get(ctx context.Context, ipID string, opts *GetOptions) (IPAddress, *Response, error)
 	Create(ctx context.Context, projectID int, request *CreateIPAddress) (IPAddress, *Response, error)
@@ -20,7 +20,7 @@ type IpAddressesService interface {
 	Unassign(ctx context.Context, ipID string) (*Response, error)
 }
 
-// IPAddresses fields
+// IPAddress data.
 type IPAddress struct {
 	ID            string             `json:"id,omitempty"`
 	Address       string             `json:"address,omitempty"`
@@ -63,7 +63,7 @@ type AssignedTo struct {
 	Pricing  Pricing `json:"pricing,omitempty"`
 }
 
-// IPClient paveldi client
+// IPsClient makes IP address related API requests.
 type IPsClient struct {
 	client *Client
 }
@@ -90,11 +90,12 @@ type UpdateIPAddress struct {
 	Tags       *map[string]string `json:"tags,omitempty"`
 }
 
+// AssignIPAddress is the IP address assignment request body.
 // Subnet type IP addresses can be only assigned to a server.
 // Floating IP address can be assigned directly to a server or routed to subnet type IP address.
 type AssignIPAddress struct {
 	ServerID int    `json:"targeted_to,omitempty"`
-	IpID     string `json:"routed_to,omitempty"`
+	RoutedTo string `json:"routed_to,omitempty"`
 }
 
 // List func lists ip addresses
@@ -111,9 +112,9 @@ func (i *IPsClient) List(ctx context.Context, projectID int, opts *GetOptions) (
 	return trans, resp, err
 }
 
-// List func lists teams
+// Get IP address.
 func (i *IPsClient) Get(ctx context.Context, ipID string, opts *GetOptions) (IPAddress, *Response, error) {
-	path := opts.WithQuery(fmt.Sprintf("%s/%s", baseIpPath, ipID))
+	path := opts.WithQuery(fmt.Sprintf("%s/%s", baseIPPath, ipID))
 	var trans IPAddress
 
 	req, err := i.client.NewRequest(ctx, http.MethodGet, path, nil)
@@ -142,7 +143,7 @@ func (i *IPsClient) Create(ctx context.Context, projectID int, request *CreateIP
 // Update function updates existing IP address
 func (i *IPsClient) Update(ctx context.Context, ipID string, request *UpdateIPAddress) (IPAddress, *Response, error) {
 	var trans IPAddress
-	path := fmt.Sprintf("%s/%s", baseIpPath, ipID)
+	path := fmt.Sprintf("%s/%s", baseIPPath, ipID)
 
 	req, err := i.client.NewRequest(ctx, http.MethodPut, path, request)
 	if err != nil {
@@ -155,7 +156,7 @@ func (i *IPsClient) Update(ctx context.Context, ipID string, request *UpdateIPAd
 
 // Remove function removes existing project IP address
 func (i *IPsClient) Remove(ctx context.Context, ipID string) (*Response, error) {
-	path := fmt.Sprintf("%s/%s", baseIpPath, ipID)
+	path := fmt.Sprintf("%s/%s", baseIPPath, ipID)
 
 	req, err := i.client.NewRequest(ctx, http.MethodDelete, path, nil)
 	if err != nil {
@@ -166,9 +167,10 @@ func (i *IPsClient) Remove(ctx context.Context, ipID string) (*Response, error) 
 	return resp, err
 }
 
+// Assign IP address.
 func (i *IPsClient) Assign(ctx context.Context, ipID string, request *AssignIPAddress) (IPAddress, *Response, error) {
 	var trans IPAddress
-	path := fmt.Sprintf("%s/%s", baseIpPath, ipID)
+	path := fmt.Sprintf("%s/%s", baseIPPath, ipID)
 
 	req, err := i.client.NewRequest(ctx, http.MethodPut, path, request)
 	if err != nil {
@@ -179,8 +181,9 @@ func (i *IPsClient) Assign(ctx context.Context, ipID string, request *AssignIPAd
 	return trans, resp, err
 }
 
+// Unassign IP address.
 func (i *IPsClient) Unassign(ctx context.Context, ipID string) (*Response, error) {
-	path := fmt.Sprintf("%s/%s", baseIpPath, ipID)
+	path := fmt.Sprintf("%s/%s", baseIPPath, ipID)
 	request := UpdateIPAddress{
 		TargetedTo: "0",
 	}

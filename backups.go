@@ -8,6 +8,8 @@ import (
 
 const baseBackupPath = "/v1/backup-storages"
 
+// BackupsService is an interface for interfacing with the the Backup Storage endpoints of the CherryServers API
+// See: https://api.cherryservers.com/doc/#tag/Backup-Storage
 type BackupsService interface {
 	ListPlans(ctx context.Context, opts *GetOptions) ([]BackupStoragePlan, *Response, error)
 	ListBackups(ctx context.Context, projectID int, opts *GetOptions) ([]BackupStorage, *Response, error)
@@ -18,10 +20,12 @@ type BackupsService interface {
 	Delete(ctx context.Context, backupID int) (*Response, error)
 }
 
+// BackupsClient makes backup storage related API requests.
 type BackupsClient struct {
 	client *Client
 }
 
+// BackupStoragePlan data.
 type BackupStoragePlan struct {
 	ID            int       `json:"id,omitempty"`
 	Name          string    `json:"name,omitempty"`
@@ -32,6 +36,7 @@ type BackupStoragePlan struct {
 	Href          string    `json:"href,omitempty"`
 }
 
+// BackupStorage data.
 type BackupStorage struct {
 	ID                   int            `json:"id,omitempty"`
 	Status               string         `json:"status,omitempty"`
@@ -50,6 +55,7 @@ type BackupStorage struct {
 	Href                 string         `json:"href,omitempty"`
 }
 
+// BackupMethod is a backup storage access method.
 type BackupMethod struct {
 	Name       string   `json:"name,omitempty"`
 	Username   string   `json:"username,omitempty"`
@@ -62,11 +68,13 @@ type BackupMethod struct {
 	Processing bool     `json:"processing,omitempty"`
 }
 
+// Rule is the backup storage access method rule for an IP address.
 type Rule struct {
 	IPAddress      IPAddress      `json:"ip,omitempty"`
 	EnabledMethods EnabledMethods `json:"methods,omitempty"`
 }
 
+// EnabledMethods for backup storage access.
 type EnabledMethods struct {
 	BORG bool `json:"borg,omitempty"`
 	FTP  bool `json:"ftp,omitempty"`
@@ -74,6 +82,7 @@ type EnabledMethods struct {
 	SMB  bool `json:"smb,omitempty"`
 }
 
+// CreateBackup is the body for backup storage creation request.
 type CreateBackup struct {
 	ServerID       int    `json:"server_id,omitempty"`
 	BackupPlanSlug string `json:"slug"`
@@ -81,6 +90,7 @@ type CreateBackup struct {
 	SSHKey         string `json:"ssh_key,omitempty"`
 }
 
+// UpdateBackupStorage is the body for a backup storage update request.
 type UpdateBackupStorage struct {
 	BackupStorageID int    `json:"id"`
 	BackupPlanSlug  string `json:"slug,omitempty"`
@@ -88,6 +98,7 @@ type UpdateBackupStorage struct {
 	SSHKey          string `json:"ssh_key,omitempty"`
 }
 
+// UpdateBackupMethod is the body for a backup storage access method update request.
 type UpdateBackupMethod struct {
 	BackupStorageID  int      `json:"id"`
 	BackupMethodName string   `json:"name"`
@@ -95,6 +106,7 @@ type UpdateBackupMethod struct {
 	Whitelist        []string `json:"whitelist"`
 }
 
+// ListPlans lists backups storage plans.
 func (s *BackupsClient) ListPlans(ctx context.Context, opts *GetOptions) ([]BackupStoragePlan, *Response, error) {
 	var trans []BackupStoragePlan
 
@@ -108,6 +120,7 @@ func (s *BackupsClient) ListPlans(ctx context.Context, opts *GetOptions) ([]Back
 	return trans, resp, err
 }
 
+// ListBackups lists backup storage instances.
 func (s *BackupsClient) ListBackups(ctx context.Context, projectID int, opts *GetOptions) ([]BackupStorage, *Response, error) {
 	var trans []BackupStorage
 
@@ -121,6 +134,7 @@ func (s *BackupsClient) ListBackups(ctx context.Context, projectID int, opts *Ge
 	return trans, resp, err
 }
 
+// Get backup storage instance.
 func (s *BackupsClient) Get(ctx context.Context, backupID int, opts *GetOptions) (BackupStorage, *Response, error) {
 	var trans BackupStorage
 
@@ -134,6 +148,7 @@ func (s *BackupsClient) Get(ctx context.Context, backupID int, opts *GetOptions)
 	return trans, resp, err
 }
 
+// Create backup storage instance.
 func (s *BackupsClient) Create(ctx context.Context, request *CreateBackup) (BackupStorage, *Response, error) {
 	var trans BackupStorage
 
@@ -148,6 +163,7 @@ func (s *BackupsClient) Create(ctx context.Context, request *CreateBackup) (Back
 	return trans, resp, err
 }
 
+// Update backup storage instance.
 func (s *BackupsClient) Update(ctx context.Context, request *UpdateBackupStorage) (BackupStorage, *Response, error) {
 	var trans BackupStorage
 
@@ -162,6 +178,7 @@ func (s *BackupsClient) Update(ctx context.Context, request *UpdateBackupStorage
 	return trans, resp, err
 }
 
+// UpdateBackupMethod updates backup storage instance access methods.
 func (s *BackupsClient) UpdateBackupMethod(ctx context.Context, request *UpdateBackupMethod) ([]BackupMethod, *Response, error) {
 	var trans []BackupMethod
 
@@ -175,6 +192,7 @@ func (s *BackupsClient) UpdateBackupMethod(ctx context.Context, request *UpdateB
 	return trans, resp, err
 }
 
+// Delete backup storage instance.
 func (s *BackupsClient) Delete(ctx context.Context, backupID int) (*Response, error) {
 	path := fmt.Sprintf("%s/%d", baseBackupPath, backupID)
 	req, err := s.client.NewRequest(ctx, http.MethodDelete, path, nil)
