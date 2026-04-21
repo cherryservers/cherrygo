@@ -94,7 +94,7 @@ func (c *Client) NewRequest(ctx context.Context, method, path string, body any) 
 
 // Do executes a request.
 //
-// The response body is un-marshalled into v, so it must be a pointer
+// The response body is un-marshalled into v and closed. v must be a pointer
 // to a type that can hold the expected response, [io.Writer] or nil.
 func (c *Client) Do(req *http.Request, v any) (*Response, error) {
 	resp, err := c.client.Do(req)
@@ -102,7 +102,9 @@ func (c *Client) Do(req *http.Request, v any) (*Response, error) {
 		return nil, err
 	}
 
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	response := Response{Response: resp}
 	response.populateTotal()
@@ -138,7 +140,10 @@ func (c *Client) Do(req *http.Request, v any) (*Response, error) {
 	if v != nil {
 		// if v implements the io.Writer interface, return the raw response
 		if w, ok := v.(io.Writer); ok {
-			io.Copy(w, resp.Body)
+			_, err := io.Copy(w, resp.Body)
+			if err != nil {
+				return nil, fmt.Errorf("failed to copy response body: %w", err)
+			}
 		} else {
 
 			decoder := json.NewDecoder(resp.Body)

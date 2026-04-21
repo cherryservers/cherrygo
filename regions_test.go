@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestRegions_List(t *testing.T) {
@@ -30,7 +32,7 @@ func TestRegions_List(t *testing.T) {
 
 	mux.HandleFunc("/v1/regions", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
-		fmt.Fprint(writer, `[
+		_, err := fmt.Fprint(writer, `[
 			{
 				"id":1,
 				"name":"EU-Nord-1",
@@ -46,6 +48,7 @@ func TestRegions_List(t *testing.T) {
 				"href":"/regions/2"
 			 }
 		]`)
+		require.NoError(t, err)
 	})
 
 	regions, _, err := testClient.Regions.List(t.Context(), nil)
@@ -72,13 +75,14 @@ func TestRegion_Get(t *testing.T) {
 
 	mux.HandleFunc("/v1/regions/eu_nord_1", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
-		fmt.Fprint(writer, `{
+		_, err := fmt.Fprint(writer, `{
 			"id":1,
 			"name":"EU-Nord-1",
 			"slug":"eu_nord_1",
 			"region_iso_2":"LT",
 			"href":"/regions/1"
 		}`)
+		require.NoError(t, err)
 	})
 
 	region, _, err := testClient.Regions.Get(t.Context(), "eu_nord_1", nil)

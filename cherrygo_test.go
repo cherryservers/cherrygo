@@ -25,7 +25,7 @@ var (
 var authToken = "myToken"
 
 func setup() {
-	os.Setenv("CHERRY_AUTH_TOKEN", authToken)
+	_ = os.Setenv("CHERRY_AUTH_TOKEN", authToken)
 
 	mux = http.NewServeMux()
 	server = httptest.NewServer(mux)
@@ -74,10 +74,12 @@ func TestErrorResponse(t *testing.T) {
 	mux.HandleFunc("/", func(writer http.ResponseWriter, _ *http.Request) {
 		writer.WriteHeader(http.StatusBadRequest)
 
-		fmt.Fprint(writer, `{
+		_, err := fmt.Fprint(writer, `{
 			"code": 400,
 			"message": "Bad Request"
 		}`)
+
+		require.NoError(t, err)
 	})
 
 	req, err := testClient.NewRequest(t.Context(), http.MethodGet, "/", nil)
@@ -92,7 +94,8 @@ func TestErrorResponse(t *testing.T) {
 }
 
 func TestCustomUserAgent(t *testing.T) {
-	os.Setenv("CHERRY_AUTH_TOKEN", "token")
+	err := os.Setenv("CHERRY_AUTH_TOKEN", "token")
+	require.NoError(t, err)
 
 	ua := "testing/1.0"
 	c, err := NewClient(WithUserAgent(ua))

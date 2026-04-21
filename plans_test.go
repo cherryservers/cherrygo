@@ -18,7 +18,8 @@ func TestPlans_List(t *testing.T) {
 	mux.HandleFunc("/v1/teams/"+strconv.Itoa(teamID)+"/plans", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
 		response := `[{"id":625,"name":"Cloud VPS 1","slug":"cloud_vps_1","title":"Cloud VPS 1","custom":false,"category":"Shared resources","softwares":[{"image":{"name":"Ubuntu 18.04 64bit"}}],"specs":{"cpus":{"count":1,"name":"Cloud VPS 1","cores":1,"frequency":0.0,"unit":"GHz"},"memory":{"count":1,"total":1,"unit":"GB","name":"1GB"},"storage":[{"count":1,"name":"20GB SSD","size":20,"unit":"GB","type":"SSD"}],"nics":{"name":"1Gbps"},"bandwidth":{"name":"1TB"}},"pricing":[{"price":0.015,"currency":"EUR","taxed":false,"unit":"Hourly","id":37}],"available_regions":[{"id":1,"name":"EU-Nord-1","region_iso_2":"LT","stock_qty":122,"spot_qty":5,"location":"Lithuania, Vilnius"}], "category": "Shared resources", "softwares": [{"image": {"name": "Ubuntu 24.04 64bit", "slug": "ubuntu_24_04_64bit"}}]}]`
-		fmt.Fprint(writer, response)
+		_, err := fmt.Fprint(writer, response)
+		require.NoError(t, err)
 	})
 
 	plans, _, err := testClient.Plans.List(t.Context(), teamID, nil)
@@ -105,7 +106,8 @@ func TestPlans_GetByID(t *testing.T) {
 		testMethod(t, r, http.MethodGet)
 
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, `{"id": 123, "name": "test-name", "slug": "test-slug"}`)
+		_, err := fmt.Fprint(w, `{"id": 123, "name": "test-name", "slug": "test-slug"}`)
+		require.NoError(t, err)
 	})
 
 	plan, _, err := testClient.Plans.GetByID(t.Context(), 123, nil)
@@ -124,7 +126,8 @@ func TestPlans_GetBySlug(t *testing.T) {
 		testMethod(t, r, http.MethodGet)
 
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, `{"id": 123, "name": "test-name", "slug": "test-slug"}`)
+		_, err := fmt.Fprint(w, `{"id": 123, "name": "test-name", "slug": "test-slug"}`)
+		require.NoError(t, err)
 	})
 
 	plan, _, err := testClient.Plans.GetBySlug(t.Context(), "test-plan", nil)

@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestImages_List(t *testing.T) {
@@ -34,7 +36,7 @@ func TestImages_List(t *testing.T) {
 
 	mux.HandleFunc("/v1/plans/e5_1620v4/images", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
-		fmt.Fprint(writer, `[
+		_, err := fmt.Fprint(writer, `[
 			{
 				"id": 1,
 				"name": "CloudLinux 7 64bit",
@@ -54,6 +56,8 @@ func TestImages_List(t *testing.T) {
 				"slug": "ubuntu_20_04"
 			}
 		]`)
+
+		require.NoError(t, err)
 	})
 
 	images, _, err := testClient.Images.List(t.Context(), "e5_1620v4", nil)

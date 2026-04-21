@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestStorage_List(t *testing.T) {
@@ -32,7 +34,7 @@ func TestStorage_List(t *testing.T) {
 
 	mux.HandleFunc("GET /v1/projects/123/storages", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
-		fmt.Fprint(writer, `[{
+		_, err := fmt.Fprint(writer, `[{
 			"id": 123,
 			"name": "name",
 			"href": "/storages/123",
@@ -48,6 +50,7 @@ func TestStorage_List(t *testing.T) {
 			"initiator": "com.cherryservers:initiator",
 			"discovery_ip": "1.1.1.1"
 		}]`)
+		require.NoError(t, err)
 	})
 
 	storages, _, err := testClient.Storages.List(t.Context(), 123, nil)
@@ -83,7 +86,7 @@ func TestStorage_Get(t *testing.T) {
 
 	mux.HandleFunc("/v1/storages/123", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
-		fmt.Fprint(writer, `{
+		_, err := fmt.Fprint(writer, `{
 			"id": 123,
 			"name": "name",
 			"href": "/storages/123",
@@ -99,6 +102,7 @@ func TestStorage_Get(t *testing.T) {
 			"initiator": "com.cherryservers:initiator",
 			"discovery_ip": "1.1.1.1"
 		}`)
+		require.NoError(t, err)
 	})
 
 	storage, _, err := testClient.Storages.Get(t.Context(), 123, nil)
@@ -135,7 +139,8 @@ func TestStorage_Create(t *testing.T) {
 			t.Errorf("Request body\n sent %#v\n expected %#v", v, requestBody)
 		}
 
-		fmt.Fprint(writer, `{"id": 123}`)
+		_, err = fmt.Fprint(writer, `{"id": 123}`)
+		require.NoError(t, err)
 	})
 
 	createStorage := CreateStorage{
@@ -158,7 +163,8 @@ func TestStorage_Delete(t *testing.T) {
 	mux.HandleFunc("/v1/storages/123", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodDelete)
 		writer.WriteHeader(http.StatusNoContent)
-		fmt.Fprint(writer)
+		_, err := fmt.Fprint(writer)
+		require.NoError(t, err)
 	})
 
 	_, err := testClient.Storages.Delete(t.Context(), 123)
@@ -189,7 +195,8 @@ func TestStorage_Attach(t *testing.T) {
 			t.Errorf("Request body\n sent %#v\n expected %#v", v, requestBody)
 		}
 
-		fmt.Fprint(writer, `{"id": 123}`)
+		_, err = fmt.Fprint(writer, `{"id": 123}`)
+		require.NoError(t, err)
 	})
 
 	attachStorage := AttachTo{
@@ -210,7 +217,8 @@ func TestStorage_Detach(t *testing.T) {
 	mux.HandleFunc("/v1/storages/123/attachments", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodDelete)
 		writer.WriteHeader(http.StatusNoContent)
-		fmt.Fprint(writer)
+		_, err := fmt.Fprint(writer)
+		require.NoError(t, err)
 	})
 
 	_, err := testClient.Storages.Detach(t.Context(), 123)
@@ -242,7 +250,8 @@ func TestStorage_Update(t *testing.T) {
 			t.Errorf("Request body\n sent %#v\n expected %#v", v, requestBody)
 		}
 
-		fmt.Fprint(writer, `{"id": 123}`)
+		_, err = fmt.Fprint(writer, `{"id": 123}`)
+		require.NoError(t, err)
 	})
 
 	updateStorage := UpdateStorage{

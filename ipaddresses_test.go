@@ -67,7 +67,8 @@ func TestIpAddresses_List(t *testing.T) {
 		jsonBytes, _ := json.Marshal(expected)
 		response := string(jsonBytes)
 
-		fmt.Fprint(writer, response)
+		_, err := fmt.Fprint(writer, response)
+		require.NoError(t, err)
 	})
 
 	ips, _, err := testClient.IPAddresses.List(t.Context(), projectID, nil)
@@ -121,7 +122,7 @@ func TestIpAddress_Get(t *testing.T) {
 
 	mux.HandleFunc("/v1/ips/"+ipUID, func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
-		fmt.Fprint(writer, `{
+		_, err := fmt.Fprint(writer, `{
 			"id":"e3f75899-1db3-b794-137f-78c5ee9096af",
 			"address":"5.199.171.0",
 			"address_family":4,
@@ -160,6 +161,8 @@ func TestIpAddress_Get(t *testing.T) {
 			"ddos_scrubbing":false,
 			"href":"/ips/e3f75899-1db3-b794-137f-78c5ee9096af"
 		 }`)
+
+		require.NoError(t, err)
 	})
 
 	ip, _, err := testClient.IPAddresses.Get(t.Context(), ipUID, nil)
@@ -232,7 +235,8 @@ func TestIpAddress_Create(t *testing.T) {
 
 		jsonBytes, _ := json.Marshal(expected)
 		response := string(jsonBytes)
-		fmt.Fprint(writer, response)
+		_, err = fmt.Fprint(writer, response)
+		require.NoError(t, err)
 	})
 
 	ipCreate := CreateIPAddress{
@@ -287,7 +291,8 @@ func TestIpAddress_Update(t *testing.T) {
 
 		jsonBytes, _ := json.Marshal(expected)
 		response := string(jsonBytes)
-		fmt.Fprint(writer, response)
+		_, err = fmt.Fprint(writer, response)
+		require.NoError(t, err)
 	})
 
 	ipUpdate := UpdateIPAddress{
@@ -317,7 +322,8 @@ func TestIpAddress_Delete(t *testing.T) {
 
 		writer.WriteHeader(http.StatusNoContent)
 
-		fmt.Fprint(writer)
+		_, err := fmt.Fprint(writer)
+		require.NoError(t, err)
 	})
 
 	_, err := testClient.IPAddresses.Remove(t.Context(), ipID)
@@ -343,7 +349,8 @@ func TestIPAddress_Assign(t *testing.T) {
 
 		assert.Equal(t, assignRequest, *v)
 
-		fmt.Fprint(w, `{"id": "abc123", "address": "127.0.0.1"}`)
+		_, err = fmt.Fprint(w, `{"id": "abc123", "address": "127.0.0.1"}`)
+		require.NoError(t, err)
 	})
 
 	ip, _, err := testClient.IPAddresses.Assign(t.Context(), "abc123", &assignRequest)
@@ -366,7 +373,8 @@ func TestIPAddress_Unassign(t *testing.T) {
 
 		assert.Equal(t, "0", v.TargetedTo)
 
-		fmt.Fprint(w, `{"id": "abc123", "address": "127.0.0.1"}`)
+		_, err = fmt.Fprint(w, `{"id": "abc123", "address": "127.0.0.1"}`)
+		require.NoError(t, err)
 	})
 
 	_, err := testClient.IPAddresses.Unassign(t.Context(), "abc123")
