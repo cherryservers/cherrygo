@@ -53,10 +53,6 @@ func (p *ProjectsClient) List(ctx context.Context, teamID int, opts *GetOptions)
 	}
 
 	resp, err := p.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -70,10 +66,6 @@ func (p *ProjectsClient) Get(ctx context.Context, projectID int, opts *GetOption
 	}
 
 	resp, err := p.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -88,10 +80,6 @@ func (p *ProjectsClient) Create(ctx context.Context, teamID int, request *Create
 	}
 
 	resp, err := p.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -106,10 +94,6 @@ func (p *ProjectsClient) Update(ctx context.Context, projectID int, request *Upd
 	}
 
 	resp, err := p.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -123,10 +107,6 @@ func (p *ProjectsClient) Delete(ctx context.Context, projectID int) (*Response, 
 	}
 
 	resp, err := p.client.Do(req, nil)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return resp, err
 }
 
@@ -140,9 +120,5 @@ func (p *ProjectsClient) ListSSHKeys(ctx context.Context, projectID int, opts *G
 	}
 
 	resp, err := p.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }

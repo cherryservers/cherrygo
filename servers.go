@@ -158,10 +158,6 @@ func (s *ServersClient) List(ctx context.Context, projectID int, opts *GetOption
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -175,10 +171,6 @@ func (s *ServersClient) Get(ctx context.Context, serverID int, opts *GetOptions)
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -233,10 +225,6 @@ func (s *ServersClient) EnterRescueMode(ctx context.Context, serverID int, field
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -267,10 +255,6 @@ func (s *ServersClient) Reinstall(ctx context.Context, serverID int, fields *Rei
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -288,10 +272,6 @@ func (s *ServersClient) Upgrade(ctx context.Context, serverID int, plan string) 
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -305,10 +285,6 @@ func (s *ServersClient) PowerState(ctx context.Context, serverID int) (PowerStat
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -322,10 +298,6 @@ func (s *ServersClient) Create(ctx context.Context, request *CreateServer) (Serv
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -339,10 +311,6 @@ func (s *ServersClient) Update(ctx context.Context, serverID int, request *Updat
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -356,10 +324,6 @@ func (s *ServersClient) Delete(ctx context.Context, serverID int) (Server, *Resp
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -373,10 +337,6 @@ func (s *ServersClient) ListSSHKeys(ctx context.Context, serverID int, opts *Get
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -390,9 +350,5 @@ func (s *ServersClient) ListCycles(ctx context.Context, opts *GetOptions) ([]Ser
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }

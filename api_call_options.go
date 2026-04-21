@@ -30,7 +30,7 @@ func (g *GetOptions) Encode() string {
 		return ""
 	}
 	v := url.Values{}
-	if g.Fields != nil && len(g.Fields) > 0 {
+	if len(g.Fields) > 0 {
 		v.Add("fields", strings.Join(g.Fields, ","))
 	}
 
@@ -40,13 +40,13 @@ func (g *GetOptions) Encode() string {
 		}
 	}
 
-	if g.Type != nil && len(g.Type) > 0 {
+	if len(g.Type) > 0 {
 		for _, el := range g.Type {
 			v.Add("type[]", el)
 		}
 	}
 
-	if g.Status != nil && len(g.Status) > 0 {
+	if len(g.Status) > 0 {
 		for _, el := range g.Status {
 			v.Add("status[]", el)
 		}

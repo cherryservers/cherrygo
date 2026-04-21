@@ -74,10 +74,6 @@ func (s *StoragesClient) List(ctx context.Context, projectID int, opts *GetOptio
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -91,10 +87,6 @@ func (s *StoragesClient) Get(ctx context.Context, storageID int, opts *GetOption
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -108,10 +100,6 @@ func (s *StoragesClient) Create(ctx context.Context, request *CreateStorage) (Bl
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -124,10 +112,6 @@ func (s *StoragesClient) Delete(ctx context.Context, storageID int) (*Response, 
 	}
 
 	resp, err := s.client.Do(req, nil)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return resp, err
 }
 
@@ -141,10 +125,6 @@ func (s *StoragesClient) Attach(ctx context.Context, request *AttachTo) (BlockSt
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -157,10 +137,6 @@ func (s *StoragesClient) Detach(ctx context.Context, storageID int) (*Response, 
 	}
 
 	resp, err := s.client.Do(req, nil)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return resp, err
 }
 
@@ -174,9 +150,5 @@ func (s *StoragesClient) Update(ctx context.Context, request *UpdateStorage) (Bl
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }

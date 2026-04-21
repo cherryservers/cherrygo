@@ -122,7 +122,7 @@ func (c *Client) Do(req *http.Request, v any) (*Response, error) {
 			return nil, err
 		}
 
-		err = fmt.Errorf("Error response from API: %v (error code: %v)", errorResponse.Message, errorResponse.Code)
+		err = fmt.Errorf("error response from API: %v (error code: %v)", errorResponse.Message, errorResponse.Code)
 
 		return &response, err
 	}
@@ -141,7 +141,7 @@ func (c *Client) Do(req *http.Request, v any) (*Response, error) {
 			decoder := json.NewDecoder(resp.Body)
 			err := decoder.Decode(&v)
 			if err != nil {
-				log.Printf("Error while decoding body: %v -> %v", err, err.Error())
+				log.Printf("error while decoding body: %v -> %v", err, err.Error())
 				return &response, err
 			}
 		}
@@ -262,6 +262,6 @@ func WithDebug(w io.Writer) ClientOpt {
 func (r *Response) populateTotal() {
 	// parse the headers and populate Meta.Total
 	if total := r.Header.Get("X-Total-Count"); total != "" {
-		r.Meta.Total, _ = strconv.Atoi(total)
+		r.Total, _ = strconv.Atoi(total)
 	}
 }

@@ -85,7 +85,7 @@ func TestErrorResponse(t *testing.T) {
 
 	_, err = testClient.Do(req, nil)
 
-	expectedErr := "Error response from API: Bad Request (error code: 400)"
+	expectedErr := "error response from API: Bad Request (error code: 400)"
 	if err.Error() != expectedErr {
 		t.Fatalf("NewClient() expected error: %v, got %v", expectedErr, err)
 	}

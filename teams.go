@@ -105,10 +105,6 @@ func (c *TeamsClient) List(ctx context.Context, opts *GetOptions) ([]Team, *Resp
 	}
 
 	resp, err := c.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -122,15 +118,11 @@ func (c *TeamsClient) Get(ctx context.Context, teamID int, opts *GetOptions) (Te
 	}
 
 	resp, err := c.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
 func (c *TeamsClient) Create(ctx context.Context, request *CreateTeam) (Team, *Response, error) {
-	path := fmt.Sprintf("%s", teamsPath)
+	path := teamsPath
 	var trans Team
 
 	req, err := c.client.NewRequest(ctx, http.MethodPost, path, request)
@@ -139,10 +131,6 @@ func (c *TeamsClient) Create(ctx context.Context, request *CreateTeam) (Team, *R
 	}
 
 	resp, err := c.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -156,10 +144,6 @@ func (c *TeamsClient) Update(ctx context.Context, teamID int, request *UpdateTea
 	}
 
 	resp, err := c.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -172,9 +156,5 @@ func (c *TeamsClient) Delete(ctx context.Context, teamID int) (*Response, error)
 	}
 
 	resp, err := c.client.Do(req, nil)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return resp, err
 }

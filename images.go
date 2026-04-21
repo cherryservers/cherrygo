@@ -36,9 +36,5 @@ func (i *ImagesClient) List(ctx context.Context, plan string, opts *GetOptions) 
 	}
 
 	resp, err := i.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }

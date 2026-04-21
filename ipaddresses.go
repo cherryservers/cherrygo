@@ -108,10 +108,6 @@ func (i *IPsClient) List(ctx context.Context, projectID int, opts *GetOptions) (
 	}
 
 	resp, err := i.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -126,10 +122,6 @@ func (i *IPsClient) Get(ctx context.Context, ipID string, opts *GetOptions) (IPA
 	}
 
 	resp, err := i.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -144,10 +136,6 @@ func (i *IPsClient) Create(ctx context.Context, projectID int, request *CreateIP
 	}
 
 	resp, err := i.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -162,10 +150,6 @@ func (i *IPsClient) Update(ctx context.Context, ipID string, request *UpdateIPAd
 	}
 
 	resp, err := i.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -179,10 +163,6 @@ func (i *IPsClient) Remove(ctx context.Context, ipID string) (*Response, error) 
 	}
 
 	resp, err := i.client.Do(req, nil)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return resp, err
 }
 
@@ -196,10 +176,6 @@ func (i *IPsClient) Assign(ctx context.Context, ipID string, request *AssignIPAd
 	}
 
 	resp, err := i.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -215,9 +191,5 @@ func (i *IPsClient) Unassign(ctx context.Context, ipID string) (*Response, error
 	}
 
 	resp, err := i.client.Do(req, nil)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return resp, err
 }

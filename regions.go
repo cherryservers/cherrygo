@@ -31,7 +31,7 @@ type RegionsClient struct {
 }
 
 func (i *RegionsClient) List(ctx context.Context, opts *GetOptions) ([]Region, *Response, error) {
-	path := opts.WithQuery(fmt.Sprintf("%s", baseRegionPath))
+	path := opts.WithQuery(baseRegionPath)
 	var trans []Region
 
 	req, err := i.client.NewRequest(ctx, http.MethodGet, path, nil)
@@ -40,10 +40,6 @@ func (i *RegionsClient) List(ctx context.Context, opts *GetOptions) ([]Region, *
 	}
 
 	resp, err := i.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -57,9 +53,5 @@ func (i *RegionsClient) Get(ctx context.Context, region string, opts *GetOptions
 	}
 
 	resp, err := i.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }

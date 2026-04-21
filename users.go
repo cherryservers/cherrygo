@@ -33,7 +33,7 @@ type UsersClient struct {
 
 func (s *UsersClient) CurrentUser(ctx context.Context, opts *GetOptions) (User, *Response, error) {
 	var trans User
-	path := opts.WithQuery(fmt.Sprintf("/v1/user"))
+	path := opts.WithQuery("v1/user")
 
 	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
@@ -41,10 +41,6 @@ func (s *UsersClient) CurrentUser(ctx context.Context, opts *GetOptions) (User, 
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -58,9 +54,5 @@ func (s *UsersClient) Get(ctx context.Context, userID int, opts *GetOptions) (Us
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }

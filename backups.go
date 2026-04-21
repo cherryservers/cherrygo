@@ -98,17 +98,13 @@ type UpdateBackupMethod struct {
 func (s *BackupsClient) ListPlans(ctx context.Context, opts *GetOptions) ([]BackupStoragePlan, *Response, error) {
 	var trans []BackupStoragePlan
 
-	path := opts.WithQuery(fmt.Sprintf("/v1/backup-storage-plans"))
+	path := opts.WithQuery("/v1/backup-storage-plans")
 	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -122,10 +118,6 @@ func (s *BackupsClient) ListBackups(ctx context.Context, projectID int, opts *Ge
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -139,10 +131,6 @@ func (s *BackupsClient) Get(ctx context.Context, backupID int, opts *GetOptions)
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -157,10 +145,6 @@ func (s *BackupsClient) Create(ctx context.Context, request *CreateBackup) (Back
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -175,10 +159,6 @@ func (s *BackupsClient) Update(ctx context.Context, request *UpdateBackupStorage
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -192,10 +172,6 @@ func (s *BackupsClient) UpdateBackupMethod(ctx context.Context, request *UpdateB
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -207,9 +183,5 @@ func (s *BackupsClient) Delete(ctx context.Context, backupID int) (*Response, er
 	}
 
 	resp, err := s.client.Do(req, nil)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return resp, err
 }

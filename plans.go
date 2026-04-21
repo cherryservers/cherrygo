@@ -117,10 +117,6 @@ func (p *PlansClient) List(ctx context.Context, teamID int, opts *GetOptions) ([
 	}
 
 	resp, err := p.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -133,10 +129,6 @@ func (p *PlansClient) get(ctx context.Context, path string, opts *GetOptions) (P
 	}
 
 	resp, err := p.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("error: %v", err)
-	}
-
 	return trans, resp, err
 }
 

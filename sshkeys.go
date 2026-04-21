@@ -57,10 +57,6 @@ func (s *SSHKeysClient) List(ctx context.Context, opts *GetOptions) ([]SSHKey, *
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -74,10 +70,6 @@ func (s *SSHKeysClient) Get(ctx context.Context, sshKeyID int, opts *GetOptions)
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -91,10 +83,6 @@ func (s *SSHKeysClient) Create(ctx context.Context, request *CreateSSHKey) (SSHK
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -109,10 +97,6 @@ func (s *SSHKeysClient) Delete(ctx context.Context, sshKeyID int) (SSHKey, *Resp
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
@@ -127,9 +111,5 @@ func (s *SSHKeysClient) Update(ctx context.Context, sshKeyID int, request *Updat
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
