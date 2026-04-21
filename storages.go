@@ -36,10 +36,6 @@ type BlockStorage struct {
 	Region        Region     `json:"region"`
 }
 
-type StorageClient struct {
-	client *Client
-}
-
 type CreateStorage struct {
 	ProjectID   int    `json:"project_id"`
 	Description string `json:"description"`

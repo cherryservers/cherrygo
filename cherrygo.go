@@ -216,20 +216,6 @@ type ErrorResponse struct {
 	SingleError string   `json:"error"`
 }
 
-func checkResponseForErrors(r *http.Response) *ErrorResponse {
-	if c := r.StatusCode; c >= 200 && c <= 299 {
-		return nil
-	}
-
-	errR := &ErrorResponse{Response: r}
-	data, err := io.ReadAll(r.Body)
-	if err == nil && len(data) > 0 {
-		json.Unmarshal(data, errR)
-	}
-
-	return errR
-}
-
 // WithUserAgent set user agent when making requests
 func WithUserAgent(ua string) ClientOpt {
 	return func(c *options) error {
