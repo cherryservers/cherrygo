@@ -199,7 +199,6 @@ func TestBackupStorage_UpdateMethod(t *testing.T) {
 
 	methodName := "FTP"
 	requestBody := map[string]any{
-		"name":      methodName,
 		"enabled":   true,
 		"whitelist": []any{"1.1.1.1", "2.2.2.2"},
 	}
@@ -230,12 +229,11 @@ func TestBackupStorage_UpdateMethod(t *testing.T) {
 	})
 
 	updateBackupMethod := UpdateBackupMethod{
-		BackupMethodName: methodName,
-		Enabled:          true,
-		Whitelist:        []string{"1.1.1.1", "2.2.2.2"},
+		Enabled:   true,
+		Whitelist: []string{"1.1.1.1", "2.2.2.2"},
 	}
 
-	_, _, err := testClient.Backups.UpdateBackupMethod(t.Context(), 123, &updateBackupMethod)
+	_, _, err := testClient.Backups.UpdateBackupMethod(t.Context(), 123, methodName, &updateBackupMethod)
 	if err != nil {
 		t.Errorf("Backups.UpdateBackupMethod returned %+v", err)
 	}

@@ -16,7 +16,7 @@ type BackupsService interface {
 	Get(ctx context.Context, backupID int, opts *GetOptions) (BackupStorage, *Response, error)
 	Create(ctx context.Context, serverID int, request *CreateBackup) (BackupStorage, *Response, error)
 	Update(ctx context.Context, id int, request *UpdateBackupStorage) (BackupStorage, *Response, error)
-	UpdateBackupMethod(ctx context.Context, id int, request *UpdateBackupMethod) ([]BackupMethod, *Response, error)
+	UpdateBackupMethod(ctx context.Context, id int, method string, request *UpdateBackupMethod) ([]BackupMethod, *Response, error)
 	Delete(ctx context.Context, backupID int) (*Response, error)
 }
 
@@ -98,9 +98,8 @@ type UpdateBackupStorage struct {
 
 // UpdateBackupMethod is the body for a backup storage access method update request.
 type UpdateBackupMethod struct {
-	BackupMethodName string   `json:"name"`
-	Enabled          bool     `json:"enabled"`
-	Whitelist        []string `json:"whitelist"`
+	Enabled   bool     `json:"enabled"`
+	Whitelist []string `json:"whitelist"`
 }
 
 // ListPlans lists backups storage plans.
@@ -176,10 +175,10 @@ func (s *BackupsClient) Update(ctx context.Context, id int, request *UpdateBacku
 }
 
 // UpdateBackupMethod updates backup storage instance access methods.
-func (s *BackupsClient) UpdateBackupMethod(ctx context.Context, id int, request *UpdateBackupMethod) ([]BackupMethod, *Response, error) {
+func (s *BackupsClient) UpdateBackupMethod(ctx context.Context, id int, method string, request *UpdateBackupMethod) ([]BackupMethod, *Response, error) {
 	var trans []BackupMethod
 
-	path := fmt.Sprintf("%s/%d/methods/%s", baseBackupPath, id, request.BackupMethodName)
+	path := fmt.Sprintf("%s/%d/methods/%s", baseBackupPath, id, method)
 	req, err := s.client.NewRequest(ctx, http.MethodPatch, path, request)
 	if err != nil {
 		return nil, nil, err
