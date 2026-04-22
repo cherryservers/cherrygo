@@ -13,11 +13,11 @@ const baseStoragePath = "/v1/storages"
 type StoragesService interface {
 	List(ctx context.Context, projectID int, opts *GetOptions) ([]BlockStorage, *Response, error)
 	Get(ctx context.Context, storageID int, opts *GetOptions) (BlockStorage, *Response, error)
-	Create(ctx context.Context, request *CreateStorage) (BlockStorage, *Response, error)
+	Create(ctx context.Context, projectID int, request *CreateStorage) (BlockStorage, *Response, error)
 	Delete(ctx context.Context, storageID int) (*Response, error)
-	Attach(ctx context.Context, request *AttachTo) (BlockStorage, *Response, error)
+	Attach(ctx context.Context, storageID int, request *AttachTo) (BlockStorage, *Response, error)
 	Detach(ctx context.Context, storageID int) (*Response, error)
-	Update(ctx context.Context, request *UpdateStorage) (BlockStorage, *Response, error)
+	Update(ctx context.Context, storageID int, request *UpdateStorage) (BlockStorage, *Response, error)
 }
 
 // BlockStorage data.
@@ -39,7 +39,6 @@ type BlockStorage struct {
 
 // CreateStorage is the storage creation request body.
 type CreateStorage struct {
-	ProjectID   int    `json:"project_id"`
 	Description string `json:"description"`
 	Size        int    `json:"size"`
 	Region      string `json:"region"`
@@ -47,8 +46,7 @@ type CreateStorage struct {
 
 // AttachTo is the storage attachment request body data.
 type AttachTo struct {
-	StorageID int `json:"storage_id"`
-	AttachTo  int `json:"attach_to"`
+	AttachTo int `json:"attach_to"`
 }
 
 // AttachedTo is the data of the instance the storage is attached to.
@@ -60,7 +58,6 @@ type AttachedTo struct {
 
 // UpdateStorage is the request body for updating storage instances.
 type UpdateStorage struct {
-	StorageID   int    `json:"storage_id"`
 	Size        int    `json:"size"`
 	Description string `json:"description,omitempty"`
 }
@@ -99,9 +96,9 @@ func (s *StoragesClient) Get(ctx context.Context, storageID int, opts *GetOption
 }
 
 // Create storage instance.
-func (s *StoragesClient) Create(ctx context.Context, request *CreateStorage) (BlockStorage, *Response, error) {
+func (s *StoragesClient) Create(ctx context.Context, projectID int, request *CreateStorage) (BlockStorage, *Response, error) {
 	var trans BlockStorage
-	path := fmt.Sprintf("%s/%d/storages", baseProjectPath, request.ProjectID)
+	path := fmt.Sprintf("%s/%d/storages", baseProjectPath, projectID)
 
 	req, err := s.client.NewRequest(ctx, http.MethodPost, path, request)
 	if err != nil {
@@ -126,9 +123,9 @@ func (s *StoragesClient) Delete(ctx context.Context, storageID int) (*Response, 
 }
 
 // Attach storage to server.
-func (s *StoragesClient) Attach(ctx context.Context, request *AttachTo) (BlockStorage, *Response, error) {
+func (s *StoragesClient) Attach(ctx context.Context, storageID int, request *AttachTo) (BlockStorage, *Response, error) {
 	var trans BlockStorage
-	path := fmt.Sprintf("%s/%d/attachments", baseStoragePath, request.StorageID)
+	path := fmt.Sprintf("%s/%d/attachments", baseStoragePath, storageID)
 
 	req, err := s.client.NewRequest(ctx, http.MethodPost, path, request)
 	if err != nil {
@@ -153,9 +150,9 @@ func (s *StoragesClient) Detach(ctx context.Context, storageID int) (*Response, 
 }
 
 // Update storage.
-func (s *StoragesClient) Update(ctx context.Context, request *UpdateStorage) (BlockStorage, *Response, error) {
+func (s *StoragesClient) Update(ctx context.Context, storageID int, request *UpdateStorage) (BlockStorage, *Response, error) {
 	var trans BlockStorage
-	path := fmt.Sprintf("%s/%d", baseStoragePath, request.StorageID)
+	path := fmt.Sprintf("%s/%d", baseStoragePath, storageID)
 
 	req, err := s.client.NewRequest(ctx, http.MethodPut, path, request)
 	if err != nil {

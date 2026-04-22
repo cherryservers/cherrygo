@@ -120,7 +120,6 @@ func TestStorage_Create(t *testing.T) {
 	defer teardown()
 
 	requestBody := map[string]interface{}{
-		"project_id":  float64(321),
 		"description": "desc",
 		"size":        521.00,
 		"region":      "EU-Nord-1",
@@ -144,13 +143,12 @@ func TestStorage_Create(t *testing.T) {
 	})
 
 	createStorage := CreateStorage{
-		ProjectID:   321,
 		Description: "desc",
 		Size:        521,
 		Region:      "EU-Nord-1",
 	}
 
-	_, _, err := testClient.Storages.Create(t.Context(), &createStorage)
+	_, _, err := testClient.Storages.Create(t.Context(), 321, &createStorage)
 	if err != nil {
 		t.Errorf("Storages.Create returned %+v", err)
 	}
@@ -178,8 +176,7 @@ func TestStorage_Attach(t *testing.T) {
 	defer teardown()
 
 	requestBody := map[string]interface{}{
-		"storage_id": float64(123),
-		"attach_to":  float64(1234),
+		"attach_to": float64(1234),
 	}
 
 	mux.HandleFunc("/v1/storages/123/attachments", func(writer http.ResponseWriter, request *http.Request) {
@@ -200,11 +197,10 @@ func TestStorage_Attach(t *testing.T) {
 	})
 
 	attachStorage := AttachTo{
-		StorageID: 123,
-		AttachTo:  1234,
+		AttachTo: 1234,
 	}
 
-	_, _, err := testClient.Storages.Attach(t.Context(), &attachStorage)
+	_, _, err := testClient.Storages.Attach(t.Context(), 123, &attachStorage)
 	if err != nil {
 		t.Errorf("Storages.Attach returned %+v", err)
 	}
@@ -232,7 +228,6 @@ func TestStorage_Update(t *testing.T) {
 	defer teardown()
 
 	requestBody := map[string]interface{}{
-		"storage_id":  float64(123),
 		"size":        float64(500),
 		"description": "volume 1",
 	}
@@ -255,12 +250,11 @@ func TestStorage_Update(t *testing.T) {
 	})
 
 	updateStorage := UpdateStorage{
-		StorageID:   123,
 		Size:        500,
 		Description: "volume 1",
 	}
 
-	_, _, err := testClient.Storages.Update(t.Context(), &updateStorage)
+	_, _, err := testClient.Storages.Update(t.Context(), 123, &updateStorage)
 	if err != nil {
 		t.Errorf("Storages.Update returned %+v", err)
 	}
