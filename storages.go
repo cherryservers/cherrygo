@@ -30,8 +30,8 @@ type BlockStorage struct {
 	Unit          string     `json:"unit"`
 	Description   string     `json:"description,omitempty"`
 	AttachedTo    AttachedTo `json:"attached_to,omitempty"`
-	VlanID        string     `json:"vlan_id"`
-	VlanIP        string     `json:"vlan_ip"`
+	VLANID        string     `json:"vlan_id"`
+	VLANIP        string     `json:"vlan_ip"`
 	Initiator     string     `json:"initiator"`
 	DiscoveryIP   string     `json:"discovery_ip"`
 	Region        Region     `json:"region"`

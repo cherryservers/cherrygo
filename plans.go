@@ -46,16 +46,16 @@ type SoftwareImageSpecs struct {
 
 // Specs specifies fields for specs
 type Specs struct {
-	Cpus      Cpus      `json:"cpus,omitempty"`
+	CPUs      CPUs      `json:"cpus,omitempty"`
 	Memory    Memory    `json:"memory,omitempty"`
 	Storage   []Storage `json:"storage,omitempty"`
 	Raid      Raid      `json:"raid,omitempty"`
-	Nics      Nics      `json:"nics,omitempty"`
+	NICs      NICs      `json:"nics,omitempty"`
 	Bandwidth Bandwidth `json:"bandwidth,omitempty"`
 }
 
-// Cpus fields
-type Cpus struct {
+// CPUs fields
+type CPUs struct {
 	Count     int     `json:"count,omitempty"`
 	Name      string  `json:"name,omitempty"`
 	Cores     int     `json:"cores,omitempty"`
@@ -84,8 +84,8 @@ type Raid struct {
 	Name string `json:"name,omitempty"`
 }
 
-// Nics fields
-type Nics struct {
+// NICs fields
+type NICs struct {
 	Name string `json:"name,omitempty"`
 }
 

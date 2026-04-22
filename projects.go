@@ -23,20 +23,20 @@ type ProjectsService interface {
 type Project struct {
 	ID   int        `json:"id,omitempty"`
 	Name string     `json:"name,omitempty"`
-	Bgp  ProjectBGP `json:"bgp,omitempty"`
+	BGP  ProjectBGP `json:"bgp,omitempty"`
 	Href string     `json:"href,omitempty"`
 }
 
 // CreateProject fields for adding new project with specified name
 type CreateProject struct {
 	Name string `json:"name,omitempty"`
-	Bgp  bool   `json:"bgp,omitempty"`
+	BGP  bool   `json:"bgp,omitempty"`
 }
 
 // UpdateProject fields for updating a project with specified name
 type UpdateProject struct {
 	Name *string `json:"name,omitempty"`
-	Bgp  *bool   `json:"bgp,omitempty"`
+	BGP  *bool   `json:"bgp,omitempty"`
 }
 
 // ProjectsClient makes project related API requests.

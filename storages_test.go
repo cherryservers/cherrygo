@@ -26,8 +26,8 @@ func TestStorage_List(t *testing.T) {
 		AttachedTo: AttachedTo{
 			Href: "/servers/1",
 		},
-		VlanID:      "1",
-		VlanIP:      "1.1.1.1",
+		VLANID:      "1",
+		VLANIP:      "1.1.1.1",
 		Initiator:   "com.cherryservers:initiator",
 		DiscoveryIP: "1.1.1.1",
 	}}
@@ -78,8 +78,8 @@ func TestStorage_Get(t *testing.T) {
 		AttachedTo: AttachedTo{
 			Href: "/servers/1",
 		},
-		VlanID:      "1",
-		VlanIP:      "1.1.1.1",
+		VLANID:      "1",
+		VLANIP:      "1.1.1.1",
 		Initiator:   "com.cherryservers:initiator",
 		DiscoveryIP: "1.1.1.1",
 	}

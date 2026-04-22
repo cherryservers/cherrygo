@@ -31,7 +31,7 @@ func TestServer_List(t *testing.T) {
 		Region: Region{
 			ID:         1,
 			Name:       "EU-Nord-1",
-			RegionIso2: "LT",
+			RegionISO2: "LT",
 			Href:       "/regions/1",
 		},
 		BGP: ServerBGP{
@@ -76,7 +76,7 @@ func TestServer_Get(t *testing.T) {
 		Region: Region{
 			ID:         1,
 			Name:       "EU-Nord-1",
-			RegionIso2: "LT",
+			RegionISO2: "LT",
 			Href:       "/regions/1",
 		},
 		BGP: ServerBGP{
@@ -147,7 +147,7 @@ func TestServer_Create(t *testing.T) {
 		Region: Region{
 			ID:         1,
 			Name:       "EU-Nord-1",
-			RegionIso2: "LT",
+			RegionISO2: "LT",
 			Href:       "/regions/1",
 		},
 		State: "active",
@@ -497,7 +497,7 @@ func TestServer_Update(t *testing.T) {
 	tags := map[string]string{"env": "dev"}
 	serverUpdate := UpdateServer{
 		Tags:     &tags,
-		Bgp:      false,
+		BGP:      false,
 		Name:     "prod server",
 		Hostname: "cherry.prod",
 	}

@@ -20,7 +20,7 @@ func TestProjects_List(t *testing.T) {
 			ID:   321,
 			Name: "My Project",
 			Href: "/projects/321",
-			Bgp: ProjectBGP{
+			BGP: ProjectBGP{
 				Enabled:  true,
 				LocalASN: 123,
 			},
@@ -29,7 +29,7 @@ func TestProjects_List(t *testing.T) {
 			ID:   322,
 			Name: "My New Project",
 			Href: "/projects/322",
-			Bgp: ProjectBGP{
+			BGP: ProjectBGP{
 				Enabled:  false,
 				LocalASN: 0,
 			},
@@ -64,7 +64,7 @@ func TestProject_Get(t *testing.T) {
 		ID:   projectID,
 		Name: "My Project",
 		Href: "/projects/321",
-		Bgp: ProjectBGP{
+		BGP: ProjectBGP{
 			Enabled:  true,
 			LocalASN: 123,
 		},
@@ -102,7 +102,7 @@ func TestProject_Create(t *testing.T) {
 		ID:   322,
 		Name: "My Custom Project",
 		Href: "/projects/322",
-		Bgp: ProjectBGP{
+		BGP: ProjectBGP{
 			Enabled:  true,
 			LocalASN: 123,
 		},
@@ -176,7 +176,7 @@ func TestProject_Update(t *testing.T) {
 
 	projectUpdate := UpdateProject{
 		Name: &name,
-		Bgp:  &bgp,
+		BGP:  &bgp,
 	}
 
 	_, _, err := testClient.Projects.Update(t.Context(), projectID, &projectUpdate)
