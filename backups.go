@@ -14,9 +14,9 @@ type BackupsService interface {
 	ListPlans(ctx context.Context, opts *GetOptions) ([]BackupStoragePlan, *Response, error)
 	ListBackups(ctx context.Context, projectID int, opts *GetOptions) ([]BackupStorage, *Response, error)
 	Get(ctx context.Context, backupID int, opts *GetOptions) (BackupStorage, *Response, error)
-	Create(ctx context.Context, request *CreateBackup) (BackupStorage, *Response, error)
-	Update(ctx context.Context, request *UpdateBackupStorage) (BackupStorage, *Response, error)
-	UpdateBackupMethod(ctx context.Context, request *UpdateBackupMethod) ([]BackupMethod, *Response, error)
+	Create(ctx context.Context, serverID int, request *CreateBackup) (BackupStorage, *Response, error)
+	Update(ctx context.Context, id int, request *UpdateBackupStorage) (BackupStorage, *Response, error)
+	UpdateBackupMethod(ctx context.Context, id int, request *UpdateBackupMethod) ([]BackupMethod, *Response, error)
 	Delete(ctx context.Context, backupID int) (*Response, error)
 }
 
@@ -84,7 +84,6 @@ type EnabledMethods struct {
 
 // CreateBackup is the body for backup storage creation request.
 type CreateBackup struct {
-	ServerID       int    `json:"server_id,omitempty"`
 	BackupPlanSlug string `json:"slug"`
 	RegionSlug     string `json:"region"`
 	SSHKey         string `json:"ssh_key,omitempty"`
@@ -92,15 +91,13 @@ type CreateBackup struct {
 
 // UpdateBackupStorage is the body for a backup storage update request.
 type UpdateBackupStorage struct {
-	BackupStorageID int    `json:"id"`
-	BackupPlanSlug  string `json:"slug,omitempty"`
-	Password        string `json:"password,omitempty"`
-	SSHKey          string `json:"ssh_key,omitempty"`
+	BackupPlanSlug string `json:"slug,omitempty"`
+	Password       string `json:"password,omitempty"`
+	SSHKey         string `json:"ssh_key,omitempty"`
 }
 
 // UpdateBackupMethod is the body for a backup storage access method update request.
 type UpdateBackupMethod struct {
-	BackupStorageID  int      `json:"id"`
 	BackupMethodName string   `json:"name"`
 	Enabled          bool     `json:"enabled"`
 	Whitelist        []string `json:"whitelist"`
@@ -149,10 +146,10 @@ func (s *BackupsClient) Get(ctx context.Context, backupID int, opts *GetOptions)
 }
 
 // Create backup storage instance.
-func (s *BackupsClient) Create(ctx context.Context, request *CreateBackup) (BackupStorage, *Response, error) {
+func (s *BackupsClient) Create(ctx context.Context, serverID int, request *CreateBackup) (BackupStorage, *Response, error) {
 	var trans BackupStorage
 
-	path := fmt.Sprintf("/v1/servers/%d/backup-storages", request.ServerID)
+	path := fmt.Sprintf("/v1/servers/%d/backup-storages", serverID)
 
 	req, err := s.client.NewRequest(ctx, http.MethodPost, path, request)
 	if err != nil {
@@ -164,10 +161,10 @@ func (s *BackupsClient) Create(ctx context.Context, request *CreateBackup) (Back
 }
 
 // Update backup storage instance.
-func (s *BackupsClient) Update(ctx context.Context, request *UpdateBackupStorage) (BackupStorage, *Response, error) {
+func (s *BackupsClient) Update(ctx context.Context, id int, request *UpdateBackupStorage) (BackupStorage, *Response, error) {
 	var trans BackupStorage
 
-	path := fmt.Sprintf("%s/%d", baseBackupPath, request.BackupStorageID)
+	path := fmt.Sprintf("%s/%d", baseBackupPath, id)
 
 	req, err := s.client.NewRequest(ctx, http.MethodPut, path, request)
 	if err != nil {
@@ -179,10 +176,10 @@ func (s *BackupsClient) Update(ctx context.Context, request *UpdateBackupStorage
 }
 
 // UpdateBackupMethod updates backup storage instance access methods.
-func (s *BackupsClient) UpdateBackupMethod(ctx context.Context, request *UpdateBackupMethod) ([]BackupMethod, *Response, error) {
+func (s *BackupsClient) UpdateBackupMethod(ctx context.Context, id int, request *UpdateBackupMethod) ([]BackupMethod, *Response, error) {
 	var trans []BackupMethod
 
-	path := fmt.Sprintf("%s/%d/methods/%s", baseBackupPath, request.BackupStorageID, request.BackupMethodName)
+	path := fmt.Sprintf("%s/%d/methods/%s", baseBackupPath, id, request.BackupMethodName)
 	req, err := s.client.NewRequest(ctx, http.MethodPatch, path, request)
 	if err != nil {
 		return nil, nil, err

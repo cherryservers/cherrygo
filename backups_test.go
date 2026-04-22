@@ -121,11 +121,10 @@ func TestBackupStorage_Create(t *testing.T) {
 	defer teardown()
 
 	serverID := 312
-	requestBody := map[string]interface{}{
-		"server_id": float64(serverID),
-		"slug":      "backup_100",
-		"region":    "eu_nord_1",
-		"ssh_key":   "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC6ec8eT...",
+	requestBody := map[string]any{
+		"slug":    "backup_100",
+		"region":  "eu_nord_1",
+		"ssh_key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC6ec8eT...",
 	}
 
 	mux.HandleFunc("/v1/servers/"+strconv.Itoa(serverID)+"/backup-storages", func(writer http.ResponseWriter, request *http.Request) {
@@ -146,13 +145,12 @@ func TestBackupStorage_Create(t *testing.T) {
 	})
 
 	createBackup := CreateBackup{
-		ServerID:       serverID,
 		BackupPlanSlug: "backup_100",
 		RegionSlug:     "eu_nord_1",
 		SSHKey:         "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC6ec8eT...",
 	}
 
-	_, _, err := testClient.Backups.Create(t.Context(), &createBackup)
+	_, _, err := testClient.Backups.Create(t.Context(), serverID, &createBackup)
 	if err != nil {
 		t.Errorf("Backup.Create returned %+v", err)
 	}
@@ -162,8 +160,7 @@ func TestBackupStorage_Update(t *testing.T) {
 	setup()
 	defer teardown()
 
-	requestBody := map[string]interface{}{
-		"id":       float64(123),
+	requestBody := map[string]any{
 		"slug":     "backup_500",
 		"password": "abc123",
 	}
@@ -186,12 +183,11 @@ func TestBackupStorage_Update(t *testing.T) {
 	})
 
 	updateBackupStorage := UpdateBackupStorage{
-		BackupStorageID: 123,
-		BackupPlanSlug:  "backup_500",
-		Password:        "abc123",
+		BackupPlanSlug: "backup_500",
+		Password:       "abc123",
 	}
 
-	_, _, err := testClient.Backups.Update(t.Context(), &updateBackupStorage)
+	_, _, err := testClient.Backups.Update(t.Context(), 123, &updateBackupStorage)
 	if err != nil {
 		t.Errorf("Backups.Update returned %+v", err)
 	}
@@ -202,11 +198,10 @@ func TestBackupStorage_UpdateMethod(t *testing.T) {
 	defer teardown()
 
 	methodName := "FTP"
-	requestBody := map[string]interface{}{
-		"id":        float64(123),
+	requestBody := map[string]any{
 		"name":      methodName,
 		"enabled":   true,
-		"whitelist": []interface{}{"1.1.1.1", "2.2.2.2"},
+		"whitelist": []any{"1.1.1.1", "2.2.2.2"},
 	}
 
 	mux.HandleFunc("/v1/backup-storages/123/methods/"+methodName, func(writer http.ResponseWriter, request *http.Request) {
@@ -235,13 +230,12 @@ func TestBackupStorage_UpdateMethod(t *testing.T) {
 	})
 
 	updateBackupMethod := UpdateBackupMethod{
-		BackupStorageID:  123,
 		BackupMethodName: methodName,
 		Enabled:          true,
 		Whitelist:        []string{"1.1.1.1", "2.2.2.2"},
 	}
 
-	_, _, err := testClient.Backups.UpdateBackupMethod(t.Context(), &updateBackupMethod)
+	_, _, err := testClient.Backups.UpdateBackupMethod(t.Context(), 123, &updateBackupMethod)
 	if err != nil {
 		t.Errorf("Backups.UpdateBackupMethod returned %+v", err)
 	}
