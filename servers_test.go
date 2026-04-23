@@ -224,7 +224,7 @@ func TestServer_Delete(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	_, _, err := testClient.Servers.Delete(t.Context(), 383531)
+	_, err := testClient.Servers.Delete(t.Context(), 383531)
 	if err != nil {
 		t.Errorf("Server.Delete returned %+v", err)
 	}

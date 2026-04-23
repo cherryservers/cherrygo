@@ -19,7 +19,7 @@ type ServersService interface {
 	PowerOff(ctx context.Context, serverID int) (Server, *Response, error)
 	PowerOn(ctx context.Context, serverID int) (Server, *Response, error)
 	Create(ctx context.Context, request *CreateServer) (Server, *Response, error)
-	Delete(ctx context.Context, serverID int) (Server, *Response, error)
+	Delete(ctx context.Context, serverID int) (*Response, error)
 	PowerState(ctx context.Context, serverID int) (PowerState, *Response, error)
 	Reboot(ctx context.Context, serverID int) (Server, *Response, error)
 	EnterRescueMode(ctx context.Context, serverID int, fields *RescueServerFields) (Server, *Response, error)
@@ -331,17 +331,16 @@ func (s *ServersClient) Update(ctx context.Context, serverID int, request *Updat
 }
 
 // Delete server.
-func (s *ServersClient) Delete(ctx context.Context, serverID int) (Server, *Response, error) {
-	var trans Server
+func (s *ServersClient) Delete(ctx context.Context, serverID int) (*Response, error) {
 	path := fmt.Sprintf("%s/%d", baseServerPath, serverID)
 
 	req, err := s.client.NewRequest(ctx, http.MethodDelete, path, nil)
 	if err != nil {
-		return Server{}, nil, err
+		return nil, err
 	}
 
-	resp, err := s.client.Do(req, &trans)
-	return trans, resp, err
+	resp, err := s.client.Do(req, nil)
+	return resp, err
 }
 
 // ListSSHKeys list SSH keys assigned to the server.

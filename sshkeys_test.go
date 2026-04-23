@@ -137,7 +137,7 @@ func TestSSHKey_Delete(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	_, _, err := testClient.SSHKeys.Delete(t.Context(), 1)
+	_, err := testClient.SSHKeys.Delete(t.Context(), 1)
 	if err != nil {
 		t.Errorf("SSHKey.Delete returned %+v", err)
 	}
