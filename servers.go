@@ -139,7 +139,7 @@ type UpdateServer struct {
 	Name     string             `json:"name,omitempty"`
 	Hostname string             `json:"hostname,omitempty"`
 	Tags     *map[string]string `json:"tags,omitempty"`
-	BGP      bool               `json:"bgp"`
+	BGP      *bool              `json:"bgp,omitempty"`
 }
 
 // ServerCycle data.
