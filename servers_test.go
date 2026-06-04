@@ -1,14 +1,18 @@
 package cherrygo
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"reflect"
 	"strconv"
 	"testing"
+	"time"
 
+	"github.com/cherryservers/cherrygo/v3/backoff"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -637,4 +641,82 @@ func TestServer_Upgrade(t *testing.T) {
 
 	assert.Equal(t, 123, server.ID)
 	assert.Equal(t, want.Plan, server.Plan.Slug)
+}
+
+func TestServer_WaitForStatusSucceedsWhenServerDeployedBeforeContextExpires(t *testing.T) {
+	mux := http.NewServeMux()
+	apiServer := httptest.NewServer(mux)
+	defer apiServer.Close()
+
+	var pollF backoff.Func = func(_ int, _ *http.Response) time.Duration {
+		return 0
+	}
+
+	client, err := NewClient(WithAuthToken(
+		"fakeToken"),
+		WithPollBackoff(pollF),
+		WithURL(apiServer.URL),
+	)
+	require.NoError(t, err)
+
+	pollCount := 0
+	mux.HandleFunc("GET /v1/servers/123", func(w http.ResponseWriter, _ *http.Request) {
+		pollCount++
+		if pollCount > 2 {
+			_, err = fmt.Fprint(w, `{"id": 123, "status": "deployed"}`)
+		} else {
+			_, err = fmt.Fprint(w, `{"id": 123, "status": "deploying"}`)
+		}
+		require.NoError(t, err)
+	})
+
+	srv, resp, err := client.Servers.WaitForStatus(t.Context(), 123, StatusDeployed)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+	assert.Equal(t, "deployed", srv.Status)
+	assert.Equal(t, 3, pollCount)
+}
+
+func TestServer_WaitForStatusFailsWhenContextCancelled(t *testing.T) {
+	mux := http.NewServeMux()
+	apiServer := httptest.NewServer(mux)
+	defer apiServer.Close()
+
+	ctx, cancel := context.WithCancel(t.Context())
+
+	var pollF backoff.Func = func(_ int, _ *http.Response) time.Duration {
+		if ctx.Err() == nil {
+			return 0
+		}
+		return time.Second * 5
+	}
+
+	client, err := NewClient(WithAuthToken(
+		"fakeToken"),
+		WithPollBackoff(pollF),
+		WithURL(apiServer.URL),
+	)
+	require.NoError(t, err)
+
+	pollCount := 0
+	mux.HandleFunc("GET /v1/servers/123", func(w http.ResponseWriter, _ *http.Request) {
+		pollCount++
+		if pollCount > 2 {
+			_, err = fmt.Fprint(w, `{"id": 123, "status": "deployed"}`)
+		} else if pollCount > 1 {
+			cancel()
+			_, err = fmt.Fprint(w, `{"id": 123, "status": "deploying"}`)
+		} else {
+			_, err = fmt.Fprint(w, `{"id": 123, "status": "deploying"}`)
+		}
+		require.NoError(t, err)
+	})
+
+	srv, resp, err := client.Servers.WaitForStatus(ctx, 123, StatusDeployed)
+
+	assert.Error(t, err)
+	assert.Nil(t, resp)
+	assert.Equal(t, "", srv.Status)
+	assert.Equal(t, 2, pollCount)
 }

@@ -2,14 +2,50 @@ package cherrygo
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 const (
 	baseServerPath = "/v1/servers"
 	endServersPath = "servers"
 )
+
+// ServerStatus is the pseudo-enum for server statuses.
+//
+// Used as a constraint for server status parameters.
+// It is not used as a field type in response structs and
+// makes no guarantees about enumerating all possible status values.
+type ServerStatus int
+
+const (
+	// StatusDeployed status is used to indicate an active server
+	// deployment. This is generally the status to watch for when
+	// provisioning a new server, except when using custom installation
+	// procedures, in which case, see `Allocated`.
+	StatusDeployed ServerStatus = iota
+
+	// StatusAllocated status is used to indicate an active server
+	// deployment, when custom installation procedures are used, i.e.
+	// iPXE, since these don't go through the full standard deployment
+	// process.
+	StatusAllocated
+)
+
+var serverStatusValues = map[ServerStatus]string{
+	StatusDeployed:  "deployed",
+	StatusAllocated: "allocated",
+}
+
+func (ss ServerStatus) String() string {
+	if v, ok := serverStatusValues[ss]; ok {
+		return v
+	}
+
+	return fmt.Sprintf("invalid ServerStatus(%d)", ss)
+}
 
 // ServersService is an interface for interfacing with the Server endpoints of the CherryServers API
 // See: https://api.cherryservers.com/doc/#tag/Servers
@@ -30,6 +66,7 @@ type ServersService interface {
 	ResetBMCPassword(ctx context.Context, serverID int) (Server, *Response, error)
 	ListCycles(ctx context.Context, opts *GetOptions) ([]ServerCycle, *Response, error)
 	Upgrade(ctx context.Context, serverID int, plan string) (Server, *Response, error)
+	WaitForStatus(ctx context.Context, serverID int, status ServerStatus) (Server, *Response, error)
 }
 
 // Server response object
@@ -369,4 +406,34 @@ func (s *ServersClient) ListCycles(ctx context.Context, opts *GetOptions) ([]Ser
 
 	resp, err := s.client.Do(req, &trans)
 	return trans, resp, err
+}
+
+// WaitForStatus blocks until server reaches specified status.
+func (s *ServersClient) WaitForStatus(ctx context.Context, serverID int, status ServerStatus) (Server, *Response, error) {
+	if s.client.pollBackoff == nil {
+		return Server{}, nil, errors.New("nil client pollBackoff function")
+	}
+
+	attempt := 0
+	for {
+		server, resp, err := s.Get(ctx, serverID, nil)
+		if err != nil {
+			return Server{}, nil, err
+		}
+
+		if server.Status == status.String() {
+			return server, resp, nil
+		}
+
+		if resp == nil {
+			return Server{}, nil, fmt.Errorf("nil response from GET server %d", serverID)
+		}
+
+		select {
+		case <-time.After(s.client.pollBackoff(attempt, resp.Response)):
+			attempt++
+		case <-ctx.Done():
+			return Server{}, nil, ctx.Err()
+		}
+	}
 }

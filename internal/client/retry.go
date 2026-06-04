@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"slices"
 	"time"
+
+	"github.com/cherryservers/cherrygo/v3/backoff"
 )
 
 const bodyReadLimit = 4096
@@ -17,7 +19,7 @@ const bodyReadLimit = 4096
 type retrier struct {
 	wrapped    requestDoer
 	maxRetries int
-	backoff    BackoffFunc
+	backoff    backoff.Func
 }
 
 // Do executes requests, retrying unsuccessful ones, when it safe to do so.

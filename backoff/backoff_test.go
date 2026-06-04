@@ -1,16 +1,16 @@
-package client_test
+package backoff_test
 
 import (
 	"net/http"
 	"testing"
 	"time"
 
-	"github.com/cherryservers/cherrygo/v3/internal/client"
+	"github.com/cherryservers/cherrygo/v3/backoff"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestExponentialBackoff(t *testing.T) {
-	fn := client.RateLimitedExponentialBackoff(client.ExponentialBackoffConfig{
+	fn := backoff.ExponentialBackoff(backoff.ExponentialBackoffConfig{
 		Base:       2 * time.Second,
 		Cap:        60 * time.Second,
 		Multiplier: 2,
@@ -40,7 +40,7 @@ func TestExponentialBackoff(t *testing.T) {
 	assert.NotEqual(t, gotDelays, gotDelaysAgain, "Duplicate delays generated.")
 }
 
-func TestBackoffRetryAfter(t *testing.T) {
+func TestRateLimitedExponentialBackoff(t *testing.T) {
 	now := time.Now()
 
 	cases := []struct {
@@ -65,7 +65,7 @@ func TestBackoffRetryAfter(t *testing.T) {
 		},
 	}
 
-	fn := client.RateLimitedExponentialBackoff(client.ExponentialBackoffConfig{
+	fn := backoff.RateLimitedExponentialBackoff(backoff.ExponentialBackoffConfig{
 		Base:       2 * time.Second,
 		Cap:        60 * time.Second,
 		Multiplier: 2,

@@ -6,6 +6,8 @@ import (
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/cherryservers/cherrygo/v3/backoff"
 )
 
 const (
@@ -26,7 +28,7 @@ type requestDoer interface {
 // Safe for concurrent use, just like [net/http.Client].
 type Client struct {
 	maxRetries int
-	backoff    BackoffFunc
+	backoff    backoff.Func
 	debugDst   io.Writer
 
 	requestDoer
@@ -44,7 +46,7 @@ func WithMaxRetries(n int) Option {
 }
 
 // WithBackoff sets a custom backoff generation function.
-func WithBackoff(b BackoffFunc) Option {
+func WithBackoff(b backoff.Func) Option {
 	return func(c *Client) {
 		c.backoff = b
 	}
@@ -69,8 +71,8 @@ func WithDebug(w io.Writer) Option {
 func New(opts ...Option) *Client {
 	client := Client{
 		maxRetries: defaultMaxRetries,
-		backoff: RateLimitedExponentialBackoff(
-			ExponentialBackoffConfig{
+		backoff: backoff.RateLimitedExponentialBackoff(
+			backoff.ExponentialBackoffConfig{
 				Base:       defaultExponentialBackoffBase,
 				Cap:        defaultExponentialBackoffCap,
 				Multiplier: defaultExponentialBackoffMultiplier,
