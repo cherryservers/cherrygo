@@ -8,10 +8,11 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"os"
 	"strconv"
+
+	"github.com/cherryservers/cherrygo/v3/internal/client"
 )
 
 const (
@@ -24,8 +25,7 @@ const (
 
 // Client returns struct for client
 type Client struct {
-	client *http.Client
-	debug  bool
+	client *client.Client
 
 	BaseURL *url.URL
 
@@ -57,13 +57,9 @@ type Meta struct {
 
 // MakeRequest makes request to API
 func (c *Client) MakeRequest(method, path string, body, v interface{}) (*Response, error) {
-
 	url, _ := url.Parse(path)
 
 	u := c.BaseURL.ResolveReference(url)
-	if c.debug {
-		fmt.Printf("\nAPI Endpoint: %v\n", u)
-	}
 
 	buf := new(bytes.Buffer)
 	if body != nil {
@@ -80,18 +76,11 @@ func (c *Client) MakeRequest(method, path string, body, v interface{}) (*Respons
 		return nil, err
 	}
 
-	req.Close = true
-
 	bearer := "Bearer " + c.AuthToken
 	req.Header.Add("Authorization", bearer)
 	req.Header.Set("User-Agent", c.UserAgent)
 	req.Header.Add("Content-Type", mediaType)
 	req.Header.Add("Accept", mediaType)
-
-	if c.debug {
-		o, _ := httputil.DumpRequestOut(req, true)
-		log.Printf("\n+++++++++++++REQUEST+++++++++++++\n%s\n+++++++++++++++++++++++++++++++++", string(o))
-	}
 
 	resp, err := c.client.Do(req)
 	if err != nil {
@@ -102,11 +91,6 @@ func (c *Client) MakeRequest(method, path string, body, v interface{}) (*Respons
 
 	response := Response{Response: resp}
 	response.populateTotal()
-
-	if c.debug {
-		o, _ := httputil.DumpResponse(response.Response, true)
-		log.Printf("\n+++++++++++++RESPONSE+++++++++++++\n%s\n+++++++++++++++++++++++++++++++++", string(o))
-	}
 
 	if sc := response.StatusCode; sc >= 299 {
 		type ErrorResponse struct {
@@ -159,13 +143,13 @@ type options struct {
 	client    *http.Client
 	userAgent string
 	authToken string
+	debugDst  io.Writer
 }
 
 type ClientOpt func(*options) error
 
 // NewClient initialization
 func NewClient(opts ...ClientOpt) (*Client, error) {
-
 	parsedOpts := &options{
 		authToken: os.Getenv(cherryAuthTokenVar),
 		client:    &http.Client{},
@@ -186,9 +170,17 @@ func NewClient(opts ...ClientOpt) (*Client, error) {
 		return nil, err
 	}
 
-	c := &Client{client: parsedOpts.client, AuthToken: parsedOpts.authToken, BaseURL: url, UserAgent: parsedOpts.userAgent}
+	if parsedOpts.debugDst == nil && os.Getenv(cherryDebugVar) != "" {
+		parsedOpts.debugDst = os.Stderr
+	}
 
-	c.debug = os.Getenv(cherryDebugVar) != ""
+	c := &Client{
+		client:    client.New(client.WithHTTPClient(parsedOpts.client), client.WithDebug(parsedOpts.debugDst)),
+		AuthToken: parsedOpts.authToken,
+		BaseURL:   url,
+		UserAgent: parsedOpts.userAgent,
+	}
+
 	c.Teams = &TeamsClient{client: c}
 	c.Plans = &PlansClient{client: c}
 	c.Images = &ImagesClient{client: c}
@@ -223,7 +215,6 @@ func checkResponseForErrors(r *http.Response) *ErrorResponse {
 	}
 
 	return errR
-
 }
 
 // WithUserAgent set user agent when making requests
@@ -255,6 +246,16 @@ func WithHTTPClient(client *http.Client) ClientOpt {
 func WithAuthToken(authToken string) ClientOpt {
 	return func(c *options) error {
 		c.authToken = authToken
+		return nil
+	}
+}
+
+// WithDebug enables debug mode, which dumps logs to w.
+// Can also be enabled with the CHERRY_DEBUG environment variable, in which case logs
+// will be dumped to stderr.
+func WithDebug(w io.Writer) ClientOpt {
+	return func(c *options) error {
+		c.debugDst = w
 		return nil
 	}
 }

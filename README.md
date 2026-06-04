@@ -18,7 +18,6 @@ You can view Cherry Servers API docs here: [https://api.cherryservers.com/doc](h
       - [Get plans](#get-plans)
       - [Get images](#get-images)
       - [Request new server](#request-new-server)
-  - [Debug](#debug)
   - [License](#license)
 
 ## Installation
@@ -119,18 +118,6 @@ if err != nil {
 }
 
 log.Println(server.ID, server.Name, server.Hostname)
-```
-
-## Debug
-
-If you want to debug this library, set the CHERRY_DEBUG environment variable to true, which enables full API request and response logging.
-```
-export CHERRY_DEBUG="true"
-```
-
-Unset the variable to stop debugging.
-```
-unset CHERRY_DEBUG
 ```
 
 ## License

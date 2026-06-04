@@ -50,7 +50,7 @@ func TestStorage_Get(t *testing.T) {
 		}`)
 	})
 
-	storage, _, err := client.Storages.Get(123, nil)
+	storage, _, err := testClient.Storages.Get(123, nil)
 	if err != nil {
 		t.Errorf("Storage.List returned %+v", err)
 	}
@@ -94,7 +94,7 @@ func TestStorage_Create(t *testing.T) {
 		Region:      "EU-Nord-1",
 	}
 
-	_, _, err := client.Storages.Create(&createStorage)
+	_, _, err := testClient.Storages.Create(&createStorage)
 	if err != nil {
 		t.Errorf("Storage.List returned %+v", err)
 	}
@@ -110,7 +110,7 @@ func TestStorage_Delete(t *testing.T) {
 		fmt.Fprint(writer)
 	})
 
-	_, err := client.Storages.Delete(123)
+	_, err := testClient.Storages.Delete(123)
 	if err != nil {
 		t.Errorf("Storage.Delete returned %+v", err)
 	}
@@ -146,7 +146,7 @@ func TestStorage_Attach(t *testing.T) {
 		AttachTo:  1234,
 	}
 
-	_, _, err := client.Storages.Attach(&attachStorage)
+	_, _, err := testClient.Storages.Attach(&attachStorage)
 	if err != nil {
 		t.Errorf("Storage.Attach returned %+v", err)
 	}
@@ -162,7 +162,7 @@ func TestStorage_Detach(t *testing.T) {
 		fmt.Fprint(writer)
 	})
 
-	_, err := client.Storages.Detach(123)
+	_, err := testClient.Storages.Detach(123)
 	if err != nil {
 		t.Errorf("Storage.Detach returned %+v", err)
 	}
@@ -200,7 +200,7 @@ func TestStorage_Update(t *testing.T) {
 		Description: "volume 1",
 	}
 
-	_, _, err := client.Storages.Update(&updateStorage)
+	_, _, err := testClient.Storages.Update(&updateStorage)
 	if err != nil {
 		t.Errorf("Storage.Update returned %+v", err)
 	}
