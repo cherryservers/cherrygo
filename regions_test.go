@@ -48,7 +48,7 @@ func TestRegions_List(t *testing.T) {
 		]`)
 	})
 
-	regions, _, err := testClient.Regions.List(nil)
+	regions, _, err := testClient.Regions.List(t.Context(), nil)
 	if err != nil {
 		t.Errorf("Regions.List returned %+v", err)
 	}
@@ -81,7 +81,7 @@ func TestRegion_Get(t *testing.T) {
 		}`)
 	})
 
-	region, _, err := testClient.Regions.Get("eu_nord_1", nil)
+	region, _, err := testClient.Regions.Get(t.Context(), "eu_nord_1", nil)
 	if err != nil {
 		t.Errorf("Regions.Get returned %+v", err)
 	}

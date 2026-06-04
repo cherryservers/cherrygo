@@ -36,7 +36,7 @@ func TestBackupStorage_Get(t *testing.T) {
 		}`)
 	})
 
-	backup, _, err := testClient.Backups.Get(123, nil)
+	backup, _, err := testClient.Backups.Get(t.Context(), 123, nil)
 	if err != nil {
 		t.Errorf("Backups.Get returned %+v", err)
 	}
@@ -63,8 +63,7 @@ func TestBackupStorage_ListBackups(t *testing.T) {
 		]`)
 	})
 
-	backups, _, err := testClient.Backups.ListBackups(projectID, nil)
-
+	backups, _, err := testClient.Backups.ListBackups(t.Context(), projectID, nil)
 	if err != nil {
 		t.Errorf("Backups.ListBackups returned %+v", err)
 	}
@@ -101,8 +100,7 @@ func TestBackupStorage_ListPlans(t *testing.T) {
 		]`)
 	})
 
-	backupPlans, _, err := testClient.Backups.ListPlans(nil)
-
+	backupPlans, _, err := testClient.Backups.ListPlans(t.Context(), nil)
 	if err != nil {
 		t.Errorf("Backups.ListPlans returned %+v", err)
 	}
@@ -147,7 +145,7 @@ func TestBackupStorage_Create(t *testing.T) {
 		SSHKey:         "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC6ec8eT...",
 	}
 
-	_, _, err := testClient.Backups.Create(&createBackup)
+	_, _, err := testClient.Backups.Create(t.Context(), &createBackup)
 	if err != nil {
 		t.Errorf("Backup.Create returned %+v", err)
 	}
@@ -185,7 +183,7 @@ func TestBackupStorage_Update(t *testing.T) {
 		Password:        "abc123",
 	}
 
-	_, _, err := testClient.Backups.Update(&updateBackupStorage)
+	_, _, err := testClient.Backups.Update(t.Context(), &updateBackupStorage)
 	if err != nil {
 		t.Errorf("Backups.Update returned %+v", err)
 	}
@@ -233,7 +231,7 @@ func TestBackupStorage_UpdateMethod(t *testing.T) {
 		Whitelist:        []string{"1.1.1.1", "2.2.2.2"},
 	}
 
-	_, _, err := testClient.Backups.UpdateBackupMethod(&updateBackupMethod)
+	_, _, err := testClient.Backups.UpdateBackupMethod(t.Context(), &updateBackupMethod)
 	if err != nil {
 		t.Errorf("Backups.UpdateBackupMethod returned %+v", err)
 	}
@@ -249,7 +247,7 @@ func TestBackupStorage_Delete(t *testing.T) {
 		fmt.Fprint(writer)
 	})
 
-	_, err := testClient.Backups.Delete(123)
+	_, err := testClient.Backups.Delete(t.Context(), 123)
 	if err != nil {
 		t.Errorf("Backups.Delete returned %+v", err)
 	}

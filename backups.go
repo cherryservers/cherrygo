@@ -1,17 +1,21 @@
 package cherrygo
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+	"net/http"
+)
 
 const baseBackupPath = "/v1/backup-storages"
 
 type BackupsService interface {
-	ListPlans(opts *GetOptions) ([]BackupStoragePlan, *Response, error)
-	ListBackups(projectID int, opts *GetOptions) ([]BackupStorage, *Response, error)
-	Get(backupID int, opts *GetOptions) (BackupStorage, *Response, error)
-	Create(request *CreateBackup) (BackupStorage, *Response, error)
-	Update(request *UpdateBackupStorage) (BackupStorage, *Response, error)
-	UpdateBackupMethod(request *UpdateBackupMethod) ([]BackupMethod, *Response, error)
-	Delete(backupID int) (*Response, error)
+	ListPlans(ctx context.Context, opts *GetOptions) ([]BackupStoragePlan, *Response, error)
+	ListBackups(ctx context.Context, projectID int, opts *GetOptions) ([]BackupStorage, *Response, error)
+	Get(ctx context.Context, backupID int, opts *GetOptions) (BackupStorage, *Response, error)
+	Create(ctx context.Context, request *CreateBackup) (BackupStorage, *Response, error)
+	Update(ctx context.Context, request *UpdateBackupStorage) (BackupStorage, *Response, error)
+	UpdateBackupMethod(ctx context.Context, request *UpdateBackupMethod) ([]BackupMethod, *Response, error)
+	Delete(ctx context.Context, backupID int) (*Response, error)
 }
 
 type BackupsClient struct {
@@ -91,11 +95,16 @@ type UpdateBackupMethod struct {
 	Whitelist        []string `json:"whitelist"`
 }
 
-func (s *BackupsClient) ListPlans(opts *GetOptions) ([]BackupStoragePlan, *Response, error) {
-	path := opts.WithQuery(fmt.Sprintf("/v1/backup-storage-plans"))
-
+func (s *BackupsClient) ListPlans(ctx context.Context, opts *GetOptions) ([]BackupStoragePlan, *Response, error) {
 	var trans []BackupStoragePlan
-	resp, err := s.client.MakeRequest("GET", path, nil, &trans)
+
+	path := opts.WithQuery(fmt.Sprintf("/v1/backup-storage-plans"))
+	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -103,11 +112,16 @@ func (s *BackupsClient) ListPlans(opts *GetOptions) ([]BackupStoragePlan, *Respo
 	return trans, resp, err
 }
 
-func (s *BackupsClient) ListBackups(projectID int, opts *GetOptions) ([]BackupStorage, *Response, error) {
+func (s *BackupsClient) ListBackups(ctx context.Context, projectID int, opts *GetOptions) ([]BackupStorage, *Response, error) {
 	var trans []BackupStorage
 
 	path := opts.WithQuery(fmt.Sprintf("/v1/projects/%d/backup-storages", projectID))
-	resp, err := s.client.MakeRequest("GET", path, nil, &trans)
+	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -115,11 +129,16 @@ func (s *BackupsClient) ListBackups(projectID int, opts *GetOptions) ([]BackupSt
 	return trans, resp, err
 }
 
-func (s *BackupsClient) Get(backupID int, opts *GetOptions) (BackupStorage, *Response, error) {
+func (s *BackupsClient) Get(ctx context.Context, backupID int, opts *GetOptions) (BackupStorage, *Response, error) {
 	var trans BackupStorage
 
 	path := opts.WithQuery(fmt.Sprintf("%s/%d", baseBackupPath, backupID))
-	resp, err := s.client.MakeRequest("GET", path, nil, &trans)
+	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return BackupStorage{}, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -127,11 +146,17 @@ func (s *BackupsClient) Get(backupID int, opts *GetOptions) (BackupStorage, *Res
 	return trans, resp, err
 }
 
-func (s *BackupsClient) Create(request *CreateBackup) (BackupStorage, *Response, error) {
+func (s *BackupsClient) Create(ctx context.Context, request *CreateBackup) (BackupStorage, *Response, error) {
 	var trans BackupStorage
 
 	path := fmt.Sprintf("/v1/servers/%d/backup-storages", request.ServerID)
-	resp, err := s.client.MakeRequest("POST", path, request, &trans)
+
+	req, err := s.client.NewRequest(ctx, http.MethodPost, path, request)
+	if err != nil {
+		return BackupStorage{}, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -139,12 +164,17 @@ func (s *BackupsClient) Create(request *CreateBackup) (BackupStorage, *Response,
 	return trans, resp, err
 }
 
-func (s *BackupsClient) Update(request *UpdateBackupStorage) (BackupStorage, *Response, error) {
+func (s *BackupsClient) Update(ctx context.Context, request *UpdateBackupStorage) (BackupStorage, *Response, error) {
 	var trans BackupStorage
 
 	path := fmt.Sprintf("%s/%d", baseBackupPath, request.BackupStorageID)
 
-	resp, err := s.client.MakeRequest("PUT", path, request, &trans)
+	req, err := s.client.NewRequest(ctx, http.MethodPut, path, request)
+	if err != nil {
+		return BackupStorage{}, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -152,11 +182,16 @@ func (s *BackupsClient) Update(request *UpdateBackupStorage) (BackupStorage, *Re
 	return trans, resp, err
 }
 
-func (s *BackupsClient) UpdateBackupMethod(request *UpdateBackupMethod) ([]BackupMethod, *Response, error) {
+func (s *BackupsClient) UpdateBackupMethod(ctx context.Context, request *UpdateBackupMethod) ([]BackupMethod, *Response, error) {
 	var trans []BackupMethod
 
 	path := fmt.Sprintf("%s/%d/methods/%s", baseBackupPath, request.BackupStorageID, request.BackupMethodName)
-	resp, err := s.client.MakeRequest("PATCH", path, request, &trans)
+	req, err := s.client.NewRequest(ctx, http.MethodPatch, path, request)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}
@@ -164,9 +199,14 @@ func (s *BackupsClient) UpdateBackupMethod(request *UpdateBackupMethod) ([]Backu
 	return trans, resp, err
 }
 
-func (s *BackupsClient) Delete(backupID int) (*Response, error) {
+func (s *BackupsClient) Delete(ctx context.Context, backupID int) (*Response, error) {
 	path := fmt.Sprintf("%s/%d", baseBackupPath, backupID)
-	resp, err := s.client.MakeRequest("DELETE", path, nil, nil)
+	req, err := s.client.NewRequest(ctx, http.MethodDelete, path, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := s.client.Do(req, nil)
 	if err != nil {
 		err = fmt.Errorf("Error: %v", err)
 	}

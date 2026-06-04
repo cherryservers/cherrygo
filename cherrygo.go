@@ -2,10 +2,10 @@ package cherrygo
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -23,7 +23,11 @@ const (
 	cherryDebugVar     = "CHERRY_DEBUG"
 )
 
-// Client returns struct for client
+// Client is a client for the Cherry Servers RESTful API.
+//
+// Retries failed requests when it's safe to do so, e.g. status 429
+// or a network timeout with an idempotent method. Respects `Retry-After` headers
+// with fallback to exponential backoff with jitter.
 type Client struct {
 	client *client.Client
 
@@ -45,7 +49,7 @@ type Client struct {
 	Backups     BackupsService
 }
 
-// Response is the http response from api calls
+// Response is the http response from api calls.
 type Response struct {
 	*http.Response
 	Meta
@@ -55,10 +59,9 @@ type Meta struct {
 	Total int
 }
 
-// MakeRequest makes request to API
-func (c *Client) MakeRequest(method, path string, body, v interface{}) (*Response, error) {
+// NewRequest creates a request. Adds the required headers.
+func (c *Client) NewRequest(ctx context.Context, method, path string, body any) (*http.Request, error) {
 	url, _ := url.Parse(path)
-
 	u := c.BaseURL.ResolveReference(url)
 
 	buf := new(bytes.Buffer)
@@ -71,17 +74,26 @@ func (c *Client) MakeRequest(method, path string, body, v interface{}) (*Respons
 		}
 	}
 
-	req, err := http.NewRequest(method, u.String(), buf)
+	req, err := http.NewRequestWithContext(ctx, method, u.String(), buf)
 	if err != nil {
 		return nil, err
 	}
 
 	bearer := "Bearer " + c.AuthToken
-	req.Header.Add("Authorization", bearer)
+	req.Header.Set("Authorization", bearer)
 	req.Header.Set("User-Agent", c.UserAgent)
-	req.Header.Add("Content-Type", mediaType)
-	req.Header.Add("Accept", mediaType)
+	req.Header.Set("Accept", mediaType)
+	if body != nil {
+		req.Header.Add("Content-Type", mediaType)
+	}
+	return req, nil
+}
 
+// Do executes a request.
+//
+// The response body is un-marshalled into v, so it must be a pointer
+// to a type that can hold the expected response, [io.Writer] or nil.
+func (c *Client) Do(req *http.Request, v any) (*Response, error) {
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
@@ -101,7 +113,7 @@ func (c *Client) MakeRequest(method, path string, body, v interface{}) (*Respons
 
 		var errorResponse ErrorResponse
 
-		bod, err := ioutil.ReadAll(resp.Body)
+		bod, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return nil, err
 		}
@@ -116,7 +128,7 @@ func (c *Client) MakeRequest(method, path string, body, v interface{}) (*Respons
 	}
 
 	// Handling delete requests which EOF is not an error
-	if method == "DELETE" && response.StatusCode == 204 {
+	if req.Method == http.MethodDelete && response.StatusCode == http.StatusNoContent {
 		return &response, err
 	}
 
@@ -146,9 +158,10 @@ type options struct {
 	debugDst  io.Writer
 }
 
+// ClientOpt is a client configuration option.
 type ClientOpt func(*options) error
 
-// NewClient initialization
+// NewClient creates a Cherry Servers API client.
 func NewClient(opts ...ClientOpt) (*Client, error) {
 	parsedOpts := &options{
 		authToken: os.Getenv(cherryAuthTokenVar),
@@ -209,7 +222,7 @@ func checkResponseForErrors(r *http.Response) *ErrorResponse {
 	}
 
 	errR := &ErrorResponse{Response: r}
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 	if err == nil && len(data) > 0 {
 		json.Unmarshal(data, errR)
 	}
