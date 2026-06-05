@@ -1,8 +1,12 @@
 package cherrygo
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strconv"
 	"testing"
@@ -136,4 +140,104 @@ func TestPlans_GetBySlug(t *testing.T) {
 	assert.Equal(t, 123, plan.ID)
 	assert.Equal(t, "test-name", plan.Name)
 	assert.Equal(t, "test-slug", plan.Slug)
+}
+
+func TestPlans_ListPrebuiltPlansReturnsPlans(t *testing.T) {
+	setup()
+	defer teardown()
+
+	wantBody, err := os.Open(filepath.Join("testdata", "prebuilt_plans.json"))
+	require.NoError(t, err)
+	defer func() {
+		_ = wantBody.Close()
+	}()
+
+	mux.HandleFunc("GET /v1/plans/test/prebuilts", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "LT-Siauliai", r.URL.Query().Get("region"))
+		_, _ = io.ReadAll(io.TeeReader(wantBody, w))
+		_, _ = wantBody.Seek(0, io.SeekStart)
+	})
+
+	got, resp, err := testClient.Plans.ListPrebuiltPlans(t.Context(), "test", "LT-Siauliai", nil)
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+
+	var want []PrebuiltPlan
+	err = json.NewDecoder(wantBody).Decode(&want)
+	require.NoError(t, err)
+
+	assert.Equal(t, want, got)
+}
+
+func TestPlans_ListPrebuiltPlansRetainsQueryParams(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("GET /v1/plans/test/prebuilts", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "LT-Siauliai", r.URL.Query().Get("region"))
+		assert.Equal(t, "1", r.URL.Query().Get("limit"))
+		_, _ = fmt.Fprint(w, `[{"id": 1}]`)
+	})
+
+	_, _, _ = testClient.Plans.ListPrebuiltPlans(t.Context(), "test", "LT-Siauliai", &GetOptions{Limit: 1})
+}
+
+func TestPlans_ListPrebuiltPlansPropagatesError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	pps, resp, err := testClient.Plans.ListPrebuiltPlans(t.Context(), "test", "LT-Siauliai", nil)
+	assert.Nil(t, pps)
+	assert.Nil(t, resp)
+	assert.Error(t, err)
+}
+
+func TestPlans_ListPrebuiltTeamPlansReturnsPlans(t *testing.T) {
+	setup()
+	defer teardown()
+
+	wantBody, err := os.Open(filepath.Join("testdata", "prebuilt_plans.json"))
+	require.NoError(t, err)
+	defer func() {
+		_ = wantBody.Close()
+	}()
+
+	mux.HandleFunc("GET /v1/teams/123/plans/test/prebuilts", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "LT-Siauliai", r.URL.Query().Get("region"))
+		_, _ = io.ReadAll(io.TeeReader(wantBody, w))
+		_, _ = wantBody.Seek(0, io.SeekStart)
+	})
+
+	got, resp, err := testClient.Plans.ListPrebuiltTeamPlans(t.Context(), "test", "LT-Siauliai", 123, nil)
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+
+	var want []PrebuiltPlan
+	err = json.NewDecoder(wantBody).Decode(&want)
+	require.NoError(t, err)
+
+	assert.Equal(t, want, got)
+}
+
+func TestPlans_ListPrebuiltTeamPlansRetainsQueryParams(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("GET /v1/teams/123/plans/test/prebuilts", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "LT-Siauliai", r.URL.Query().Get("region"))
+		assert.Equal(t, "1", r.URL.Query().Get("limit"))
+		_, _ = fmt.Fprint(w, `[{"id": 1}]`)
+	})
+
+	_, _, _ = testClient.Plans.ListPrebuiltTeamPlans(t.Context(), "test", "LT-Siauliai", 123, &GetOptions{Limit: 1})
+}
+
+func TestPlans_ListPrebuiltTeamPlansPropagatesError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	pps, resp, err := testClient.Plans.ListPrebuiltTeamPlans(t.Context(), "test", "LT-Siauliai", 123, nil)
+	assert.Nil(t, pps)
+	assert.Nil(t, resp)
+	assert.Error(t, err)
 }
