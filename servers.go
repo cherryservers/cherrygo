@@ -2,8 +2,10 @@ package cherrygo
 
 import (
 	"context"
+	"crypto/rand"
 	"errors"
 	"fmt"
+	"math/big"
 	"net/http"
 	"time"
 )
@@ -441,4 +443,41 @@ func (s *ServersClient) WaitForStatus(ctx context.Context, serverID int, status 
 			return Server{}, nil, ctx.Err()
 		}
 	}
+}
+
+// GeneratePassword generates a password that matches Cherry Servers secure password
+// criteria in a cryptographically secure way.
+func GeneratePassword() (string, error) {
+	const (
+		lowercase = "abcdefghijklmnopqrstuvwxyz"
+		uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		digits    = "0123456789"
+		all       = lowercase + uppercase + digits
+		length    = 20
+	)
+	password := make([]byte, length)
+
+	var charset string
+	for i := range length {
+		switch i {
+		case 0:
+			// Ensure there is at least one lower-case alphabetical character.
+			charset = lowercase
+		case 1:
+			// Ensure there is at least one upper-case alphabetical
+			// character that is not first.
+			charset = uppercase
+		case 2:
+			// Ensure there is at least one digit that is not last.
+			charset = digits
+		default:
+			charset = all
+		}
+		idx, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
+		if err != nil {
+			return "", err
+		}
+		password[i] = charset[idx.Int64()]
+	}
+	return string(password), nil
 }

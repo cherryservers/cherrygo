@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"testing"
 	"time"
+	"unicode"
 
 	"github.com/cherryservers/cherrygo/v3/backoff"
 	"github.com/stretchr/testify/assert"
@@ -719,4 +720,57 @@ func TestServer_WaitForStatusFailsWhenContextCancelled(t *testing.T) {
 	assert.Nil(t, resp)
 	assert.Equal(t, "", srv.Status)
 	assert.Equal(t, 2, pollCount)
+}
+
+func TestGeneratePasswordGeneratesValidCherryServersPasswords(t *testing.T) {
+	const minLen = 16
+	var failures []string
+
+	for range 1000 {
+		pw, err := GeneratePassword()
+		require.NoError(t, err)
+
+		if (len([]rune(pw))) < minLen {
+			failures = append(
+				failures,
+				fmt.Sprintf("password %q is too short, needs to be at least %d length", pw, minLen),
+			)
+		}
+
+		var hasLower, hasNonFirstUpper, hasNonLastDigit bool
+
+		for i, r := range pw {
+			if !unicode.IsLetter(r) && !unicode.IsDigit(r) {
+				failures = append(failures, fmt.Sprintf("password %q has forbidden symbol %q", pw, r))
+			}
+
+			if unicode.IsLower(r) {
+				hasLower = true
+			}
+
+			if i != 0 && unicode.IsUpper(r) {
+				hasNonFirstUpper = true
+			}
+
+			if i != len([]rune(pw))-1 && unicode.IsDigit(r) {
+				hasNonLastDigit = true
+			}
+		}
+
+		if !hasLower {
+			failures = append(failures, fmt.Sprintf("password %q doesn't have a lower case letter", pw))
+		}
+		if !hasNonFirstUpper {
+			failures = append(
+				failures,
+				fmt.Sprintf("password %q doesn't have an upper case letter that is not the first symbol", pw))
+		}
+		if !hasNonLastDigit {
+			failures = append(
+				failures,
+				fmt.Sprintf("password %q doesn't have a digit that is not the last symbol", pw))
+		}
+	}
+
+	assert.Empty(t, failures)
 }
