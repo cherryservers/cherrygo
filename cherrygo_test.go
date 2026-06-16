@@ -22,10 +22,10 @@ var (
 	projectID  int
 )
 
-var authToken = "myToken"
+var apiKey = "myKey"
 
 func setup() {
-	_ = os.Setenv("CHERRY_AUTH_TOKEN", authToken)
+	_ = os.Setenv("CHERRY_API_KEY", apiKey)
 
 	mux = http.NewServeMux()
 	server = httptest.NewServer(mux)
@@ -60,10 +60,10 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestNewClientWithAuthVar(t *testing.T) {
-	c, _ := NewClient(WithAuthToken(authToken))
+	c, _ := NewClient(WithAPIKey(apiKey))
 
-	if c.AuthToken != authToken {
-		t.Errorf("NewClient AuthToken = %v, expected %v", testClient.AuthToken, authToken)
+	if c.APIKey != apiKey {
+		t.Errorf("NewClient API key = %v, expected %v", testClient.APIKey, apiKey)
 	}
 }
 
@@ -94,7 +94,7 @@ func TestErrorResponse(t *testing.T) {
 }
 
 func TestCustomUserAgent(t *testing.T) {
-	err := os.Setenv("CHERRY_AUTH_TOKEN", "token")
+	err := os.Setenv("CHERRY_API_KEY", "key")
 	require.NoError(t, err)
 
 	ua := "testing/1.0"
@@ -120,7 +120,7 @@ func TestDebug(t *testing.T) {
 
 	buf := &bytes.Buffer{}
 
-	c, err := NewClient(WithAuthToken("HIDDEN"), WithDebug(buf), WithURL(server.URL))
+	c, err := NewClient(WithAPIKey("HIDDEN"), WithDebug(buf), WithURL(server.URL))
 	require.NoError(t, err)
 
 	req, err := c.NewRequest(t.Context(), http.MethodGet, "/test", nil)
