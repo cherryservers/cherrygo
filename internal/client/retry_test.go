@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cherryservers/cherrygo/v3/backoff"
 	"github.com/cherryservers/cherrygo/v3/internal/client"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -37,7 +38,7 @@ type retryTestCase struct {
 	status         int
 	fn             http.HandlerFunc
 	reqCtx         context.Context
-	backoffFn      client.BackoffFunc
+	backoffFn      backoff.Func
 	wantCalls      int
 	wantErr        bool
 	wantRespDrains int
@@ -264,7 +265,7 @@ func TestRetryContextCancellation(t *testing.T) {
 	calls := 0
 	reqCtx, cancel := context.WithCancel(t.Context())
 
-	var ctxCancelBackoff client.BackoffFunc = func(attempts int, _ *http.Response) time.Duration {
+	var ctxCancelBackoff backoff.Func = func(attempts int, _ *http.Response) time.Duration {
 		if attempts < 2 {
 			return time.Nanosecond
 		}

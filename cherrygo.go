@@ -13,7 +13,9 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"time"
 
+	"github.com/cherryservers/cherrygo/v3/backoff"
 	"github.com/cherryservers/cherrygo/v3/internal/client"
 )
 
@@ -31,7 +33,8 @@ const (
 // or a network timeout with an idempotent method. Respects `Retry-After` headers
 // with fallback to exponential backoff with jitter.
 type Client struct {
-	client *client.Client
+	client      *client.Client
+	pollBackoff backoff.Func
 
 	BaseURL *url.URL
 
@@ -159,11 +162,12 @@ func (c *Client) Do(req *http.Request, v any) (*Response, error) {
 }
 
 type options struct {
-	url       string
-	client    *http.Client
-	userAgent string
-	authToken string
-	debugDst  io.Writer
+	url         string
+	client      *http.Client
+	userAgent   string
+	authToken   string
+	debugDst    io.Writer
+	pollBackoff backoff.Func
 }
 
 // ClientOpt is a client configuration option.
@@ -176,6 +180,13 @@ func NewClient(opts ...ClientOpt) (*Client, error) {
 		client:    &http.Client{},
 		url:       apiURL,
 		userAgent: userAgent,
+		pollBackoff: backoff.ExponentialBackoff(
+			backoff.ExponentialBackoffConfig{
+				Base:       1 * time.Second,
+				Cap:        10 * time.Second,
+				Multiplier: 2,
+			},
+		),
 	}
 	for _, opt := range opts {
 		if err := opt(parsedOpts); err != nil {
@@ -196,10 +207,11 @@ func NewClient(opts ...ClientOpt) (*Client, error) {
 	}
 
 	c := &Client{
-		client:    client.New(client.WithHTTPClient(parsedOpts.client), client.WithDebug(parsedOpts.debugDst)),
-		AuthToken: parsedOpts.authToken,
-		BaseURL:   url,
-		UserAgent: parsedOpts.userAgent,
+		client:      client.New(client.WithHTTPClient(parsedOpts.client), client.WithDebug(parsedOpts.debugDst)),
+		AuthToken:   parsedOpts.authToken,
+		BaseURL:     url,
+		UserAgent:   parsedOpts.userAgent,
+		pollBackoff: parsedOpts.pollBackoff,
 	}
 
 	c.Teams = &TeamsClient{client: c}
@@ -263,6 +275,14 @@ func WithAuthToken(authToken string) ClientOpt {
 func WithDebug(w io.Writer) ClientOpt {
 	return func(c *options) error {
 		c.debugDst = w
+		return nil
+	}
+}
+
+// WithPollBackoff sets a custom backoff function for polling.
+func WithPollBackoff(b backoff.Func) ClientOpt {
+	return func(c *options) error {
+		c.pollBackoff = b
 		return nil
 	}
 }
