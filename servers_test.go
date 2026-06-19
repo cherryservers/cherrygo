@@ -812,5 +812,5 @@ func TestServer_AllowBMCAccess(t *testing.T) {
 	err = json.NewDecoder(apiResponse).Decode(&want)
 	require.NoError(t, err)
 
-	assert.Equal(t, want.BMC, got)
+	assert.Equal(t, want, got)
 }
