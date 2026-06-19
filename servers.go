@@ -154,8 +154,13 @@ type UpgradeServer struct {
 
 // CreateServer fields for ordering new server
 type CreateServer struct {
-	ProjectID       int                `json:"project_id"`
-	Plan            string             `json:"plan"`
+	ProjectID int    `json:"project_id"`
+	Plan      string `json:"plan"`
+
+	// PrebuiltID allows selecting a pre-assembled plan variant.
+	// Requires Plan to be set as well.
+	PrebuiltID int `json:"prebuilt_id,omitempty"`
+
 	Hostname        string             `json:"hostname,omitempty"`
 	Image           string             `json:"image,omitempty"`
 	Region          string             `json:"region"`
