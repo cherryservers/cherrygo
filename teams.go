@@ -73,14 +73,14 @@ type Billing struct {
 	LastName    string `json:"last_name,omitempty"`
 	Address1    string `json:"address_1,omitempty"`
 	Address2    string `json:"address_2,omitempty"`
-	CountryIso2 string `json:"country_iso_2,omitempty"`
+	CountryISO2 string `json:"country_iso_2,omitempty"`
 	City        string `json:"city,omitempty"`
-	Vat         Vat    `json:"vat,omitempty"`
+	VAT         VAT    `json:"vat,omitempty"`
 	Currency    string `json:"currency,omitempty"`
 }
 
-// Vat billing data.
-type Vat struct {
+// VAT billing data.
+type VAT struct {
 	Amount int    `json:"amount"`
 	Number string `json:"number,omitempty"`
 	Valid  bool   `json:"valid"`

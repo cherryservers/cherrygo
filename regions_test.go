@@ -18,14 +18,14 @@ func TestRegions_List(t *testing.T) {
 			ID:         1,
 			Name:       "EU-Nord-1",
 			Slug:       "eu_nord_1",
-			RegionIso2: "LT",
+			RegionISO2: "LT",
 			Href:       "/regions/1",
 		},
 		{
 			ID:         2,
 			Name:       "EU-West-1",
 			Slug:       "eu_west_1",
-			RegionIso2: "NL",
+			RegionISO2: "NL",
 			Href:       "/regions/2",
 		},
 	}
@@ -69,7 +69,7 @@ func TestRegion_Get(t *testing.T) {
 		ID:         1,
 		Name:       "EU-Nord-1",
 		Slug:       "eu_nord_1",
-		RegionIso2: "LT",
+		RegionISO2: "LT",
 		Href:       "/regions/1",
 	}
 

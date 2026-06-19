@@ -25,7 +25,7 @@ type IPAddress struct {
 	ID            string             `json:"id,omitempty"`
 	Address       string             `json:"address,omitempty"`
 	AddressFamily int                `json:"address_family,omitempty"`
-	Cidr          string             `json:"cidr,omitempty"`
+	CIDR          string             `json:"cidr,omitempty"`
 	Gateway       string             `json:"gateway,omitempty"`
 	Type          string             `json:"type,omitempty"`
 	Region        Region             `json:"region,omitempty"`
@@ -33,7 +33,7 @@ type IPAddress struct {
 	AssignedTo    AssignedTo         `json:"assigned_to,omitempty"`
 	TargetedTo    AssignedTo         `json:"targeted_to,omitempty"`
 	Project       Project            `json:"project,omitempty"`
-	PtrRecord     string             `json:"ptr_record,omitempty"`
+	PTRRecord     string             `json:"ptr_record,omitempty"`
 	ARecord       string             `json:"a_record,omitempty"`
 	Tags          *map[string]string `json:"tags,omitempty"`
 	DDoSScrubbing bool               `json:"ddos_scrubbing,omitempty"`
@@ -45,7 +45,7 @@ type RoutedTo struct {
 	ID            string `json:"id,omitempty"`
 	Address       string `json:"address,omitempty"`
 	AddressFamily int    `json:"address_family,omitempty"`
-	Cidr          string `json:"cidr,omitempty"`
+	CIDR          string `json:"cidr,omitempty"`
 	Gateway       string `json:"gateway,omitempty"`
 	Type          string `json:"type,omitempty"`
 	Region        Region `json:"region,omitempty"`
@@ -71,7 +71,7 @@ type IPsClient struct {
 // CreateIPAddress fields for adding addition IP address
 type CreateIPAddress struct {
 	Region        string             `json:"region,omitempty"`
-	PtrRecord     string             `json:"ptr_record,omitempty"`
+	PTRRecord     string             `json:"ptr_record,omitempty"`
 	ARecord       string             `json:"a_record,omitempty"`
 	RoutedTo      string             `json:"routed_to,omitempty"`
 	AssignedTo    string             `json:"assigned_to,omitempty"`
@@ -82,7 +82,7 @@ type CreateIPAddress struct {
 
 // UpdateIPAddress fields for updating IP address
 type UpdateIPAddress struct {
-	PtrRecord  string             `json:"ptr_record,omitempty"`
+	PTRRecord  string             `json:"ptr_record,omitempty"`
 	ARecord    string             `json:"a_record,omitempty"`
 	RoutedTo   string             `json:"routed_to,omitempty"`
 	AssignedTo string             `json:"assigned_to,omitempty"`

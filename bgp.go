@@ -31,5 +31,5 @@ type BGPRoute struct {
 // RegionBGP data.
 type RegionBGP struct {
 	Hosts []string `json:"hosts,omitempty"`
-	Asn   int      `json:"asn,omitempty"`
+	ASN   int      `json:"asn,omitempty"`
 }

@@ -107,8 +107,8 @@ func TestTeam_Get(t *testing.T) {
 		Billing: Billing{
 			Type:        "personal",
 			LastName:    "['test.test', 'cherryservers.com']",
-			CountryIso2: "LT",
-			Vat: Vat{
+			CountryISO2: "LT",
+			VAT: VAT{
 				Amount: 21,
 				Valid:  false,
 			},

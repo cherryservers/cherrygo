@@ -30,7 +30,7 @@ func TestPlans_List(t *testing.T) {
 	ltRegion := Region{
 		ID:         1,
 		Name:       "EU-Nord-1",
-		RegionIso2: "LT",
+		RegionISO2: "LT",
 		Location:   "Lithuania, Vilnius",
 	}
 
@@ -41,7 +41,7 @@ func TestPlans_List(t *testing.T) {
 			Slug:   "cloud_vps_1",
 			Custom: false,
 			Specs: Specs{
-				Cpus: Cpus{
+				CPUs: CPUs{
 					Count:     1,
 					Name:      "Cloud VPS 1",
 					Cores:     1,
@@ -61,7 +61,7 @@ func TestPlans_List(t *testing.T) {
 					Unit:  "GB",
 				}},
 				// Raid: Raid{},
-				Nics: Nics{
+				NICs: NICs{
 					Name: "1Gbps",
 				},
 				Bandwidth: Bandwidth{
