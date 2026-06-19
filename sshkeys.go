@@ -14,7 +14,7 @@ type SSHKeysService interface {
 	List(ctx context.Context, opts *GetOptions) ([]SSHKey, *Response, error)
 	Get(ctx context.Context, sshKeyID int, opts *GetOptions) (SSHKey, *Response, error)
 	Create(ctx context.Context, request *CreateSSHKey) (SSHKey, *Response, error)
-	Delete(ctx context.Context, sshKeyID int) (SSHKey, *Response, error)
+	Delete(ctx context.Context, sshKeyID int) (*Response, error)
 	Update(ctx context.Context, sshKeyID int, request *UpdateSSHKey) (SSHKey, *Response, error)
 }
 
@@ -89,17 +89,16 @@ func (s *SSHKeysClient) Create(ctx context.Context, request *CreateSSHKey) (SSHK
 }
 
 // Delete removes desired SSH key by its ID.
-func (s *SSHKeysClient) Delete(ctx context.Context, sshKeyID int) (SSHKey, *Response, error) {
-	var trans SSHKey
+func (s *SSHKeysClient) Delete(ctx context.Context, sshKeyID int) (*Response, error) {
 	path := fmt.Sprintf("%s/%d", baseSSHPath, sshKeyID)
 
 	req, err := s.client.NewRequest(ctx, http.MethodDelete, path, nil)
 	if err != nil {
-		return SSHKey{}, nil, err
+		return nil, err
 	}
 
-	resp, err := s.client.Do(req, &trans)
-	return trans, resp, err
+	resp, err := s.client.Do(req, nil)
+	return resp, err
 }
 
 // Update an SSH key.
