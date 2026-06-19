@@ -17,6 +17,8 @@ type PlansService interface {
 	List(ctx context.Context, teamID int, opts *GetOptions) ([]Plan, *Response, error)
 	GetBySlug(ctx context.Context, slug string, opts *GetOptions) (Plan, *Response, error)
 	GetByID(ctx context.Context, id int, opts *GetOptions) (Plan, *Response, error)
+	ListPrebuiltPlans(ctx context.Context, basePlan, region string, opts *GetOptions) ([]PrebuiltPlan, *Response, error)
+	ListPrebuiltTeamPlans(ctx context.Context, basePlan, region string, teamID int, opts *GetOptions) ([]PrebuiltPlan, *Response, error)
 }
 
 // Plan data.
@@ -31,6 +33,14 @@ type Plan struct {
 	AvailableRegions []AvailableRegions `json:"available_regions,omitempty"`
 	Category         string             `json:"category"`
 	Softwares        []SoftwareImage    `json:"softwares"`
+}
+
+// PrebuiltPlan is a base plan variant for a pre-assembled server.
+type PrebuiltPlan struct {
+	ID       int       `json:"id"`
+	StockQty int       `json:"stock_qty"`
+	Specs    Specs     `json:"specs"`
+	Pricing  []Pricing `json:"pricing"`
 }
 
 // SoftwareImage data.
@@ -149,4 +159,37 @@ func (p *PlansClient) GetBySlug(ctx context.Context, slug string, opts *GetOptio
 	path := opts.WithQuery(fmt.Sprintf("%s/%s", basePlanPath, slug))
 
 	return p.get(ctx, path)
+}
+
+func (p *PlansClient) listPrebuiltPlans(ctx context.Context, path, region string, opts *GetOptions) ([]PrebuiltPlan, *Response, error) {
+	var pps []PrebuiltPlan
+
+	if opts == nil {
+		opts = new(GetOptions)
+	}
+	if opts.QueryParams == nil {
+		opts.QueryParams = make(map[string]string, 1)
+	}
+	opts.QueryParams["region"] = region
+
+	req, err := p.client.NewRequest(ctx, http.MethodGet, opts.WithQuery(path), nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := p.client.Do(req, &pps)
+	return pps, resp, err
+}
+
+// ListPrebuiltPlans retrieves variations of the base plan that have pre-assembled stock.
+func (p *PlansClient) ListPrebuiltPlans(ctx context.Context, basePlan, region string, opts *GetOptions) ([]PrebuiltPlan, *Response, error) {
+	path := fmt.Sprintf("%s/%s/prebuilts", basePlanPath, basePlan)
+	return p.listPrebuiltPlans(ctx, path, region, opts)
+}
+
+// ListPrebuiltTeamPlans retrieves variations of the base plan that have pre-assembled stock.
+// The pricing is adjusted according to your teams billing settings.
+func (p *PlansClient) ListPrebuiltTeamPlans(ctx context.Context, basePlan, region string, teamID int, opts *GetOptions) ([]PrebuiltPlan, *Response, error) {
+	path := fmt.Sprintf("%s/%d/plans/%s/prebuilts", teamPlanPath, teamID, basePlan)
+	return p.listPrebuiltPlans(ctx, path, region, opts)
 }

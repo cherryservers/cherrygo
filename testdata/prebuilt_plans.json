@@ -1,0 +1,222 @@
+[
+  {
+    "id": 1179,
+    "stock_qty": 61,
+    "specs": {
+      "cpus": {
+        "count": 1,
+        "name": "E5-1650v4",
+        "cores": 6,
+        "frequency": 3.6,
+        "unit": "GHz"
+      },
+      "memory": {
+        "count": 1,
+        "total": 64,
+        "unit": "GB",
+        "name": "64GB ECC REG DDR4 "
+      },
+      "storage": [
+        {
+          "count": 2,
+          "name": "SSD 500GB",
+          "size": 500,
+          "unit": "GB",
+          "type": "SSD"
+        }
+      ],
+      "nics": {
+        "name": "3Gbps"
+      },
+      "bandwidth": {
+        "name": "30TB"
+      }
+    },
+    "pricing": [
+      {
+        "id": 3,
+        "unit": "Monthly",
+        "price": 189.0,
+        "currency": "EUR",
+        "taxed": false
+      },
+      {
+        "id": 4,
+        "unit": "Quarterly",
+        "price": 538.65,
+        "currency": "EUR",
+        "taxed": false
+      },
+      {
+        "id": 5,
+        "unit": "Semiannually",
+        "price": 1020.6,
+        "currency": "EUR",
+        "taxed": false
+      },
+      {
+        "id": 6,
+        "unit": "Annually",
+        "price": 1927.8,
+        "currency": "EUR",
+        "taxed": false
+      },
+      {
+        "id": 37,
+        "unit": "Hourly",
+        "price": 0.3238,
+        "currency": "EUR",
+        "taxed": false
+      }
+    ]
+  },
+  {
+    "id": 33829,
+    "stock_qty": 1,
+    "specs": {
+      "cpus": {
+        "count": 1,
+        "name": "E5-1650v4",
+        "cores": 6,
+        "frequency": 3.6,
+        "unit": "GHz"
+      },
+      "memory": {
+        "count": 1,
+        "total": 64,
+        "unit": "GB",
+        "name": "64GB 2400MHz"
+      },
+      "storage": [
+        {
+          "count": 1,
+          "name": "SSD 500GB",
+          "size": 500,
+          "unit": "GB",
+          "type": "SSD"
+        },
+        {
+          "count": 1,
+          "name": "SSD 1TB",
+          "size": 1,
+          "unit": "TB",
+          "type": "SSD"
+        }
+      ],
+      "nics": {
+        "name": "3Gbps"
+      },
+      "bandwidth": {
+        "name": "30TB"
+      }
+    },
+    "pricing": [
+      {
+        "id": 3,
+        "unit": "Monthly",
+        "price": 204.0,
+        "currency": "EUR",
+        "taxed": false
+      },
+      {
+        "id": 4,
+        "unit": "Quarterly",
+        "price": 581.4,
+        "currency": "EUR",
+        "taxed": false
+      },
+      {
+        "id": 5,
+        "unit": "Semiannually",
+        "price": 1101.6,
+        "currency": "EUR",
+        "taxed": false
+      },
+      {
+        "id": 6,
+        "unit": "Annually",
+        "price": 2080.8,
+        "currency": "EUR",
+        "taxed": false
+      },
+      {
+        "id": 37,
+        "unit": "Hourly",
+        "price": 0.3495,
+        "currency": "EUR",
+        "taxed": false
+      }
+    ]
+  },
+  {
+    "id": 1227,
+    "stock_qty": 1,
+    "specs": {
+      "cpus": {
+        "count": 1,
+        "name": "E5-1650v4",
+        "cores": 6,
+        "frequency": 3.6,
+        "unit": "GHz"
+      },
+      "memory": {
+        "count": 1,
+        "total": 128,
+        "unit": "GB",
+        "name": "128GB 2400MHz"
+      },
+      "storage": [
+        {
+          "count": 2,
+          "name": "SSD 1TB",
+          "size": 1,
+          "unit": "TB",
+          "type": "SSD"
+        }
+      ],
+      "nics": {
+        "name": "3Gbps"
+      },
+      "bandwidth": {
+        "name": "30TB"
+      }
+    },
+    "pricing": [
+      {
+        "id": 3,
+        "unit": "Monthly",
+        "price": 247.0,
+        "currency": "EUR",
+        "taxed": false
+      },
+      {
+        "id": 4,
+        "unit": "Quarterly",
+        "price": 708.15,
+        "currency": "EUR",
+        "taxed": false
+      },
+      {
+        "id": 5,
+        "unit": "Semiannually",
+        "price": 1350.6,
+        "currency": "EUR",
+        "taxed": false
+      },
+      {
+        "id": 6,
+        "unit": "Annually",
+        "price": 2569.8,
+        "currency": "EUR",
+        "taxed": false
+      },
+      {
+        "id": 37,
+        "unit": "Hourly",
+        "price": 0.42319999999999997,
+        "currency": "EUR",
+        "taxed": false
+      }
+    ]
+  }
+]
