@@ -69,7 +69,7 @@ type ServersService interface {
 	ResetBMCPassword(ctx context.Context, serverID int) (Server, *Response, error)
 	ListCycles(ctx context.Context, opts *GetOptions) ([]ServerCycle, *Response, error)
 	Upgrade(ctx context.Context, serverID int, plan string) (Server, *Response, error)
-	AllowBMCAccess(ctx context.Context, serverID int, ip4 string) (BMC, *Response, error)
+	AllowBMCAccess(ctx context.Context, serverID int, ip4 string) (Server, *Response, error)
 	WaitForStatus(ctx context.Context, serverID int, status ServerStatus) (Server, *Response, error)
 }
 
@@ -349,7 +349,7 @@ func (s *ServersClient) Upgrade(ctx context.Context, serverID int, plan string) 
 
 // AllowBMCAccess allows BMC/IPMI access from the specified IPv4 address for a limited duration.
 // If ip4 is empty, no whitelist will be used, i.e. all addresses will be allowed.
-func (s *ServersClient) AllowBMCAccess(ctx context.Context, serverID int, ip4 string) (BMC, *Response, error) {
+func (s *ServersClient) AllowBMCAccess(ctx context.Context, serverID int, ip4 string) (Server, *Response, error) {
 	var srv Server
 	body := &allowBMCAccess{
 		ServerAction: ServerAction{Type: "create-console-access"},
@@ -359,11 +359,11 @@ func (s *ServersClient) AllowBMCAccess(ctx context.Context, serverID int, ip4 st
 
 	req, err := s.client.NewRequest(ctx, http.MethodPost, path, body)
 	if err != nil {
-		return BMC{}, nil, err
+		return Server{}, nil, err
 	}
 
 	resp, err := s.client.Do(req, &srv)
-	return srv.BMC, resp, err
+	return srv, resp, err
 }
 
 // PowerState retrieves server power state.
