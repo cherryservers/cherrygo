@@ -187,9 +187,9 @@ func TestPlans_ListPrebuiltPlansPropagatesError(t *testing.T) {
 	defer teardown()
 
 	pps, resp, err := testClient.Plans.ListPrebuiltPlans(t.Context(), "test", "LT-Siauliai", nil)
+	assert.Error(t, err)
 	assert.Nil(t, pps)
 	assert.Nil(t, resp)
-	assert.Error(t, err)
 }
 
 func TestPlans_ListPrebuiltTeamPlansReturnsPlans(t *testing.T) {
