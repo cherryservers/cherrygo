@@ -3,11 +3,13 @@ package cherrygo
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"reflect"
 	"strconv"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -228,15 +230,42 @@ func TestBackupStorage_UpdateMethod(t *testing.T) {
 		require.NoError(t, err)
 	})
 
+	var (
+		enabled   = true
+		whitelist = []string{"1.1.1.1", "2.2.2.2"}
+	)
 	updateBackupMethod := UpdateBackupMethod{
-		Enabled:   true,
-		Whitelist: []string{"1.1.1.1", "2.2.2.2"},
+		Enabled:   &enabled,
+		Whitelist: &whitelist,
 	}
 
 	_, _, err := testClient.Backups.UpdateBackupMethod(t.Context(), 123, methodName, &updateBackupMethod)
 	if err != nil {
 		t.Errorf("Backups.UpdateBackupMethod returned %+v", err)
 	}
+}
+
+func TestBackupStorage_UpdateMethodBodyFieldsOmitted(t *testing.T) {
+	setup()
+	defer teardown()
+
+	bod := UpdateBackupMethod{}
+
+	mux.HandleFunc("PATCH /v1/backup-storages/123/methods/FTP", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, http.MethodPatch)
+
+		got, err := io.ReadAll(r.Body)
+		require.NoError(t, err)
+		assert.JSONEq(t, "{}", string(got))
+
+		_, err = fmt.Fprint(w, `[{
+			"name": "FTP"
+			}]`)
+		require.NoError(t, err)
+	})
+
+	_, _, err := testClient.Backups.UpdateBackupMethod(t.Context(), 123, "FTP", &bod)
+	require.NoError(t, err)
 }
 
 func TestBackupStorage_Delete(t *testing.T) {

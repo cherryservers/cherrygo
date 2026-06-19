@@ -3,6 +3,7 @@ package cherrygo
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -497,7 +498,7 @@ func TestServer_Update(t *testing.T) {
 	tags := map[string]string{"env": "dev"}
 	serverUpdate := UpdateServer{
 		Tags:     &tags,
-		BGP:      false,
+		BGP:      new(bool),
 		Name:     "prod server",
 		Hostname: "cherry.prod",
 	}
@@ -510,6 +511,27 @@ func TestServer_Update(t *testing.T) {
 	if !reflect.DeepEqual(server, response) {
 		t.Errorf("Server.List returned %+v, expected %+v", server, response)
 	}
+}
+
+func TestServer_UpdateBodyFieldsOmitted(t *testing.T) {
+	setup()
+	defer teardown()
+
+	bod := UpdateServer{}
+
+	mux.HandleFunc("PUT /v1/servers/123", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, http.MethodPut)
+
+		got, err := io.ReadAll(r.Body)
+		require.NoError(t, err)
+		assert.JSONEq(t, "{}", string(got))
+
+		_, err = fmt.Fprint(w, `{"id": 123}`)
+		require.NoError(t, err)
+	})
+
+	_, _, err := testClient.Servers.Update(t.Context(), 123, &bod)
+	require.NoError(t, err)
 }
 
 func TestServer_Reinstall(t *testing.T) {

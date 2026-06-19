@@ -98,8 +98,8 @@ type UpdateBackupStorage struct {
 
 // UpdateBackupMethod is the body for a backup storage access method update request.
 type UpdateBackupMethod struct {
-	Enabled   bool     `json:"enabled"`
-	Whitelist []string `json:"whitelist"`
+	Enabled   *bool     `json:"enabled,omitempty"`
+	Whitelist *[]string `json:"whitelist,omitempty"`
 }
 
 // ListPlans lists backups storage plans.
