@@ -447,6 +447,18 @@ func (s *ServersClient) WaitForStatus(ctx context.Context, serverID int, status 
 
 // GeneratePassword generates a password that matches Cherry Servers secure password
 // criteria in a cryptographically secure way.
+//
+// The requirements are as follows:
+//
+// - At least 8 characters (this function will generate a 20 character long password).
+//
+// - Must include at least one letter.
+//
+// - Must include at least one capital letter that is not the first character.
+//
+// - Must include at least one number that is not the last character.
+//
+// - Forbidden characters ' " ` ! $ % & ; % #.
 func GeneratePassword() (string, error) {
 	const (
 		lowercase = "abcdefghijklmnopqrstuvwxyz"
