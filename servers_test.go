@@ -47,6 +47,7 @@ func TestServer_List(t *testing.T) {
 		},
 		State: "active",
 		Tags:  map[string]string{"env": "dev"},
+		VLAN:  1234,
 	}}
 
 	mux.HandleFunc("GET /v1/projects/123/servers", func(writer http.ResponseWriter, request *http.Request) {
@@ -92,6 +93,7 @@ func TestServer_Get(t *testing.T) {
 		},
 		State: "active",
 		Tags:  map[string]string{"env": "dev"},
+		VLAN:  1234,
 	}
 
 	mux.HandleFunc("/v1/servers/383531", func(writer http.ResponseWriter, request *http.Request) {
