@@ -26,12 +26,14 @@ type Region struct {
 	Href       string    `json:"href,omitempty"`
 }
 
+// RegionsClient makes region related API requests.
 type RegionsClient struct {
 	client *Client
 }
 
+// List all regions.
 func (i *RegionsClient) List(ctx context.Context, opts *GetOptions) ([]Region, *Response, error) {
-	path := opts.WithQuery(fmt.Sprintf("%s", baseRegionPath))
+	path := opts.WithQuery(baseRegionPath)
 	var trans []Region
 
 	req, err := i.client.NewRequest(ctx, http.MethodGet, path, nil)
@@ -40,13 +42,10 @@ func (i *RegionsClient) List(ctx context.Context, opts *GetOptions) ([]Region, *
 	}
 
 	resp, err := i.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
+// Get region.
 func (i *RegionsClient) Get(ctx context.Context, region string, opts *GetOptions) (Region, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("%s/%s", baseRegionPath, region))
 	var trans Region
@@ -57,9 +56,5 @@ func (i *RegionsClient) Get(ctx context.Context, region string, opts *GetOptions
 	}
 
 	resp, err := i.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }

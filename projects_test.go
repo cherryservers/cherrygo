@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestProjects_List(t *testing.T) {
@@ -40,11 +42,11 @@ func TestProjects_List(t *testing.T) {
 		jsonBytes, _ := json.Marshal(expected)
 		response := string(jsonBytes)
 
-		fmt.Fprint(writer, response)
+		_, err := fmt.Fprint(writer, response)
+		require.NoError(t, err)
 	})
 
 	projects, _, err := testClient.Projects.List(t.Context(), teamID, nil)
-
 	if err != nil {
 		t.Errorf("Projects.List returned %+v", err)
 	}
@@ -70,7 +72,7 @@ func TestProject_Get(t *testing.T) {
 
 	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID), func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
-		fmt.Fprint(writer, `{
+		_, err := fmt.Fprint(writer, `{
 			"id": 321,
 			"name": "My Project",
 			"href": "/projects/321",
@@ -79,6 +81,7 @@ func TestProject_Get(t *testing.T) {
 				"local_asn": 123
 			}
 		}`)
+		require.NoError(t, err)
 	})
 
 	project, _, err := testClient.Projects.Get(t.Context(), projectID, nil)
@@ -124,7 +127,8 @@ func TestProject_Create(t *testing.T) {
 
 		jsonBytes, _ := json.Marshal(expected)
 		response := string(jsonBytes)
-		fmt.Fprint(writer, response)
+		_, err = fmt.Fprint(writer, response)
+		require.NoError(t, err)
 	})
 
 	projectCreate := CreateProject{
@@ -163,7 +167,8 @@ func TestProject_Update(t *testing.T) {
 			t.Errorf("Request body\n sent %#v\n expected %#v", v, requestBody)
 		}
 
-		fmt.Fprint(writer, `{"id": 321}`)
+		_, err = fmt.Fprint(writer, `{"id": 321}`)
+		require.NoError(t, err)
 	})
 
 	name := "My Updated Project"
@@ -189,11 +194,11 @@ func TestProject_Delete(t *testing.T) {
 
 		writer.WriteHeader(http.StatusNoContent)
 
-		fmt.Fprint(writer)
+		_, err := fmt.Fprint(writer)
+		require.NoError(t, err)
 	})
 
 	_, err := testClient.Projects.Delete(t.Context(), projectID)
-
 	if err != nil {
 		t.Errorf("Project.Delete returned %+v", err)
 	}
@@ -221,7 +226,8 @@ func TestProjectSSHKeys_List(t *testing.T) {
 		jsonBytes, _ := json.Marshal(expected)
 		response := string(jsonBytes)
 
-		fmt.Fprint(writer, response)
+		_, err := fmt.Fprint(writer, response)
+		require.NoError(t, err)
 	})
 
 	sshKeys, _, err := testClient.Projects.ListSSHKeys(t.Context(), 123, nil)

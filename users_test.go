@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestUser_Current(t *testing.T) {
@@ -24,7 +26,7 @@ func TestUser_Current(t *testing.T) {
 
 	mux.HandleFunc("/v1/user", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
-		fmt.Fprint(writer, `{
+		_, err := fmt.Fprint(writer, `{
 				"id":123,
 				"first_name": "Ei",
 				"last_name": "Jei",
@@ -34,6 +36,7 @@ func TestUser_Current(t *testing.T) {
 				"security_phone": "37060000000",
 				"security_phone_verified": false
 			 }`)
+		require.NoError(t, err)
 	})
 
 	user, _, err := testClient.Users.CurrentUser(t.Context(), nil)
@@ -63,7 +66,7 @@ func TestUser_Get(t *testing.T) {
 
 	mux.HandleFunc("/v1/users/123", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
-		fmt.Fprint(writer, `{
+		_, err := fmt.Fprint(writer, `{
 				"id":123,
 				"first_name": "Ei",
 				"last_name": "Jei",
@@ -73,6 +76,7 @@ func TestUser_Get(t *testing.T) {
 				"security_phone": "37060000000",
 				"security_phone_verified": false
 			 }`)
+		require.NoError(t, err)
 	})
 
 	user, _, err := testClient.Users.Get(t.Context(), 123, nil)

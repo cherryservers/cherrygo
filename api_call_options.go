@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// GetOptions are the optional query parameters for a GET request.
 type GetOptions struct {
 	Fields []string `url:"fields,omitempty,comma"`
 	Limit  int      `url:"limit,omitempty"`
@@ -17,20 +18,21 @@ type GetOptions struct {
 	QueryParams map[string]string `url:"-"`
 }
 
+// WithQuery encodes query parameters into the path.
 func (g *GetOptions) WithQuery(apiPath string) string {
-	params := g.Encode()
+	params := g.encode()
 	if params != "" {
 		return fmt.Sprintf("%s?%s", apiPath, params)
 	}
 	return apiPath
 }
 
-func (g *GetOptions) Encode() string {
+func (g *GetOptions) encode() string {
 	if g == nil {
 		return ""
 	}
 	v := url.Values{}
-	if g.Fields != nil && len(g.Fields) > 0 {
+	if len(g.Fields) > 0 {
 		v.Add("fields", strings.Join(g.Fields, ","))
 	}
 
@@ -40,13 +42,13 @@ func (g *GetOptions) Encode() string {
 		}
 	}
 
-	if g.Type != nil && len(g.Type) > 0 {
+	if len(g.Type) > 0 {
 		for _, el := range g.Type {
 			v.Add("type[]", el)
 		}
 	}
 
-	if g.Status != nil && len(g.Status) > 0 {
+	if len(g.Status) > 0 {
 		for _, el := range g.Status {
 			v.Add("status[]", el)
 		}

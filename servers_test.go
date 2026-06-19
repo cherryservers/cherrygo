@@ -47,7 +47,8 @@ func TestServer_List(t *testing.T) {
 		jsonBytes, _ := json.Marshal(expected)
 		response := string(jsonBytes)
 
-		fmt.Fprint(writer, response)
+		_, err := fmt.Fprint(writer, response)
+		require.NoError(t, err)
 	})
 
 	servers, _, err := testClient.Servers.List(t.Context(), 123, nil)
@@ -91,7 +92,8 @@ func TestServer_Get(t *testing.T) {
 		jsonBytes, _ := json.Marshal(expected)
 		response := string(jsonBytes)
 
-		fmt.Fprint(writer, response)
+		_, err := fmt.Fprint(writer, response)
+		require.NoError(t, err)
 	})
 
 	server, _, err := testClient.Servers.Get(t.Context(), 383531, nil)
@@ -118,7 +120,8 @@ func TestServer_PowerState(t *testing.T) {
 		jsonBytes, _ := json.Marshal(expected)
 		response := string(jsonBytes)
 
-		fmt.Fprint(writer, response)
+		_, err := fmt.Fprint(writer, response)
+		require.NoError(t, err)
 	})
 
 	power, _, err := testClient.Servers.PowerState(t.Context(), 383531)
@@ -180,7 +183,8 @@ func TestServer_Create(t *testing.T) {
 		jsonBytes, _ := json.Marshal(expected)
 		response := string(jsonBytes)
 
-		fmt.Fprint(writer, response)
+		_, err = fmt.Fprint(writer, response)
+		require.NoError(t, err)
 	})
 
 	tags := map[string]string{"env": "dev"}
@@ -215,7 +219,8 @@ func TestServer_Delete(t *testing.T) {
 
 		writer.WriteHeader(http.StatusNoContent)
 
-		fmt.Fprint(writer)
+		_, err := fmt.Fprint(writer)
+		require.NoError(t, err)
 	})
 
 	_, _, err := testClient.Servers.Delete(t.Context(), 383531)
@@ -251,7 +256,8 @@ func TestServer_PowerOn(t *testing.T) {
 
 		jsonBytes, _ := json.Marshal(response)
 
-		fmt.Fprint(writer, string(jsonBytes))
+		_, err = fmt.Fprint(writer, string(jsonBytes))
+		require.NoError(t, err)
 	})
 
 	_, _, err := testClient.Servers.PowerOn(t.Context(), 383531)
@@ -287,7 +293,8 @@ func TestServer_PowerOff(t *testing.T) {
 
 		jsonBytes, _ := json.Marshal(response)
 
-		fmt.Fprint(writer, string(jsonBytes))
+		_, err = fmt.Fprint(writer, string(jsonBytes))
+		require.NoError(t, err)
 	})
 
 	_, _, err := testClient.Servers.PowerOff(t.Context(), 383531)
@@ -323,7 +330,8 @@ func TestServer_Reboot(t *testing.T) {
 
 		jsonBytes, _ := json.Marshal(response)
 
-		fmt.Fprint(writer, string(jsonBytes))
+		_, err = fmt.Fprint(writer, string(jsonBytes))
+		require.NoError(t, err)
 	})
 
 	_, _, err := testClient.Servers.Reboot(t.Context(), 383531)
@@ -362,7 +370,8 @@ func TestServer_EnterRescueMode(t *testing.T) {
 		jsonBytes, _ := json.Marshal(expected)
 		response := string(jsonBytes)
 
-		fmt.Fprint(writer, response)
+		_, err = fmt.Fprint(writer, response)
+		require.NoError(t, err)
 	})
 
 	_, _, err := testClient.Servers.EnterRescueMode(t.Context(), 383531, &RescueServerFields{Password: "abcdef"})
@@ -400,7 +409,8 @@ func TestServer_ExitRescueMode(t *testing.T) {
 		jsonBytes, _ := json.Marshal(expected)
 		response := string(jsonBytes)
 
-		fmt.Fprint(writer, response)
+		_, err = fmt.Fprint(writer, response)
+		require.NoError(t, err)
 	})
 
 	_, _, err := testClient.Servers.ExitRescueMode(t.Context(), 383531)
@@ -435,7 +445,8 @@ func TestServersClient_ResetBMCPassword(t *testing.T) {
 
 		jsonBytes, _ := json.Marshal(response)
 
-		fmt.Fprint(writer, string(jsonBytes))
+		_, err := fmt.Fprint(writer, string(jsonBytes))
+		require.NoError(t, err)
 	})
 
 	if _, _, err := testClient.Servers.ResetBMCPassword(t.Context(), 383531); err != nil {
@@ -479,7 +490,8 @@ func TestServer_Update(t *testing.T) {
 
 		jsonBytes, _ := json.Marshal(response)
 
-		fmt.Fprint(writer, string(jsonBytes))
+		_, err = fmt.Fprint(writer, string(jsonBytes))
+		require.NoError(t, err)
 	})
 
 	tags := map[string]string{"env": "dev"}
@@ -524,7 +536,8 @@ func TestServer_Reinstall(t *testing.T) {
 		assert.Equal(t, reinstallRequest, *v)
 
 		w.WriteHeader(http.StatusCreated)
-		fmt.Fprint(w, `{"id": 123, "deployed_image": {"slug": "test-img"}}`)
+		_, err = fmt.Fprint(w, `{"id": 123, "deployed_image": {"slug": "test-img"}}`)
+		require.NoError(t, err)
 	})
 
 	server, _, err := testClient.Servers.Reinstall(t.Context(), 123, &reinstallRequest)
@@ -542,7 +555,8 @@ func TestServer_ListSSHKeys(t *testing.T) {
 		testMethod(t, r, http.MethodGet)
 
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, `[{"id": 123, "label": "test-key"}]`)
+		_, err := fmt.Fprint(w, `[{"id": 123, "label": "test-key"}]`)
+		require.NoError(t, err)
 	})
 
 	keys, _, err := testClient.Servers.ListSSHKeys(t.Context(), 123, nil)
@@ -560,7 +574,8 @@ func TestServer_ListCycles(t *testing.T) {
 		testMethod(t, r, http.MethodGet)
 
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, `[{"id": 123, "name": "test-name", "slug": "test-slug"}]`)
+		_, err := fmt.Fprint(w, `[{"id": 123, "name": "test-name", "slug": "test-slug"}]`)
+		require.NoError(t, err)
 	})
 
 	cycles, _, err := testClient.Servers.ListCycles(t.Context(), nil)
@@ -591,7 +606,8 @@ func TestServer_Upgrade(t *testing.T) {
 
 		assert.Equal(t, want, *v)
 
-		fmt.Fprint(w, `{"id": 123, "plan":{"id": 123, "slug": "test-plan"}}`)
+		_, err = fmt.Fprint(w, `{"id": 123, "plan":{"id": 123, "slug": "test-plan"}}`)
+		require.NoError(t, err)
 	})
 
 	server, _, err := testClient.Servers.Upgrade(t.Context(), 123, "test-plan")

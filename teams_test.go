@@ -17,7 +17,8 @@ func TestTeam_Delete(t *testing.T) {
 	mux.HandleFunc("/v1/teams/123", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodDelete)
 		writer.WriteHeader(http.StatusNoContent)
-		fmt.Fprint(writer)
+		_, err := fmt.Fprint(writer)
+		require.NoError(t, err)
 	})
 
 	_, err := testClient.Teams.Delete(t.Context(), 123)
@@ -49,7 +50,7 @@ func TestTeam_List(t *testing.T) {
 		testMethod(t, request, http.MethodGet)
 		writer.WriteHeader(http.StatusOK)
 
-		fmt.Fprint(writer, `[{
+		_, err := fmt.Fprint(writer, `[{
 				"id":123,
 				"name": "team",
 				"credit": {
@@ -63,6 +64,8 @@ func TestTeam_List(t *testing.T) {
 					}
 				}
 			 }]`)
+
+		require.NoError(t, err)
 	})
 
 	team, _, err := testClient.Teams.List(t.Context(), nil)
@@ -118,7 +121,7 @@ func TestTeam_Get(t *testing.T) {
 		testMethod(t, request, http.MethodGet)
 		writer.WriteHeader(http.StatusOK)
 
-		fmt.Fprint(writer, `{
+		_, err := fmt.Fprint(writer, `{
 					"id": 123,
 					"name": "team",
 					"credit": {
@@ -157,6 +160,7 @@ func TestTeam_Get(t *testing.T) {
 					"href": "/teams/148226"
 					}
 		`)
+		require.NoError(t, err)
 	})
 
 	team, _, err := testClient.Teams.Get(t.Context(), 123, nil)
@@ -191,11 +195,12 @@ func TestTeam_Create(t *testing.T) {
 
 		writer.WriteHeader(http.StatusCreated)
 
-		fmt.Fprint(writer, `{
+		_, err = fmt.Fprint(writer, `{
 					"id": 123,
 					"name": "team"
 			}
 		`)
+		require.NoError(t, err)
 	})
 
 	team, _, err := testClient.Teams.Create(t.Context(), &createRequest)
@@ -214,7 +219,7 @@ func TestTeam_Update(t *testing.T) {
 	}
 
 	var (
-		name = "team"
+		name     = "team"
 		teamType = "personal"
 		currency = "EUR"
 	)
@@ -235,11 +240,12 @@ func TestTeam_Update(t *testing.T) {
 
 		writer.WriteHeader(http.StatusCreated)
 
-		fmt.Fprint(writer, `{
+		_, err = fmt.Fprint(writer, `{
 					"id": 123,
 					"name": "team"
 			}
 		`)
+		require.NoError(t, err)
 	})
 
 	team, _, err := testClient.Teams.Update(t.Context(), 123, &updateRequest)

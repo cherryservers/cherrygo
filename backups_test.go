@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestBackupStorage_Get(t *testing.T) {
@@ -25,7 +27,7 @@ func TestBackupStorage_Get(t *testing.T) {
 
 	mux.HandleFunc("/v1/backup-storages/123", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
-		fmt.Fprint(writer, `{
+		_, err := fmt.Fprint(writer, `{
 			"id": 123,
 			"status": "deployed",
 			"state": "active",
@@ -34,6 +36,7 @@ func TestBackupStorage_Get(t *testing.T) {
 			"size_gigabytes": 100,
 			"used_gigabytes": 1
 		}`)
+		require.NoError(t, err)
 	})
 
 	backup, _, err := testClient.Backups.Get(t.Context(), 123, nil)
@@ -57,10 +60,11 @@ func TestBackupStorage_ListBackups(t *testing.T) {
 
 	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID)+"/backup-storages", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
-		fmt.Fprint(writer, `[
+		_, err := fmt.Fprint(writer, `[
 			{"id": 123},
 			{"id": 321}
 		]`)
+		require.NoError(t, err)
 	})
 
 	backups, _, err := testClient.Backups.ListBackups(t.Context(), projectID, nil)
@@ -89,7 +93,7 @@ func TestBackupStorage_ListPlans(t *testing.T) {
 
 	mux.HandleFunc("/v1/backup-storage-plans", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
-		fmt.Fprint(writer, `[
+		_, err := fmt.Fprint(writer, `[
 			{
 				"id": 123,
 				"name": "Backup 100",
@@ -98,6 +102,8 @@ func TestBackupStorage_ListPlans(t *testing.T) {
 			},
 			{"id": 321}
 		]`)
+
+		require.NoError(t, err)
 	})
 
 	backupPlans, _, err := testClient.Backups.ListPlans(t.Context(), nil)
@@ -135,7 +141,8 @@ func TestBackupStorage_Create(t *testing.T) {
 			t.Errorf("Request body\n sent %#v\n expected %#v", v, requestBody)
 		}
 
-		fmt.Fprint(writer, `{"id": 123}`)
+		_, err = fmt.Fprint(writer, `{"id": 123}`)
+		require.NoError(t, err)
 	})
 
 	createBackup := CreateBackup{
@@ -174,7 +181,8 @@ func TestBackupStorage_Update(t *testing.T) {
 			t.Errorf("Request body\n sent %#v\n expected %#v", v, requestBody)
 		}
 
-		fmt.Fprint(writer, `{"id": 123}`)
+		_, err = fmt.Fprint(writer, `{"id": 123}`)
+		require.NoError(t, err)
 	})
 
 	updateBackupStorage := UpdateBackupStorage{
@@ -214,7 +222,7 @@ func TestBackupStorage_UpdateMethod(t *testing.T) {
 			t.Errorf("Request body\n sent %#v\n expected %#v", v, requestBody)
 		}
 
-		fmt.Fprint(writer, `[{
+		_, err = fmt.Fprint(writer, `[{
 			"name": "FTP",
 			"username": "username",
 			"password": "password",
@@ -222,6 +230,8 @@ func TestBackupStorage_UpdateMethod(t *testing.T) {
 			"ssh_key": "ssh_key",
 			"enabled": true
 			}]`)
+
+		require.NoError(t, err)
 	})
 
 	updateBackupMethod := UpdateBackupMethod{
@@ -244,7 +254,8 @@ func TestBackupStorage_Delete(t *testing.T) {
 	mux.HandleFunc("/v1/backup-storages/123", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodDelete)
 		writer.WriteHeader(http.StatusNoContent)
-		fmt.Fprint(writer)
+		_, err := fmt.Fprint(writer)
+		require.NoError(t, err)
 	})
 
 	_, err := testClient.Backups.Delete(t.Context(), 123)

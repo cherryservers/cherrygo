@@ -15,7 +15,7 @@ import (
 )
 
 func TestDebug(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, err := fmt.Fprintf(w, `{"id": 1}`)
 		require.NoError(t, err)
 	}))

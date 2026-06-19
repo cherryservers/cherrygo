@@ -31,7 +31,8 @@ func TestSSHKey_List(t *testing.T) {
 		jsonBytes, _ := json.Marshal(expected)
 		response := string(jsonBytes)
 
-		fmt.Fprint(writer, response)
+		_, err := fmt.Fprint(writer, response)
+		require.NoError(t, err)
 	})
 
 	sshKey, _, err := testClient.SSHKeys.List(t.Context(), nil)
@@ -60,7 +61,8 @@ func TestSSHKey_Get(t *testing.T) {
 		jsonBytes, _ := json.Marshal(expected)
 		response := string(jsonBytes)
 
-		fmt.Fprint(writer, response)
+		_, err := fmt.Fprint(writer, response)
+		require.NoError(t, err)
 	})
 
 	sshKey, _, err := testClient.SSHKeys.Get(t.Context(), 1, nil)
@@ -107,7 +109,8 @@ func TestSSHKey_Create(t *testing.T) {
 
 		jsonBytes, _ := json.Marshal(expected)
 
-		fmt.Fprint(writer, string(jsonBytes))
+		_, err = fmt.Fprint(writer, string(jsonBytes))
+		require.NoError(t, err)
 	})
 
 	sshCreate := CreateSSHKey{
@@ -116,7 +119,6 @@ func TestSSHKey_Create(t *testing.T) {
 	}
 
 	_, _, err := testClient.SSHKeys.Create(t.Context(), &sshCreate)
-
 	if err != nil {
 		t.Errorf("SSHKey.Create returned %+v", err)
 	}
@@ -131,11 +133,11 @@ func TestSSHKey_Delete(t *testing.T) {
 
 		writer.WriteHeader(http.StatusNoContent)
 
-		fmt.Fprint(writer)
+		_, err := fmt.Fprint(writer)
+		require.NoError(t, err)
 	})
 
 	_, _, err := testClient.SSHKeys.Delete(t.Context(), 1)
-
 	if err != nil {
 		t.Errorf("SSHKey.Delete returned %+v", err)
 	}
@@ -170,7 +172,8 @@ func TestSSHKey_Update(t *testing.T) {
 
 		jsonBytes, _ := json.Marshal(expected)
 
-		fmt.Fprint(writer, string(jsonBytes))
+		_, err = fmt.Fprint(writer, string(jsonBytes))
+		require.NoError(t, err)
 	})
 
 	label := "updated label"
@@ -181,7 +184,6 @@ func TestSSHKey_Update(t *testing.T) {
 	}
 
 	_, _, err := testClient.SSHKeys.Update(t.Context(), 1, &sshUpdate)
-
 	if err != nil {
 		t.Errorf("SSHKey.Update returned %+v", err)
 	}

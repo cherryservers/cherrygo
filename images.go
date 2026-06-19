@@ -14,6 +14,7 @@ type ImagesService interface {
 	List(ctx context.Context, plan string, opts *GetOptions) ([]Image, *Response, error)
 }
 
+// Image holds OS image data.
 type Image struct {
 	ID      int       `json:"id,omitempty"`
 	Name    string    `json:"name,omitempty"`
@@ -21,6 +22,7 @@ type Image struct {
 	Pricing []Pricing `json:"pricing,omitempty"`
 }
 
+// ImagesClient makes image related API requests.
 type ImagesClient struct {
 	client *Client
 }
@@ -36,9 +38,5 @@ func (i *ImagesClient) List(ctx context.Context, plan string, opts *GetOptions) 
 	}
 
 	resp, err := i.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }

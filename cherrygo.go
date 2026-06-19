@@ -1,3 +1,5 @@
+// Package cherrygo provides a client that can
+// manage Cherry Servers infrastructure resources.
 package cherrygo
 
 import (
@@ -42,7 +44,7 @@ type Client struct {
 	Projects    ProjectsService
 	SSHKeys     SSHKeysService
 	Servers     ServersService
-	IPAddresses IpAddressesService
+	IPAddresses IPAddressesService
 	Storages    StoragesService
 	Regions     RegionsService
 	Users       UsersService
@@ -55,6 +57,7 @@ type Response struct {
 	Meta
 }
 
+// Meta is the response metadata.
 type Meta struct {
 	Total int
 }
@@ -91,7 +94,7 @@ func (c *Client) NewRequest(ctx context.Context, method, path string, body any) 
 
 // Do executes a request.
 //
-// The response body is un-marshalled into v, so it must be a pointer
+// The response body is un-marshalled into v and closed. v must be a pointer
 // to a type that can hold the expected response, [io.Writer] or nil.
 func (c *Client) Do(req *http.Request, v any) (*Response, error) {
 	resp, err := c.client.Do(req)
@@ -99,7 +102,9 @@ func (c *Client) Do(req *http.Request, v any) (*Response, error) {
 		return nil, err
 	}
 
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	response := Response{Response: resp}
 	response.populateTotal()
@@ -122,7 +127,7 @@ func (c *Client) Do(req *http.Request, v any) (*Response, error) {
 			return nil, err
 		}
 
-		err = fmt.Errorf("Error response from API: %v (error code: %v)", errorResponse.Message, errorResponse.Code)
+		err = fmt.Errorf("error response from API: %v (error code: %v)", errorResponse.Message, errorResponse.Code)
 
 		return &response, err
 	}
@@ -135,13 +140,16 @@ func (c *Client) Do(req *http.Request, v any) (*Response, error) {
 	if v != nil {
 		// if v implements the io.Writer interface, return the raw response
 		if w, ok := v.(io.Writer); ok {
-			io.Copy(w, resp.Body)
+			_, err := io.Copy(w, resp.Body)
+			if err != nil {
+				return nil, fmt.Errorf("failed to copy response body: %w", err)
+			}
 		} else {
 
 			decoder := json.NewDecoder(resp.Body)
 			err := decoder.Decode(&v)
 			if err != nil {
-				log.Printf("Error while decoding body: %v -> %v", err, err.Error())
+				log.Printf("error while decoding body: %v -> %v", err, err.Error())
 				return &response, err
 			}
 		}
@@ -216,20 +224,6 @@ type ErrorResponse struct {
 	SingleError string   `json:"error"`
 }
 
-func checkResponseForErrors(r *http.Response) *ErrorResponse {
-	if c := r.StatusCode; c >= 200 && c <= 299 {
-		return nil
-	}
-
-	errR := &ErrorResponse{Response: r}
-	data, err := io.ReadAll(r.Body)
-	if err == nil && len(data) > 0 {
-		json.Unmarshal(data, errR)
-	}
-
-	return errR
-}
-
 // WithUserAgent set user agent when making requests
 func WithUserAgent(ua string) ClientOpt {
 	return func(c *options) error {
@@ -276,6 +270,6 @@ func WithDebug(w io.Writer) ClientOpt {
 func (r *Response) populateTotal() {
 	// parse the headers and populate Meta.Total
 	if total := r.Header.Get("X-Total-Count"); total != "" {
-		r.Meta.Total, _ = strconv.Atoi(total)
+		r.Total, _ = strconv.Atoi(total)
 	}
 }

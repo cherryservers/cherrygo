@@ -20,6 +20,7 @@ type StoragesService interface {
 	Update(ctx context.Context, request *UpdateStorage) (BlockStorage, *Response, error)
 }
 
+// BlockStorage data.
 type BlockStorage struct {
 	ID            int        `json:"id"`
 	Name          string     `json:"name"`
@@ -36,10 +37,7 @@ type BlockStorage struct {
 	Region        Region     `json:"region"`
 }
 
-type StorageClient struct {
-	client *Client
-}
-
+// CreateStorage is the storage creation request body.
 type CreateStorage struct {
 	ProjectID   int    `json:"project_id"`
 	Description string `json:"description"`
@@ -47,27 +45,32 @@ type CreateStorage struct {
 	Region      string `json:"region"`
 }
 
+// AttachTo is the storage attachment request body data.
 type AttachTo struct {
 	StorageID int `json:"storage_id"`
 	AttachTo  int `json:"attach_to"`
 }
 
+// AttachedTo is the data of the instance the storage is attached to.
 type AttachedTo struct {
 	ID       int    `json:"id"`
 	Hostname string `json:"hostname,omitempty"`
 	Href     string `json:"href"`
 }
 
+// UpdateStorage is the request body for updating storage instances.
 type UpdateStorage struct {
 	StorageID   int    `json:"storage_id"`
 	Size        int    `json:"size"`
 	Description string `json:"description,omitempty"`
 }
 
+// StoragesClient makes storage related API requests.
 type StoragesClient struct {
 	client *Client
 }
 
+// List all project storages.
 func (s *StoragesClient) List(ctx context.Context, projectID int, opts *GetOptions) ([]BlockStorage, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("%s/%d/storages", baseProjectPath, projectID))
 	var trans []BlockStorage
@@ -78,13 +81,10 @@ func (s *StoragesClient) List(ctx context.Context, projectID int, opts *GetOptio
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
+// Get storage instance.
 func (s *StoragesClient) Get(ctx context.Context, storageID int, opts *GetOptions) (BlockStorage, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("%s/%d", baseStoragePath, storageID))
 	var trans BlockStorage
@@ -95,13 +95,10 @@ func (s *StoragesClient) Get(ctx context.Context, storageID int, opts *GetOption
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
+// Create storage instance.
 func (s *StoragesClient) Create(ctx context.Context, request *CreateStorage) (BlockStorage, *Response, error) {
 	var trans BlockStorage
 	path := fmt.Sprintf("%s/%d/storages", baseProjectPath, request.ProjectID)
@@ -112,13 +109,10 @@ func (s *StoragesClient) Create(ctx context.Context, request *CreateStorage) (Bl
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
+// Delete storage.
 func (s *StoragesClient) Delete(ctx context.Context, storageID int) (*Response, error) {
 	path := fmt.Sprintf("%s/%d", baseStoragePath, storageID)
 
@@ -128,13 +122,10 @@ func (s *StoragesClient) Delete(ctx context.Context, storageID int) (*Response, 
 	}
 
 	resp, err := s.client.Do(req, nil)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return resp, err
 }
 
+// Attach storage to server.
 func (s *StoragesClient) Attach(ctx context.Context, request *AttachTo) (BlockStorage, *Response, error) {
 	var trans BlockStorage
 	path := fmt.Sprintf("%s/%d/attachments", baseStoragePath, request.StorageID)
@@ -145,13 +136,10 @@ func (s *StoragesClient) Attach(ctx context.Context, request *AttachTo) (BlockSt
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
+// Detach storage from server.
 func (s *StoragesClient) Detach(ctx context.Context, storageID int) (*Response, error) {
 	path := fmt.Sprintf("%s/%d/attachments", baseStoragePath, storageID)
 
@@ -161,13 +149,10 @@ func (s *StoragesClient) Detach(ctx context.Context, storageID int) (*Response, 
 	}
 
 	resp, err := s.client.Do(req, nil)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return resp, err
 }
 
+// Update storage.
 func (s *StoragesClient) Update(ctx context.Context, request *UpdateStorage) (BlockStorage, *Response, error) {
 	var trans BlockStorage
 	path := fmt.Sprintf("%s/%d", baseStoragePath, request.StorageID)
@@ -178,9 +163,5 @@ func (s *StoragesClient) Update(ctx context.Context, request *UpdateStorage) (Bl
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }

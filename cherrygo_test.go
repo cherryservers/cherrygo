@@ -25,7 +25,7 @@ var (
 var authToken = "myToken"
 
 func setup() {
-	os.Setenv("CHERRY_AUTH_TOKEN", authToken)
+	_ = os.Setenv("CHERRY_AUTH_TOKEN", authToken)
 
 	mux = http.NewServeMux()
 	server = httptest.NewServer(mux)
@@ -71,13 +71,15 @@ func TestErrorResponse(t *testing.T) {
 	setup()
 	defer teardown()
 
-	mux.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/", func(writer http.ResponseWriter, _ *http.Request) {
 		writer.WriteHeader(http.StatusBadRequest)
 
-		fmt.Fprint(writer, `{
+		_, err := fmt.Fprint(writer, `{
 			"code": 400,
 			"message": "Bad Request"
 		}`)
+
+		require.NoError(t, err)
 	})
 
 	req, err := testClient.NewRequest(t.Context(), http.MethodGet, "/", nil)
@@ -85,14 +87,15 @@ func TestErrorResponse(t *testing.T) {
 
 	_, err = testClient.Do(req, nil)
 
-	expectedErr := "Error response from API: Bad Request (error code: 400)"
+	expectedErr := "error response from API: Bad Request (error code: 400)"
 	if err.Error() != expectedErr {
 		t.Fatalf("NewClient() expected error: %v, got %v", expectedErr, err)
 	}
 }
 
 func TestCustomUserAgent(t *testing.T) {
-	os.Setenv("CHERRY_AUTH_TOKEN", "token")
+	err := os.Setenv("CHERRY_AUTH_TOKEN", "token")
+	require.NoError(t, err)
 
 	ua := "testing/1.0"
 	c, err := NewClient(WithUserAgent(ua))

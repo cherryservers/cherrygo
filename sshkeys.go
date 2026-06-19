@@ -18,7 +18,7 @@ type SSHKeysService interface {
 	Update(ctx context.Context, sshKeyID int, request *UpdateSSHKey) (SSHKey, *Response, error)
 }
 
-// SSHKeys fields for return values after creation
+// SSHKey data.
 type SSHKey struct {
 	ID          int    `json:"id,omitempty"`
 	Label       string `json:"label,omitempty"`
@@ -30,6 +30,7 @@ type SSHKey struct {
 	Href        string `json:"href,omitempty"`
 }
 
+// SSHKeysClient makes SSH key related API requests.
 type SSHKeysClient struct {
 	client *Client
 }
@@ -46,7 +47,7 @@ type UpdateSSHKey struct {
 	Key   *string `json:"key,omitempty"`
 }
 
-// List all available ssh keys
+// List all SSH keys.
 func (s *SSHKeysClient) List(ctx context.Context, opts *GetOptions) ([]SSHKey, *Response, error) {
 	var trans []SSHKey
 	pathQuery := opts.WithQuery(baseSSHPath)
@@ -57,13 +58,10 @@ func (s *SSHKeysClient) List(ctx context.Context, opts *GetOptions) ([]SSHKey, *
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
+// Get an SSH key.
 func (s *SSHKeysClient) Get(ctx context.Context, sshKeyID int, opts *GetOptions) (SSHKey, *Response, error) {
 	var trans SSHKey
 	path := opts.WithQuery(fmt.Sprintf("%s/%d", baseSSHPath, sshKeyID))
@@ -74,14 +72,10 @@ func (s *SSHKeysClient) Get(ctx context.Context, sshKeyID int, opts *GetOptions)
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
-// Create adds new SSH key
+// Create a new SSH key.
 func (s *SSHKeysClient) Create(ctx context.Context, request *CreateSSHKey) (SSHKey, *Response, error) {
 	var trans SSHKey
 
@@ -91,14 +85,10 @@ func (s *SSHKeysClient) Create(ctx context.Context, request *CreateSSHKey) (SSHK
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
-// Delete removes desired SSH key by its ID
+// Delete removes desired SSH key by its ID.
 func (s *SSHKeysClient) Delete(ctx context.Context, sshKeyID int) (SSHKey, *Response, error) {
 	var trans SSHKey
 	path := fmt.Sprintf("%s/%d", baseSSHPath, sshKeyID)
@@ -109,14 +99,10 @@ func (s *SSHKeysClient) Delete(ctx context.Context, sshKeyID int) (SSHKey, *Resp
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
 
-// Update function updates keys Label or key itself
+// Update an SSH key.
 func (s *SSHKeysClient) Update(ctx context.Context, sshKeyID int, request *UpdateSSHKey) (SSHKey, *Response, error) {
 	var trans SSHKey
 	path := fmt.Sprintf("%s/%d", baseSSHPath, sshKeyID)
@@ -127,9 +113,5 @@ func (s *SSHKeysClient) Update(ctx context.Context, sshKeyID int, request *Updat
 	}
 
 	resp, err := s.client.Do(req, &trans)
-	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
-	}
-
 	return trans, resp, err
 }
