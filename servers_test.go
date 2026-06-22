@@ -7,6 +7,8 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strconv"
 	"testing"
@@ -773,4 +775,42 @@ func TestGeneratePasswordGeneratesValidCherryServersPasswords(t *testing.T) {
 	}
 
 	assert.Empty(t, failures)
+}
+
+func TestServer_AllowBMCAccess(t *testing.T) {
+	setup()
+	defer teardown()
+
+	apiResponse, err := os.Open(filepath.Join("testdata", "allow_bmc.json"))
+	require.NoError(t, err)
+	defer func() {
+		_ = apiResponse.Close()
+	}()
+
+	wantReqBody := allowBMCAccess{
+		ServerAction: ServerAction{Type: "create-console-access"},
+		AllowedIP:    "123.123.123.123",
+	}
+
+	mux.HandleFunc("POST /v1/servers/899712/actions", func(w http.ResponseWriter, r *http.Request) {
+		gotReqBody := allowBMCAccess{}
+		err := json.NewDecoder(r.Body).Decode(&gotReqBody)
+		require.NoError(t, err)
+
+		assert.Equal(t, wantReqBody, gotReqBody)
+
+		w.WriteHeader(http.StatusCreated)
+		_, _ = io.ReadAll(io.TeeReader(apiResponse, w))
+		_, _ = apiResponse.Seek(0, io.SeekStart)
+	})
+
+	got, resp, err := testClient.Servers.AllowBMCAccess(t.Context(), 899712, "123.123.123.123")
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+
+	var want Server
+	err = json.NewDecoder(apiResponse).Decode(&want)
+	require.NoError(t, err)
+
+	assert.Equal(t, want, got)
 }
