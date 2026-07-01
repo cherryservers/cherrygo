@@ -20,11 +20,11 @@ import (
 )
 
 const (
-	apiURL             = "https://api.cherryservers.com/v1/"
-	cherryAuthTokenVar = "CHERRY_AUTH_TOKEN"
-	mediaType          = "application/json"
-	userAgent          = "cherry-agent-go/"
-	cherryDebugVar     = "CHERRY_DEBUG"
+	apiURL          = "https://api.cherryservers.com/v1/"
+	cherryAPIKeyVar = "CHERRY_API_KEY"
+	mediaType       = "application/json"
+	userAgent       = "cherry-agent-go/"
+	cherryDebugVar  = "CHERRY_DEBUG"
 )
 
 // Client is a client for the Cherry Servers RESTful API.
@@ -39,7 +39,7 @@ type Client struct {
 	BaseURL *url.URL
 
 	UserAgent string
-	AuthToken string
+	APIKey    string
 
 	Teams       TeamsService
 	Plans       PlansService
@@ -85,7 +85,7 @@ func (c *Client) NewRequest(ctx context.Context, method, path string, body any) 
 		return nil, err
 	}
 
-	bearer := "Bearer " + c.AuthToken
+	bearer := "Bearer " + c.APIKey
 	req.Header.Set("Authorization", bearer)
 	req.Header.Set("User-Agent", c.UserAgent)
 	req.Header.Set("Accept", mediaType)
@@ -165,7 +165,7 @@ type options struct {
 	url         string
 	client      *http.Client
 	userAgent   string
-	authToken   string
+	apiKey      string
 	debugDst    io.Writer
 	pollBackoff backoff.Func
 }
@@ -176,7 +176,7 @@ type ClientOpt func(*options) error
 // NewClient creates a Cherry Servers API client.
 func NewClient(opts ...ClientOpt) (*Client, error) {
 	parsedOpts := &options{
-		authToken: os.Getenv(cherryAuthTokenVar),
+		apiKey:    os.Getenv(cherryAPIKeyVar),
 		client:    &http.Client{},
 		url:       apiURL,
 		userAgent: userAgent,
@@ -193,8 +193,8 @@ func NewClient(opts ...ClientOpt) (*Client, error) {
 			return nil, err
 		}
 	}
-	if parsedOpts.authToken == "" {
-		return nil, fmt.Errorf("auth token must be provided as parameter of environment variable %s", cherryAuthTokenVar)
+	if parsedOpts.apiKey == "" {
+		return nil, fmt.Errorf("api key must be provided as an option or environment variable %s", cherryAPIKeyVar)
 	}
 
 	url, err := url.Parse(parsedOpts.url)
@@ -208,7 +208,7 @@ func NewClient(opts ...ClientOpt) (*Client, error) {
 
 	c := &Client{
 		client:      client.New(client.WithHTTPClient(parsedOpts.client), client.WithDebug(parsedOpts.debugDst)),
-		AuthToken:   parsedOpts.authToken,
+		APIKey:      parsedOpts.apiKey,
 		BaseURL:     url,
 		UserAgent:   parsedOpts.userAgent,
 		pollBackoff: parsedOpts.pollBackoff,
@@ -260,11 +260,11 @@ func WithHTTPClient(client *http.Client) ClientOpt {
 	}
 }
 
-// WithAuthToken use provided auth token to make requests, defaults to environment variable
-// CHERRY_AUTH_TOKEN
-func WithAuthToken(authToken string) ClientOpt {
+// WithAPIKey is used to provide a Cherry Servers API key to make requests, defaults to environment variable
+// CHERRY_API_KEY
+func WithAPIKey(apiKey string) ClientOpt {
 	return func(c *options) error {
-		c.authToken = authToken
+		c.apiKey = apiKey
 		return nil
 	}
 }

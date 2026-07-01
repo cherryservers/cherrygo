@@ -29,21 +29,21 @@ go get github.com/cherryservers/cherrygo/v3
 
 ### Authentication
 
-To authenticate to the Cherry Servers API, you must have an API token. You can create API tokens in the [Cherry Servers client portal](https://portal.cherryservers.com/settings/api-keys). Tokens must be exported in the `CHERRY_AUTH_TOKEN` environment variable or passed to the client directly.
+To authenticate to the Cherry Servers API, you must have an API key. You can create API keys in the [Cherry Servers client portal](https://portal.cherryservers.com/settings/api-keys). API keys must be exported in the `CHERRY_API_KEY` environment variable or passed to the client directly.
 
-Use an exported CHERRY_AUTH_TOKEN environment variable:
+Use an exported CHERRY_API_KEY environment variable:
 ```
-export CHERRY_AUTH_TOKEN="4bdc0acb8f7af4bdc0acb8f7afe78522e6dae9b7e03b0e78522e6dae9b7e03b0"
+export CHERRY_API_KEY="4bdc0acb8f7af4bdc0acb8f7afe78522e6dae9b7e03b0e78522e6dae9b7e03b0"
 ```
 ```go
 func main() {
     c, err := cherrygo.NewClient()
 }
 ```
-Pass a token directly to the client:
+Pass an API key directly to the client:
 ```go
 func main() {
-    c, err := cherrygo.NewClient(cherrygo.WithAuthToken("your-api-token"))
+    c, err := cherrygo.NewClient(cherrygo.WithAPIKey("your-api-key"))
 }
 ```
 

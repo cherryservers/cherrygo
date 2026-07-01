@@ -22,7 +22,7 @@ func (d *debugger) Do(req *http.Request) (*http.Response, error) {
 		d.l = log.New(d.dst, "cherrygo ", log.Default().Flags())
 	})
 
-	// Mask token.
+	// Mask API key.
 	auth := req.Header.Get("Authorization")
 	if auth != "" {
 		req.Header.Set("Authorization", "***")

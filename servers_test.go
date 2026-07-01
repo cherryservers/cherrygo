@@ -655,8 +655,8 @@ func TestServer_WaitForStatusSucceedsWhenServerDeployedBeforeContextExpires(t *t
 		return 0
 	}
 
-	client, err := NewClient(WithAuthToken(
-		"fakeToken"),
+	client, err := NewClient(WithAPIKey(
+		"fakeKey"),
 		WithPollBackoff(pollF),
 		WithURL(apiServer.URL),
 	)
@@ -695,8 +695,8 @@ func TestServer_WaitForStatusFailsWhenContextCancelled(t *testing.T) {
 		return time.Second * 5
 	}
 
-	client, err := NewClient(WithAuthToken(
-		"fakeToken"),
+	client, err := NewClient(WithAPIKey(
+		"fakeKey"),
 		WithPollBackoff(pollF),
 		WithURL(apiServer.URL),
 	)
