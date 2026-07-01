@@ -192,6 +192,7 @@ type CreateServer struct {
 	StorageID       int                `json:"storage_id,omitempty"`
 	Cycle           string             `json:"cycle,omitempty"`
 	DiscountCode    string             `json:"discount,omitempty"`
+	ConfigureIPv6   *bool              `json:"configure_ipv6,omitempty"`
 }
 
 // UpdateServer fields for updating a server with specified tags

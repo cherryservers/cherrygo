@@ -165,16 +165,17 @@ func TestServer_Create(t *testing.T) {
 	}
 
 	requestBody := map[string]interface{}{
-		"plan":         "e5_1620v4",
-		"project_id":   float64(projectID),
-		"hostname":     "server-hostname",
-		"image":        "ubuntu_22_04",
-		"region":       "eu_nord_1",
-		"ssh_keys":     []interface{}{"1", "2", "3"},
-		"ip_addresses": []interface{}{"e3f75899-1db3-b794-137f-78c5ee9096af"},
-		"user_data":    "dXNlcl9kYXRh",
-		"tags":         map[string]interface{}{"env": "dev"},
-		"spot_market":  false,
+		"plan":           "e5_1620v4",
+		"project_id":     float64(projectID),
+		"hostname":       "server-hostname",
+		"image":          "ubuntu_22_04",
+		"region":         "eu_nord_1",
+		"ssh_keys":       []interface{}{"1", "2", "3"},
+		"ip_addresses":   []interface{}{"e3f75899-1db3-b794-137f-78c5ee9096af"},
+		"user_data":      "dXNlcl9kYXRh",
+		"tags":           map[string]interface{}{"env": "dev"},
+		"spot_market":    false,
+		"configure_ipv6": false,
 	}
 
 	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID)+"/servers", func(writer http.ResponseWriter, request *http.Request) {
@@ -199,15 +200,16 @@ func TestServer_Create(t *testing.T) {
 
 	tags := map[string]string{"env": "dev"}
 	serverCreate := CreateServer{
-		Plan:        "e5_1620v4",
-		ProjectID:   projectID,
-		Hostname:    "server-hostname",
-		Image:       "ubuntu_22_04",
-		Region:      "eu_nord_1",
-		SSHKeys:     []string{"1", "2", "3"},
-		IPAddresses: []string{"e3f75899-1db3-b794-137f-78c5ee9096af"},
-		UserData:    "dXNlcl9kYXRh",
-		Tags:        &tags,
+		Plan:          "e5_1620v4",
+		ProjectID:     projectID,
+		Hostname:      "server-hostname",
+		Image:         "ubuntu_22_04",
+		Region:        "eu_nord_1",
+		SSHKeys:       []string{"1", "2", "3"},
+		IPAddresses:   []string{"e3f75899-1db3-b794-137f-78c5ee9096af"},
+		UserData:      "dXNlcl9kYXRh",
+		Tags:          &tags,
+		ConfigureIPv6: new(bool),
 	}
 
 	server, _, err := testClient.Servers.Create(t.Context(), &serverCreate)
@@ -218,6 +220,28 @@ func TestServer_Create(t *testing.T) {
 	if !reflect.DeepEqual(server, expected) {
 		t.Errorf("Server.Create returned %+v, expected %+v", server, expected)
 	}
+}
+
+func TestServer_CreateConfigureIPv6OmittedWhenNotSet(t *testing.T) {
+	setup()
+	defer teardown()
+
+	bod := CreateServer{ProjectID: 123}
+
+	mux.HandleFunc("POST /v1/projects/123/servers", func(w http.ResponseWriter, r *http.Request) {
+		dec := json.NewDecoder(r.Body)
+
+		got := CreateServer{}
+		err := dec.Decode(&got)
+		require.NoError(t, err)
+		assert.Nil(t, got.ConfigureIPv6)
+
+		_, err = fmt.Fprint(w, `{"id": 123}`)
+		require.NoError(t, err)
+	})
+
+	_, _, err := testClient.Servers.Create(t.Context(), &bod)
+	require.NoError(t, err)
 }
 
 func TestServer_Delete(t *testing.T) {
