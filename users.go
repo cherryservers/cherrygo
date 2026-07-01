@@ -33,7 +33,7 @@ type UsersClient struct {
 	client *Client
 }
 
-// CurrentUser gets current user based on the bearer token.
+// CurrentUser gets current user based on the API key.
 func (s *UsersClient) CurrentUser(ctx context.Context, opts *GetOptions) (User, *Response, error) {
 	var trans User
 	path := opts.WithQuery("v1/user")
