@@ -100,6 +100,7 @@ type Server struct {
 	Backup           BackupStorage     `json:"backup_storage,omitempty"`
 	Created          string            `json:"created_at,omitempty"`
 	TerminationDate  string            `json:"termination_date,omitempty"`
+	VLAN             int               `json:"vlan,omitempty"`
 }
 
 // BMC data.
