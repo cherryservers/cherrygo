@@ -2,7 +2,7 @@
 
 Cherry Servers golang API client library for Cherry Servers RESTful API.
 
-You can view the client API docs here: [https://pkg.go.dev/github.com/cherryservers/cherrygo/v3](https://pkg.go.dev/github.com/cherryservers/cherrygo/v3)
+You can view the client API docs here: [https://pkg.go.dev/github.com/cherryservers/cherrygo/v4](https://pkg.go.dev/github.com/cherryservers/cherrygo/v4)
 
 You can view Cherry Servers API docs here: [https://api.cherryservers.com/doc](https://api.cherryservers.com/doc)
 
@@ -24,7 +24,7 @@ You can view Cherry Servers API docs here: [https://api.cherryservers.com/doc](h
 
 Add the library as a dependency to your project:
 ```
-go get github.com/cherryservers/cherrygo/v3
+go get github.com/cherryservers/cherrygo/v4
 ```
 
 ### Authentication
