@@ -36,15 +36,25 @@ Use an exported CHERRY_API_KEY environment variable:
 export CHERRY_API_KEY="4bdc0acb8f7af4bdc0acb8f7afe78522e6dae9b7e03b0e78522e6dae9b7e03b0"
 ```
 ```go
+import (
+	"context"
+	"log"
+
+	"github.com/cherryservers/cherrygo/v4"
+)
+
+
 func main() {
+    ctx := context.Background()
     c, err := cherrygo.NewClient()
+    if err != nil {
+        log.Fatal(err)
+    }
 }
 ```
-Pass an API key directly to the client:
+To pass a key to client without an environment variable:
 ```go
-func main() {
-    c, err := cherrygo.NewClient(cherrygo.WithAPIKey("your-api-key"))
-}
+c, err := cherrygo.NewClient(cherrygo.WithAPIKey("your-api-key"))
 ```
 
 ### Examples
@@ -52,26 +62,27 @@ func main() {
 #### Get teams
 You will need a team ID for subsequent function calls, for example, to get projects for a specified team, you will need to provide a team ID.
 ```go
-teams, _, err := c.Teams.List(nil)
+teams, _, err := c.Teams.List(ctx, nil)
 if err != nil {
-    log.Fatal("Error", err)
+    log.Fatal(err)
 }
 
 for _, t := range teams {
-    log.Println(t.ID, t.Name, t.Credit.Promo.Remaining, t.Credit.Promo.Usage, t.Credit.Resources.Pricing.Price)
+    log.Printf("id: %d, name: %q, remaining promo credit: %f\n",
+        t.ID, t.Name, t.Credit.Promo.Remaining)
 }
 ```
 
 #### Get projects
 After you have your team ID, you can list your projects. You will need your project ID to list your servers or order new ones.
 ```go
-projects, _, err := c.Projects.List(teamID, nil)
+projects, _, err := c.Projects.List(ctx, teamID, nil)
 if err != nil {
-    log.Fatal("Error", err)
+    log.Fatal(err)
 }
 
 for _, p := range projects {
-    log.Println(p.ID, p.Name, p.Href)
+    log.Println(p.ID, p.Name)
 }
 ```
 
@@ -79,13 +90,22 @@ for _, p := range projects {
 View available server plans.
 
 ```go
-plans, _, err := c.Plans.List(teamID, nil)
+plans, _, err := c.Plans.List(ctx, teamID, nil)
 if err != nil {
-    log.Fatalf("Plans error: %v", err)
+    log.Fatal(err)
 }
 
 for _, p := range plans {
-    log.Println(p.Name, p.Slug)
+    var hourlyPrice float32
+    for _, pr := range p.Pricing {
+        if pr.Unit == "Hourly" {
+            hourlyPrice = pr.Price
+        }
+    }
+    for _, r := range p.AvailableRegions {
+        log.Printf("slug: %q, region: %q, stock: %d, type: %q, hourly price: %f",
+            p.Slug, r.Slug, r.StockQty, p.Type, hourlyPrice)
+    }
 }
 ```
 
@@ -93,13 +113,13 @@ for _, p := range plans {
 View OS images available for a specific plan.
 
 ```go
-images, _, err := c.Images.List(planSlug, nil)
+images, _, err := c.Images.List(ctx, planSlug, nil)
 if err != nil {
-    log.Fatal("Error", err)
+    log.Fatal(err)
 }
 
 for _, i := range images {
-    log.Println(i.Name, i.Slug)
+    log.Println(i.Slug)
 }
 ```
 
@@ -112,9 +132,9 @@ addServerRequest := cherrygo.CreateServer{
     Plan:        planSlug,
 }
 
-server, _, err := c.Servers.Create(&addServerRequest)
+server, _, err := c.Servers.Create(ctx, &addServerRequest)
 if err != nil {
-    log.Fatal("Error while creating new server: ", err)
+    log.Fatal(err)
 }
 
 log.Println(server.ID, server.Name, server.Hostname)
