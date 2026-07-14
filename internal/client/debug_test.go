@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cherryservers/cherrygo/v3/internal/client"
+	"github.com/cherryservers/cherrygo/v4/internal/client"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

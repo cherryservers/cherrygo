@@ -15,8 +15,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/cherryservers/cherrygo/v3/backoff"
-	"github.com/cherryservers/cherrygo/v3/internal/client"
+	"github.com/cherryservers/cherrygo/v4/backoff"
+	"github.com/cherryservers/cherrygo/v4/internal/client"
 )
 
 const (

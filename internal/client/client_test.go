@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cherryservers/cherrygo/v3/backoff"
-	"github.com/cherryservers/cherrygo/v3/internal/client"
+	"github.com/cherryservers/cherrygo/v4/backoff"
+	"github.com/cherryservers/cherrygo/v4/internal/client"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
