@@ -36,7 +36,7 @@ type UsersClient struct {
 // CurrentUser gets current user based on the API key.
 func (s *UsersClient) CurrentUser(ctx context.Context, opts *GetOptions) (User, *Response, error) {
 	var trans User
-	path := opts.WithQuery("v1/user")
+	path := opts.WithQuery("/v1/user")
 
 	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
