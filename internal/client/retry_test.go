@@ -98,8 +98,6 @@ func TestRetry(t *testing.T) {
 		"GET":    {408, 429, 502, 503, 504},
 		"DELETE": {408, 429, 502, 503, 504},
 		"PUT":    {408, 429, 502, 503, 504},
-		"POST":   {429, 503},
-		"PATCH":  {429, 503},
 	}
 
 	for method, statuses := range retryable {
@@ -146,8 +144,8 @@ func TestRetry(t *testing.T) {
 	}
 
 	unRetryable := map[string][]int{
-		"POST":  {408, 502, 504},
-		"PATCH": {408, 502, 504},
+		"POST":  {408, 429, 502, 503, 504},
+		"PATCH": {408, 429, 502, 503, 504},
 	}
 
 	for method, statuses := range unRetryable {
