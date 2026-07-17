@@ -182,6 +182,7 @@ func (p *PlansClient) listPrebuiltPlans(ctx context.Context, path, region string
 }
 
 // ListPrebuiltPlans retrieves variations of the base plan that have pre-assembled stock.
+// Mutates opts to set the region query parameter.
 func (p *PlansClient) ListPrebuiltPlans(ctx context.Context, basePlan, region string, opts *GetOptions) ([]PrebuiltPlan, *Response, error) {
 	path := fmt.Sprintf("%s/%s/prebuilts", basePlanPath, basePlan)
 	return p.listPrebuiltPlans(ctx, path, region, opts)
@@ -189,6 +190,7 @@ func (p *PlansClient) ListPrebuiltPlans(ctx context.Context, basePlan, region st
 
 // ListPrebuiltTeamPlans retrieves variations of the base plan that have pre-assembled stock.
 // The pricing is adjusted according to your teams billing settings.
+// Mutates opts to set the region query parameter.
 func (p *PlansClient) ListPrebuiltTeamPlans(ctx context.Context, basePlan, region string, teamID int, opts *GetOptions) ([]PrebuiltPlan, *Response, error) {
 	path := fmt.Sprintf("%s/%d/plans/%s/prebuilts", teamPlanPath, teamID, basePlan)
 	return p.listPrebuiltPlans(ctx, path, region, opts)
