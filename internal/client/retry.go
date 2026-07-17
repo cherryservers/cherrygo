@@ -134,20 +134,16 @@ func isIdempotent(method string) bool {
 }
 
 func safeToRetry(status int, method string) bool {
-	idempotentRetryable := []int{
+	retryable := []int{
 		http.StatusRequestTimeout,
 		http.StatusTooManyRequests,
 		http.StatusBadGateway,
 		http.StatusServiceUnavailable,
 		http.StatusGatewayTimeout,
 	}
-	nonIdempotentRetryable := []int{
-		http.StatusServiceUnavailable,
-		http.StatusTooManyRequests,
-	}
 
 	if isIdempotent(method) {
-		return slices.Contains(idempotentRetryable, status)
+		return slices.Contains(retryable, status)
 	}
-	return slices.Contains(nonIdempotentRetryable, status)
+	return false
 }
