@@ -730,16 +730,17 @@ func TestServer_WaitForStatusFailsWhenContextCancelled(t *testing.T) {
 
 	pollCount := 0
 	mux.HandleFunc("GET /v1/servers/123", func(w http.ResponseWriter, _ *http.Request) {
+		var handleErr error
 		pollCount++
 		if pollCount > 2 {
-			_, err = fmt.Fprint(w, `{"id": 123, "status": "deployed"}`)
+			_, handleErr = fmt.Fprint(w, `{"id": 123, "status": "deployed"}`)
 		} else if pollCount > 1 {
 			cancel()
-			_, err = fmt.Fprint(w, `{"id": 123, "status": "deploying"}`)
+			_, handleErr = fmt.Fprint(w, `{"id": 123, "status": "deploying"}`)
 		} else {
-			_, err = fmt.Fprint(w, `{"id": 123, "status": "deploying"}`)
+			_, handleErr = fmt.Fprint(w, `{"id": 123, "status": "deploying"}`)
 		}
-		require.NoError(t, err)
+		require.NoError(t, handleErr)
 	})
 
 	srv, resp, err := client.Servers.WaitForStatus(ctx, 123, StatusDeployed)
