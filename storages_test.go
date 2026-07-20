@@ -7,7 +7,61 @@ import (
 	"reflect"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
+
+func TestStorage_List(t *testing.T) {
+	setup()
+	defer teardown()
+
+	expected := []BlockStorage{{
+		ID:            123,
+		Name:          "name",
+		Href:          "/storages/123",
+		Size:          256,
+		AllowEditSize: true,
+		Unit:          "GB",
+		Description:   "string",
+		AttachedTo: AttachedTo{
+			Href: "/servers/1",
+		},
+		VLANID:      "1",
+		VLANIP:      "1.1.1.1",
+		Initiator:   "com.cherryservers:initiator",
+		DiscoveryIP: "1.1.1.1",
+	}}
+
+	mux.HandleFunc("GET /v1/projects/123/storages", func(writer http.ResponseWriter, request *http.Request) {
+		testMethod(t, request, http.MethodGet)
+		_, err := fmt.Fprint(writer, `[{
+			"id": 123,
+			"name": "name",
+			"href": "/storages/123",
+			"size": 256,
+			"allow_edit_size": true,
+			"unit": "GB",
+			"description": "string",
+			"attached_to": {
+				"href": "/servers/1"
+			},
+			"vlan_id": "1",
+			"vlan_ip": "1.1.1.1",
+			"initiator": "com.cherryservers:initiator",
+			"discovery_ip": "1.1.1.1"
+		}]`)
+		require.NoError(t, err)
+	})
+
+	storages, _, err := testClient.Storages.List(t.Context(), 123, nil)
+	if err != nil {
+		t.Errorf("Storages.List returned %+v", err)
+	}
+
+	if !reflect.DeepEqual(storages, expected) {
+		t.Errorf("Storages.List returned %+v, expected %+v", storages, expected)
+	}
+}
 
 func TestStorage_Get(t *testing.T) {
 	setup()
@@ -24,15 +78,15 @@ func TestStorage_Get(t *testing.T) {
 		AttachedTo: AttachedTo{
 			Href: "/servers/1",
 		},
-		VlanID:      "1",
-		VlanIP:      "1.1.1.1",
+		VLANID:      "1",
+		VLANIP:      "1.1.1.1",
 		Initiator:   "com.cherryservers:initiator",
 		DiscoveryIP: "1.1.1.1",
 	}
 
 	mux.HandleFunc("/v1/storages/123", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
-		fmt.Fprint(writer, `{
+		_, err := fmt.Fprint(writer, `{
 			"id": 123,
 			"name": "name",
 			"href": "/storages/123",
@@ -48,15 +102,16 @@ func TestStorage_Get(t *testing.T) {
 			"initiator": "com.cherryservers:initiator",
 			"discovery_ip": "1.1.1.1"
 		}`)
+		require.NoError(t, err)
 	})
 
-	storage, _, err := client.Storages.Get(123, nil)
+	storage, _, err := testClient.Storages.Get(t.Context(), 123, nil)
 	if err != nil {
-		t.Errorf("Storage.List returned %+v", err)
+		t.Errorf("Storages.Get returned %+v", err)
 	}
 
 	if !reflect.DeepEqual(storage, expected) {
-		t.Errorf("Storage.List returned %+v, expected %+v", storage, expected)
+		t.Errorf("Storages.Get returned %+v, expected %+v", storage, expected)
 	}
 }
 
@@ -65,7 +120,6 @@ func TestStorage_Create(t *testing.T) {
 	defer teardown()
 
 	requestBody := map[string]interface{}{
-		"project_id":  float64(321),
 		"description": "desc",
 		"size":        521.00,
 		"region":      "EU-Nord-1",
@@ -84,19 +138,19 @@ func TestStorage_Create(t *testing.T) {
 			t.Errorf("Request body\n sent %#v\n expected %#v", v, requestBody)
 		}
 
-		fmt.Fprint(writer, `{"id": 123}`)
+		_, err = fmt.Fprint(writer, `{"id": 123}`)
+		require.NoError(t, err)
 	})
 
 	createStorage := CreateStorage{
-		ProjectID:   321,
 		Description: "desc",
 		Size:        521,
 		Region:      "EU-Nord-1",
 	}
 
-	_, _, err := client.Storages.Create(&createStorage)
+	_, _, err := testClient.Storages.Create(t.Context(), 321, &createStorage)
 	if err != nil {
-		t.Errorf("Storage.List returned %+v", err)
+		t.Errorf("Storages.Create returned %+v", err)
 	}
 }
 
@@ -107,12 +161,13 @@ func TestStorage_Delete(t *testing.T) {
 	mux.HandleFunc("/v1/storages/123", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodDelete)
 		writer.WriteHeader(http.StatusNoContent)
-		fmt.Fprint(writer)
+		_, err := fmt.Fprint(writer)
+		require.NoError(t, err)
 	})
 
-	_, err := client.Storages.Delete(123)
+	_, err := testClient.Storages.Delete(t.Context(), 123)
 	if err != nil {
-		t.Errorf("Storage.Delete returned %+v", err)
+		t.Errorf("Storages.Delete returned %+v", err)
 	}
 }
 
@@ -121,8 +176,7 @@ func TestStorage_Attach(t *testing.T) {
 	defer teardown()
 
 	requestBody := map[string]interface{}{
-		"storage_id": float64(123),
-		"attach_to":  float64(1234),
+		"attach_to": float64(1234),
 	}
 
 	mux.HandleFunc("/v1/storages/123/attachments", func(writer http.ResponseWriter, request *http.Request) {
@@ -138,17 +192,17 @@ func TestStorage_Attach(t *testing.T) {
 			t.Errorf("Request body\n sent %#v\n expected %#v", v, requestBody)
 		}
 
-		fmt.Fprint(writer, `{"id": 123}`)
+		_, err = fmt.Fprint(writer, `{"id": 123}`)
+		require.NoError(t, err)
 	})
 
 	attachStorage := AttachTo{
-		StorageID: 123,
-		AttachTo:  1234,
+		AttachTo: 1234,
 	}
 
-	_, _, err := client.Storages.Attach(&attachStorage)
+	_, _, err := testClient.Storages.Attach(t.Context(), 123, &attachStorage)
 	if err != nil {
-		t.Errorf("Storage.Attach returned %+v", err)
+		t.Errorf("Storages.Attach returned %+v", err)
 	}
 }
 
@@ -159,12 +213,13 @@ func TestStorage_Detach(t *testing.T) {
 	mux.HandleFunc("/v1/storages/123/attachments", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodDelete)
 		writer.WriteHeader(http.StatusNoContent)
-		fmt.Fprint(writer)
+		_, err := fmt.Fprint(writer)
+		require.NoError(t, err)
 	})
 
-	_, err := client.Storages.Detach(123)
+	_, err := testClient.Storages.Detach(t.Context(), 123)
 	if err != nil {
-		t.Errorf("Storage.Detach returned %+v", err)
+		t.Errorf("Storages.Detach returned %+v", err)
 	}
 }
 
@@ -173,7 +228,6 @@ func TestStorage_Update(t *testing.T) {
 	defer teardown()
 
 	requestBody := map[string]interface{}{
-		"storage_id":  float64(123),
 		"size":        float64(500),
 		"description": "volume 1",
 	}
@@ -191,17 +245,17 @@ func TestStorage_Update(t *testing.T) {
 			t.Errorf("Request body\n sent %#v\n expected %#v", v, requestBody)
 		}
 
-		fmt.Fprint(writer, `{"id": 123}`)
+		_, err = fmt.Fprint(writer, `{"id": 123}`)
+		require.NoError(t, err)
 	})
 
 	updateStorage := UpdateStorage{
-		StorageID:   123,
 		Size:        500,
 		Description: "volume 1",
 	}
 
-	_, _, err := client.Storages.Update(&updateStorage)
+	_, _, err := testClient.Storages.Update(t.Context(), 123, &updateStorage)
 	if err != nil {
-		t.Errorf("Storage.Update returned %+v", err)
+		t.Errorf("Storages.Update returned %+v", err)
 	}
 }

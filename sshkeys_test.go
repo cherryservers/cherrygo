@@ -6,7 +6,40 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func TestSSHKey_List(t *testing.T) {
+	setup()
+	defer teardown()
+
+	expected := []SSHKey{{
+		ID:          1,
+		Label:       "test",
+		Key:         "ssh-rsa AAAAB3NzaC1yc",
+		Fingerprint: "fb:f0:21:33:e9:26:y3:2e:2e:b4:5c:8a:a6:26:64:ae",
+		Updated:     "2021-04-20 16:40:54",
+		Created:     "2021-04-20 13:40:43",
+		Href:        "/ssh-keys/1",
+	}}
+
+	mux.HandleFunc("GET /v1/ssh-keys", func(writer http.ResponseWriter, request *http.Request) {
+		testMethod(t, request, http.MethodGet)
+
+		jsonBytes, _ := json.Marshal(expected)
+		response := string(jsonBytes)
+
+		_, err := fmt.Fprint(writer, response)
+		require.NoError(t, err)
+	})
+
+	sshKey, _, err := testClient.SSHKeys.List(t.Context(), nil)
+	require.NoError(t, err)
+
+	assert.Equal(t, expected, sshKey)
+}
 
 func TestSSHKey_Get(t *testing.T) {
 	setup()
@@ -28,16 +61,17 @@ func TestSSHKey_Get(t *testing.T) {
 		jsonBytes, _ := json.Marshal(expected)
 		response := string(jsonBytes)
 
-		fmt.Fprint(writer, response)
+		_, err := fmt.Fprint(writer, response)
+		require.NoError(t, err)
 	})
 
-	sshKey, _, err := client.SSHKeys.Get(1, nil)
+	sshKey, _, err := testClient.SSHKeys.Get(t.Context(), 1, nil)
 	if err != nil {
-		t.Errorf("SSHKey.List returned %+v", err)
+		t.Errorf("SSHKey.Get returned %+v", err)
 	}
 
 	if !reflect.DeepEqual(sshKey, expected) {
-		t.Errorf("SSHKey.List returned %+v, expected %+v", sshKey, expected)
+		t.Errorf("SSHKey.Get returned %+v, expected %+v", sshKey, expected)
 	}
 }
 
@@ -75,7 +109,8 @@ func TestSSHKey_Create(t *testing.T) {
 
 		jsonBytes, _ := json.Marshal(expected)
 
-		fmt.Fprint(writer, string(jsonBytes))
+		_, err = fmt.Fprint(writer, string(jsonBytes))
+		require.NoError(t, err)
 	})
 
 	sshCreate := CreateSSHKey{
@@ -83,8 +118,7 @@ func TestSSHKey_Create(t *testing.T) {
 		Key:   "ssh-rsa AAAAB3NzaC1yc",
 	}
 
-	_, _, err := client.SSHKeys.Create(&sshCreate)
-
+	_, _, err := testClient.SSHKeys.Create(t.Context(), &sshCreate)
 	if err != nil {
 		t.Errorf("SSHKey.Create returned %+v", err)
 	}
@@ -99,11 +133,11 @@ func TestSSHKey_Delete(t *testing.T) {
 
 		writer.WriteHeader(http.StatusNoContent)
 
-		fmt.Fprint(writer)
+		_, err := fmt.Fprint(writer)
+		require.NoError(t, err)
 	})
 
-	_, _, err := client.SSHKeys.Delete(1)
-
+	_, err := testClient.SSHKeys.Delete(t.Context(), 1)
 	if err != nil {
 		t.Errorf("SSHKey.Delete returned %+v", err)
 	}
@@ -138,7 +172,8 @@ func TestSSHKey_Update(t *testing.T) {
 
 		jsonBytes, _ := json.Marshal(expected)
 
-		fmt.Fprint(writer, string(jsonBytes))
+		_, err = fmt.Fprint(writer, string(jsonBytes))
+		require.NoError(t, err)
 	})
 
 	label := "updated label"
@@ -148,8 +183,7 @@ func TestSSHKey_Update(t *testing.T) {
 		Key:   &key,
 	}
 
-	_, _, err := client.SSHKeys.Update(1, &sshUpdate)
-
+	_, _, err := testClient.SSHKeys.Update(t.Context(), 1, &sshUpdate)
 	if err != nil {
 		t.Errorf("SSHKey.Update returned %+v", err)
 	}

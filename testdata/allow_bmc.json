@@ -1,0 +1,436 @@
+{
+  "id": 899712,
+  "name": "AMD Ryzen 9950X",
+  "href": "/servers/899712",
+  "bmc": {
+    "password": "test",
+    "ip": "123.123.123.123",
+    "allowed_ip": "123.123.123.123",
+    "expires": "2026-06-08T13:23:59+00:00",
+    "user": "kuser"
+  },
+  "hostname": "model-thrush",
+  "image": "Ubuntu 24.04 64bit",
+  "spot_instance": false,
+  "region": {
+    "id": 1,
+    "name": "Lithuania",
+    "slug": "LT-Siauliai",
+    "region_iso_2": "LT",
+    "href": "/regions/1",
+    "bgp": {
+      "hosts": [
+        "46.166.166.122",
+        "46.166.166.123"
+      ],
+      "asn": 16125
+    },
+    "location": "Lithuania, Šiauliai"
+  },
+  "state": "active",
+  "status": "deployed",
+  "bgp": {
+    "enabled": false,
+    "available": false,
+    "status": "Disabled",
+    "routers": 0,
+    "connected": 0,
+    "limit": 0,
+    "active": 0,
+    "routes": [],
+    "updated": "2026-06-08T15:25:09+03:00"
+  },
+  "software": {
+    "addons": []
+  },
+  "plan": {
+    "id": 1095,
+    "href": "/plans/amd-ryzen-9950x",
+    "name": "AMD Ryzen 9950X",
+    "slug": "amd-ryzen-9950x",
+    "title": "AMD Ryzen 9950X",
+    "type": "baremetal",
+    "category": "lightweight",
+    "specs": {
+      "cpus": {
+        "count": 1,
+        "name": "CPU Ryzen 9950X",
+        "cores": 16,
+        "frequency": 4.3,
+        "max_frequency": 5.7,
+        "unit": "GHz"
+      },
+      "memory": {
+        "count": 1,
+        "total": 192,
+        "unit": "GB",
+        "name": "192GB 5600MHz"
+      },
+      "storage": [
+        {
+          "count": 2,
+          "name": "NVMe 1TB",
+          "size": 1,
+          "unit": "TB",
+          "type": "NVME"
+        }
+      ],
+      "nics": {
+        "name": "3Gbps"
+      },
+      "bandwidth": {
+        "name": "100TB"
+      }
+    },
+    "pricing": [
+      {
+        "id": 37,
+        "unit": "Hourly",
+        "price": 0.536,
+        "currency": "EUR",
+        "taxed": true
+      }
+    ]
+  },
+  "pricing": {
+    "id": 37,
+    "currency": "EUR",
+    "unit": "Hours",
+    "unit_price": 0.53,
+    "discount": 0.0,
+    "discount_percentage": false,
+    "price_subtotal": 0.89,
+    "taxed": true,
+    "price_total": 1.08,
+    "price": 1.08,
+    "quantity": 2,
+    "billable_amount": 1.08
+  },
+  "ip_addresses": [
+    {
+      "id": "036a280d-1c37-0fb8-5389-75e9b900f5f0",
+      "address": "46.166.169.95",
+      "address_family": 4,
+      "cidr": "46.166.169.64/26",
+      "gateway": "46.166.169.65",
+      "type": "primary-ip",
+      "region": {
+        "id": 1,
+        "name": "Lithuania",
+        "slug": "LT-Siauliai",
+        "region_iso_2": "LT",
+        "href": "/regions/1",
+        "bgp": {
+          "hosts": [
+            "46.166.166.122",
+            "46.166.166.123"
+          ],
+          "asn": 16125
+        },
+        "location": "Lithuania, Šiauliai"
+      },
+      "assigned_to": {
+        "id": 899712,
+        "name": "AMD Ryzen 9950X",
+        "href": "/servers/899712",
+        "bmc": {
+          "password": "test",
+          "ip": "123.123.123.123",
+          "allowed_ip": "123.123.123.123",
+          "expires": "2026-06-08T13:23:59+00:00",
+          "user": "kuser"
+        },
+        "hostname": "model-thrush",
+        "spot_instance": false,
+        "region": {
+          "id": 1,
+          "name": "Lithuania",
+          "slug": "LT-Siauliai",
+          "region_iso_2": "LT",
+          "href": "/regions/1",
+          "bgp": {
+            "hosts": [
+              "46.166.166.122",
+              "46.166.166.123"
+            ],
+            "asn": 16125
+          },
+          "location": "Lithuania, Šiauliai"
+        },
+        "state": "active",
+        "software": {
+          "addons": []
+        },
+        "tags": {},
+        "termination_date": "None",
+        "upgradable": false,
+        "created_at": "2026-06-08T10:52:29+00:00",
+        "traffic_used_bytes": 80245,
+        "network": "on",
+        "project": {
+          "id": 123456,
+          "name": "cherryctl",
+          "bgp": {
+            "enabled": false,
+            "local_asn": 0
+          },
+          "href": "/projects/123456"
+        },
+        "os_raid_level": "Raid 1",
+        "os_disk": "NVMe 1TB",
+        "bandwidth_speed_mbps": {
+          "limit": 3000,
+          "maximum": 3000
+        }
+      },
+      "ptr_record": "ip-46-166-169-95.002.ptr.cherryservers.net",
+      "ddos_scrubbing": false,
+      "tags": {},
+      "project": {
+        "id": 123456,
+        "name": "cherryctl",
+        "bgp": {
+          "enabled": false,
+          "local_asn": 0
+        },
+        "href": "/projects/123456"
+      },
+      "targeted_to": {
+        "id": 899712,
+        "name": "AMD Ryzen 9950X",
+        "href": "/servers/899712",
+        "bmc": {
+          "password": "test",
+          "ip": "123.123.123.123",
+          "allowed_ip": "123.123.123.123",
+          "expires": "2026-06-08T13:23:59+00:00",
+          "user": "kuser"
+        },
+        "hostname": "model-thrush",
+        "spot_instance": false,
+        "region": {
+          "id": 1,
+          "name": "Lithuania",
+          "slug": "LT-Siauliai",
+          "region_iso_2": "LT",
+          "href": "/regions/1",
+          "bgp": {
+            "hosts": [
+              "46.166.166.122",
+              "46.166.166.123"
+            ],
+            "asn": 16125
+          },
+          "location": "Lithuania, Šiauliai"
+        },
+        "state": "active",
+        "software": {
+          "addons": []
+        },
+        "tags": {},
+        "termination_date": "1970-01-01T03:00:00+03:00",
+        "upgradable": false,
+        "created_at": "2026-06-08T10:52:29+00:00",
+        "traffic_used_bytes": 80245,
+        "network": "on",
+        "project": {
+          "id": 123456,
+          "name": "cherryctl",
+          "bgp": {
+            "enabled": false,
+            "local_asn": 0
+          },
+          "href": "/projects/123456"
+        },
+        "os_raid_level": "Raid 1",
+        "os_disk": "NVMe 1TB",
+        "bandwidth_speed_mbps": {
+          "limit": 3000,
+          "maximum": 3000
+        }
+      },
+      "default_ptr_record": "ip-46-166-169-95.002.ptr.cherryservers.net.",
+      "default_a_record": "ip-46-166-169-95.002.ptr.cherryservers.net.",
+      "dns_resolvers": [
+        "10.100.0.53",
+        "10.100.0.54"
+      ],
+      "href": "/ips/036a280d-1c37-0fb8-5389-75e9b900f5f0"
+    },
+    {
+      "id": "9a981605-5cc2-a640-c75f-c3c2875f271d",
+      "address": "10.179.192.2",
+      "address_family": 4,
+      "cidr": "10.179.192.0/24",
+      "type": "private-ip",
+      "region": {
+        "id": 1,
+        "name": "Lithuania",
+        "slug": "LT-Siauliai",
+        "region_iso_2": "LT",
+        "href": "/regions/1",
+        "bgp": {
+          "hosts": [
+            "46.166.166.122",
+            "46.166.166.123"
+          ],
+          "asn": 16125
+        },
+        "location": "Lithuania, Šiauliai"
+      },
+      "assigned_to": {
+        "id": 899712,
+        "name": "AMD Ryzen 9950X",
+        "href": "/servers/899712",
+        "bmc": {
+          "password": "test",
+          "ip": "123.123.123.123",
+          "allowed_ip": "123.123.123.123",
+          "expires": "2026-06-08T13:23:59+00:00",
+          "user": "kuser"
+        },
+        "hostname": "model-thrush",
+        "spot_instance": false,
+        "region": {
+          "id": 1,
+          "name": "Lithuania",
+          "slug": "LT-Siauliai",
+          "region_iso_2": "LT",
+          "href": "/regions/1",
+          "bgp": {
+            "hosts": [
+              "46.166.166.122",
+              "46.166.166.123"
+            ],
+            "asn": 16125
+          },
+          "location": "Lithuania, Šiauliai"
+        },
+        "state": "active",
+        "software": {
+          "addons": []
+        },
+        "tags": {},
+        "termination_date": "None",
+        "upgradable": false,
+        "created_at": "2026-06-08T10:52:29+00:00",
+        "traffic_used_bytes": 80245,
+        "network": "on",
+        "project": {
+          "id": 123456,
+          "name": "cherryctl",
+          "bgp": {
+            "enabled": false,
+            "local_asn": 0
+          },
+          "href": "/projects/123456"
+        },
+        "os_raid_level": "Raid 1",
+        "os_disk": "NVMe 1TB",
+        "bandwidth_speed_mbps": {
+          "limit": 3000,
+          "maximum": 3000
+        }
+      },
+      "ddos_scrubbing": false,
+      "vlan_id": 2897,
+      "tags": {},
+      "project": {
+        "id": 123456,
+        "name": "cherryctl",
+        "bgp": {
+          "enabled": false,
+          "local_asn": 0
+        },
+        "href": "/projects/123456"
+      },
+      "targeted_to": {
+        "id": 899712,
+        "name": "AMD Ryzen 9950X",
+        "href": "/servers/899712",
+        "bmc": {
+          "password": "test",
+          "ip": "123.123.123.123",
+          "allowed_ip": "123.123.123.123",
+          "expires": "2026-06-08T13:23:59+00:00",
+          "user": "kuser"
+        },
+        "hostname": "model-thrush",
+        "spot_instance": false,
+        "region": {
+          "id": 1,
+          "name": "Lithuania",
+          "slug": "LT-Siauliai",
+          "region_iso_2": "LT",
+          "href": "/regions/1",
+          "bgp": {
+            "hosts": [
+              "46.166.166.122",
+              "46.166.166.123"
+            ],
+            "asn": 16125
+          },
+          "location": "Lithuania, Šiauliai"
+        },
+        "state": "active",
+        "software": {
+          "addons": []
+        },
+        "tags": {},
+        "termination_date": "None",
+        "upgradable": false,
+        "created_at": "2026-06-08T10:52:29+00:00",
+        "traffic_used_bytes": 80245,
+        "network": "on",
+        "project": {
+          "id": 123456,
+          "name": "cherryctl",
+          "bgp": {
+            "enabled": false,
+            "local_asn": 0
+          },
+          "href": "/projects/123456"
+        },
+        "os_raid_level": "Raid 1",
+        "os_disk": "NVMe 1TB",
+        "bandwidth_speed_mbps": {
+          "limit": 3000,
+          "maximum": 3000
+        }
+      },
+      "href": "/ips/9a981605-5cc2-a640-c75f-c3c2875f271d"
+    }
+  ],
+  "ssh_keys": [
+    {
+      "id": 9845,
+      "href": "/ssh-keys/9845"
+    }
+  ],
+  "vlan": 618,
+  "tags": {},
+  "termination_date": "None",
+  "upgradable": false,
+  "created_at": "2026-06-08T10:52:29+00:00",
+  "traffic_used_bytes": 80245,
+  "network": "on",
+  "deployed_image": {
+    "name": "Ubuntu 24.04 64bit",
+    "slug": "ubuntu_24_04_64bit"
+  },
+  "project": {
+    "id": 123456,
+    "name": "cherryctl",
+    "bgp": {
+      "enabled": false,
+      "local_asn": 0
+    },
+    "href": "/projects/123456"
+  },
+  "os_raid_level": "Raid 1",
+  "os_disk": "NVMe 1TB",
+  "bandwidth_speed_mbps": {
+    "limit": 3000,
+    "maximum": 3000
+  }
+}

@@ -1,7 +1,9 @@
 package cherrygo
 
 import (
+	"context"
 	"fmt"
+	"net/http"
 )
 
 const baseImagePath = "/v1/plans"
@@ -9,9 +11,10 @@ const baseImagePath = "/v1/plans"
 // ImagesService is an interface for interfacing with the the Images endpoints of the CherryServers API
 // See: https://api.cherryservers.com/doc/#tag/Images
 type ImagesService interface {
-	List(plan string, opts *GetOptions) ([]Image, *Response, error)
+	List(ctx context.Context, plan string, opts *GetOptions) ([]Image, *Response, error)
 }
 
+// Image holds OS image data.
 type Image struct {
 	ID      int       `json:"id,omitempty"`
 	Name    string    `json:"name,omitempty"`
@@ -19,19 +22,21 @@ type Image struct {
 	Pricing []Pricing `json:"pricing,omitempty"`
 }
 
+// ImagesClient makes image related API requests.
 type ImagesClient struct {
 	client *Client
 }
 
 // List func lists images
-func (i *ImagesClient) List(plan string, opts *GetOptions) ([]Image, *Response, error) {
+func (i *ImagesClient) List(ctx context.Context, plan string, opts *GetOptions) ([]Image, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("%s/%s/images", baseImagePath, plan))
 	var trans []Image
 
-	resp, err := i.client.MakeRequest("GET", path, nil, &trans)
+	req, err := i.client.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
+		return nil, nil, err
 	}
 
+	resp, err := i.client.Do(req, &trans)
 	return trans, resp, err
 }

@@ -1,11 +1,18 @@
 package cherrygo
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPlans_List(t *testing.T) {
@@ -15,10 +22,11 @@ func TestPlans_List(t *testing.T) {
 	mux.HandleFunc("/v1/teams/"+strconv.Itoa(teamID)+"/plans", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
 		response := `[{"id":625,"name":"Cloud VPS 1","slug":"cloud_vps_1","title":"Cloud VPS 1","custom":false,"category":"Shared resources","softwares":[{"image":{"name":"Ubuntu 18.04 64bit"}}],"specs":{"cpus":{"count":1,"name":"Cloud VPS 1","cores":1,"frequency":0.0,"unit":"GHz"},"memory":{"count":1,"total":1,"unit":"GB","name":"1GB"},"storage":[{"count":1,"name":"20GB SSD","size":20,"unit":"GB","type":"SSD"}],"nics":{"name":"1Gbps"},"bandwidth":{"name":"1TB"}},"pricing":[{"price":0.015,"currency":"EUR","taxed":false,"unit":"Hourly","id":37}],"available_regions":[{"id":1,"name":"EU-Nord-1","region_iso_2":"LT","stock_qty":122,"spot_qty":5,"location":"Lithuania, Vilnius"}], "category": "Shared resources", "softwares": [{"image": {"name": "Ubuntu 24.04 64bit", "slug": "ubuntu_24_04_64bit"}}]}]`
-		fmt.Fprint(writer, response)
+		_, err := fmt.Fprint(writer, response)
+		require.NoError(t, err)
 	})
 
-	plans, _, err := client.Plans.List(teamID, nil)
+	plans, _, err := testClient.Plans.List(t.Context(), teamID, nil)
 	if err != nil {
 		t.Errorf("Plans.List returned %+v", err)
 	}
@@ -26,7 +34,7 @@ func TestPlans_List(t *testing.T) {
 	ltRegion := Region{
 		ID:         1,
 		Name:       "EU-Nord-1",
-		RegionIso2: "LT",
+		RegionISO2: "LT",
 		Location:   "Lithuania, Vilnius",
 	}
 
@@ -37,7 +45,7 @@ func TestPlans_List(t *testing.T) {
 			Slug:   "cloud_vps_1",
 			Custom: false,
 			Specs: Specs{
-				Cpus: Cpus{
+				CPUs: CPUs{
 					Count:     1,
 					Name:      "Cloud VPS 1",
 					Cores:     1,
@@ -56,8 +64,8 @@ func TestPlans_List(t *testing.T) {
 					Size:  20,
 					Unit:  "GB",
 				}},
-				//Raid: Raid{},
-				Nics: Nics{
+				// Raid: Raid{},
+				NICs: NICs{
 					Name: "1Gbps",
 				},
 				Bandwidth: Bandwidth{
@@ -78,11 +86,13 @@ func TestPlans_List(t *testing.T) {
 				},
 			},
 			Category: "Shared resources",
-			Softwares: []SoftwareImage{{
-				Image: SoftwareImageSpecs{
-					Name: "Ubuntu 24.04 64bit",
-					Slug: "ubuntu_24_04_64bit",
-				}},
+			Softwares: []SoftwareImage{
+				{
+					Image: SoftwareImageSpecs{
+						Name: "Ubuntu 24.04 64bit",
+						Slug: "ubuntu_24_04_64bit",
+					},
+				},
 			},
 		},
 	}
@@ -90,4 +100,144 @@ func TestPlans_List(t *testing.T) {
 	if !reflect.DeepEqual(plans, expected) {
 		t.Errorf("Plans.List  plans returned %+v, expected %+v", plans, expected)
 	}
+}
+
+func TestPlans_GetByID(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("GET /v1/plans/123", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, http.MethodGet)
+
+		w.WriteHeader(http.StatusOK)
+		_, err := fmt.Fprint(w, `{"id": 123, "name": "test-name", "slug": "test-slug"}`)
+		require.NoError(t, err)
+	})
+
+	plan, _, err := testClient.Plans.GetByID(t.Context(), 123, nil)
+	require.NoError(t, err)
+
+	assert.Equal(t, 123, plan.ID)
+	assert.Equal(t, "test-name", plan.Name)
+	assert.Equal(t, "test-slug", plan.Slug)
+}
+
+func TestPlans_GetBySlug(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("GET /v1/plans/test-plan", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, http.MethodGet)
+
+		w.WriteHeader(http.StatusOK)
+		_, err := fmt.Fprint(w, `{"id": 123, "name": "test-name", "slug": "test-slug"}`)
+		require.NoError(t, err)
+	})
+
+	plan, _, err := testClient.Plans.GetBySlug(t.Context(), "test-plan", nil)
+	require.NoError(t, err)
+
+	assert.Equal(t, 123, plan.ID)
+	assert.Equal(t, "test-name", plan.Name)
+	assert.Equal(t, "test-slug", plan.Slug)
+}
+
+func TestPlans_ListPrebuiltPlansReturnsPlans(t *testing.T) {
+	setup()
+	defer teardown()
+
+	wantBody, err := os.Open(filepath.Join("testdata", "prebuilt_plans.json"))
+	require.NoError(t, err)
+	defer func() {
+		_ = wantBody.Close()
+	}()
+
+	mux.HandleFunc("GET /v1/plans/test/prebuilts", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "LT-Siauliai", r.URL.Query().Get("region"))
+		_, _ = io.ReadAll(io.TeeReader(wantBody, w))
+		_, _ = wantBody.Seek(0, io.SeekStart)
+	})
+
+	got, resp, err := testClient.Plans.ListPrebuiltPlans(t.Context(), "test", "LT-Siauliai", nil)
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+
+	var want []PrebuiltPlan
+	err = json.NewDecoder(wantBody).Decode(&want)
+	require.NoError(t, err)
+
+	assert.Equal(t, want, got)
+}
+
+func TestPlans_ListPrebuiltPlansRetainsQueryParams(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("GET /v1/plans/test/prebuilts", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "LT-Siauliai", r.URL.Query().Get("region"))
+		assert.Equal(t, "1", r.URL.Query().Get("limit"))
+		_, _ = fmt.Fprint(w, `[{"id": 1}]`)
+	})
+
+	_, _, _ = testClient.Plans.ListPrebuiltPlans(t.Context(), "test", "LT-Siauliai", &GetOptions{Limit: 1})
+}
+
+func TestPlans_ListPrebuiltPlansPropagatesError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	pps, resp, err := testClient.Plans.ListPrebuiltPlans(t.Context(), "test", "LT-Siauliai", nil)
+	assert.Error(t, err)
+	assert.Nil(t, pps)
+	assert.Nil(t, resp)
+}
+
+func TestPlans_ListPrebuiltTeamPlansReturnsPlans(t *testing.T) {
+	setup()
+	defer teardown()
+
+	wantBody, err := os.Open(filepath.Join("testdata", "prebuilt_plans.json"))
+	require.NoError(t, err)
+	defer func() {
+		_ = wantBody.Close()
+	}()
+
+	mux.HandleFunc("GET /v1/teams/123/plans/test/prebuilts", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "LT-Siauliai", r.URL.Query().Get("region"))
+		_, _ = io.ReadAll(io.TeeReader(wantBody, w))
+		_, _ = wantBody.Seek(0, io.SeekStart)
+	})
+
+	got, resp, err := testClient.Plans.ListPrebuiltTeamPlans(t.Context(), "test", "LT-Siauliai", 123, nil)
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+
+	var want []PrebuiltPlan
+	err = json.NewDecoder(wantBody).Decode(&want)
+	require.NoError(t, err)
+
+	assert.Equal(t, want, got)
+}
+
+func TestPlans_ListPrebuiltTeamPlansRetainsQueryParams(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("GET /v1/teams/123/plans/test/prebuilts", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "LT-Siauliai", r.URL.Query().Get("region"))
+		assert.Equal(t, "1", r.URL.Query().Get("limit"))
+		_, _ = fmt.Fprint(w, `[{"id": 1}]`)
+	})
+
+	_, _, _ = testClient.Plans.ListPrebuiltTeamPlans(t.Context(), "test", "LT-Siauliai", 123, &GetOptions{Limit: 1})
+}
+
+func TestPlans_ListPrebuiltTeamPlansPropagatesError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	pps, resp, err := testClient.Plans.ListPrebuiltTeamPlans(t.Context(), "test", "LT-Siauliai", 123, nil)
+	assert.Nil(t, pps)
+	assert.Nil(t, resp)
+	assert.Error(t, err)
 }

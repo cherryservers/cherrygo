@@ -1,5 +1,6 @@
 package cherrygo
 
+// Membership hold team membership data.
 type Membership struct {
 	ID       int       `json:"id,omitempty"`
 	Roles    []string  `json:"roles,omitempty"`

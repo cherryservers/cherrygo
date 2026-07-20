@@ -1,23 +1,31 @@
 package cherrygo
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+	"net/http"
+)
 
 const baseBackupPath = "/v1/backup-storages"
 
+// BackupsService is an interface for interfacing with the the Backup Storage endpoints of the CherryServers API
+// See: https://api.cherryservers.com/doc/#tag/Backup-Storage
 type BackupsService interface {
-	ListPlans(opts *GetOptions) ([]BackupStoragePlan, *Response, error)
-	ListBackups(projectID int, opts *GetOptions) ([]BackupStorage, *Response, error)
-	Get(backupID int, opts *GetOptions) (BackupStorage, *Response, error)
-	Create(request *CreateBackup) (BackupStorage, *Response, error)
-	Update(request *UpdateBackupStorage) (BackupStorage, *Response, error)
-	UpdateBackupMethod(request *UpdateBackupMethod) ([]BackupMethod, *Response, error)
-	Delete(backupID int) (*Response, error)
+	ListPlans(ctx context.Context, opts *GetOptions) ([]BackupStoragePlan, *Response, error)
+	ListBackups(ctx context.Context, projectID int, opts *GetOptions) ([]BackupStorage, *Response, error)
+	Get(ctx context.Context, backupID int, opts *GetOptions) (BackupStorage, *Response, error)
+	Create(ctx context.Context, serverID int, request *CreateBackup) (BackupStorage, *Response, error)
+	Update(ctx context.Context, id int, request *UpdateBackupStorage) (BackupStorage, *Response, error)
+	UpdateBackupMethod(ctx context.Context, id int, method string, request *UpdateBackupMethod) ([]BackupMethod, *Response, error)
+	Delete(ctx context.Context, backupID int) (*Response, error)
 }
 
+// BackupsClient makes backup storage related API requests.
 type BackupsClient struct {
 	client *Client
 }
 
+// BackupStoragePlan data.
 type BackupStoragePlan struct {
 	ID            int       `json:"id,omitempty"`
 	Name          string    `json:"name,omitempty"`
@@ -28,6 +36,7 @@ type BackupStoragePlan struct {
 	Href          string    `json:"href,omitempty"`
 }
 
+// BackupStorage data.
 type BackupStorage struct {
 	ID                   int            `json:"id,omitempty"`
 	Status               string         `json:"status,omitempty"`
@@ -46,6 +55,7 @@ type BackupStorage struct {
 	Href                 string         `json:"href,omitempty"`
 }
 
+// BackupMethod is a backup storage access method.
 type BackupMethod struct {
 	Name       string   `json:"name,omitempty"`
 	Username   string   `json:"username,omitempty"`
@@ -58,11 +68,13 @@ type BackupMethod struct {
 	Processing bool     `json:"processing,omitempty"`
 }
 
+// Rule is the backup storage access method rule for an IP address.
 type Rule struct {
 	IPAddress      IPAddress      `json:"ip,omitempty"`
 	EnabledMethods EnabledMethods `json:"methods,omitempty"`
 }
 
+// EnabledMethods for backup storage access.
 type EnabledMethods struct {
 	BORG bool `json:"borg,omitempty"`
 	FTP  bool `json:"ftp,omitempty"`
@@ -70,106 +82,120 @@ type EnabledMethods struct {
 	SMB  bool `json:"smb,omitempty"`
 }
 
+// CreateBackup is the body for backup storage creation request.
 type CreateBackup struct {
-	ServerID       int    `json:"server_id,omitempty"`
 	BackupPlanSlug string `json:"slug"`
 	RegionSlug     string `json:"region"`
 	SSHKey         string `json:"ssh_key,omitempty"`
 }
 
+// UpdateBackupStorage is the body for a backup storage update request.
 type UpdateBackupStorage struct {
-	BackupStorageID int    `json:"id"`
-	BackupPlanSlug  string `json:"slug,omitempty"`
-	Password        string `json:"password,omitempty"`
-	SSHKey          string `json:"ssh_key,omitempty"`
+	BackupPlanSlug string `json:"slug,omitempty"`
+	Password       string `json:"password,omitempty"`
+	SSHKey         string `json:"ssh_key,omitempty"`
 }
 
+// UpdateBackupMethod is the body for a backup storage access method update request.
 type UpdateBackupMethod struct {
-	BackupStorageID  int      `json:"id"`
-	BackupMethodName string   `json:"name"`
-	Enabled          bool     `json:"enabled"`
-	Whitelist        []string `json:"whitelist"`
+	Enabled   *bool     `json:"enabled,omitempty"`
+	Whitelist *[]string `json:"whitelist,omitempty"`
 }
 
-func (s *BackupsClient) ListPlans(opts *GetOptions) ([]BackupStoragePlan, *Response, error) {
-	path := opts.WithQuery(fmt.Sprintf("/v1/backup-storage-plans"))
-
+// ListPlans lists backups storage plans.
+func (s *BackupsClient) ListPlans(ctx context.Context, opts *GetOptions) ([]BackupStoragePlan, *Response, error) {
 	var trans []BackupStoragePlan
-	resp, err := s.client.MakeRequest("GET", path, nil, &trans)
+
+	path := opts.WithQuery("/v1/backup-storage-plans")
+	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
+		return nil, nil, err
 	}
 
+	resp, err := s.client.Do(req, &trans)
 	return trans, resp, err
 }
 
-func (s *BackupsClient) ListBackups(projectID int, opts *GetOptions) ([]BackupStorage, *Response, error) {
+// ListBackups lists backup storage instances.
+func (s *BackupsClient) ListBackups(ctx context.Context, projectID int, opts *GetOptions) ([]BackupStorage, *Response, error) {
 	var trans []BackupStorage
 
 	path := opts.WithQuery(fmt.Sprintf("/v1/projects/%d/backup-storages", projectID))
-	resp, err := s.client.MakeRequest("GET", path, nil, &trans)
+	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
+		return nil, nil, err
 	}
 
+	resp, err := s.client.Do(req, &trans)
 	return trans, resp, err
 }
 
-func (s *BackupsClient) Get(backupID int, opts *GetOptions) (BackupStorage, *Response, error) {
+// Get backup storage instance.
+func (s *BackupsClient) Get(ctx context.Context, backupID int, opts *GetOptions) (BackupStorage, *Response, error) {
 	var trans BackupStorage
 
 	path := opts.WithQuery(fmt.Sprintf("%s/%d", baseBackupPath, backupID))
-	resp, err := s.client.MakeRequest("GET", path, nil, &trans)
+	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
+		return BackupStorage{}, nil, err
 	}
 
+	resp, err := s.client.Do(req, &trans)
 	return trans, resp, err
 }
 
-func (s *BackupsClient) Create(request *CreateBackup) (BackupStorage, *Response, error) {
+// Create backup storage instance.
+func (s *BackupsClient) Create(ctx context.Context, serverID int, request *CreateBackup) (BackupStorage, *Response, error) {
 	var trans BackupStorage
 
-	path := fmt.Sprintf("/v1/servers/%d/backup-storages", request.ServerID)
-	resp, err := s.client.MakeRequest("POST", path, request, &trans)
+	path := fmt.Sprintf("/v1/servers/%d/backup-storages", serverID)
+
+	req, err := s.client.NewRequest(ctx, http.MethodPost, path, request)
 	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
+		return BackupStorage{}, nil, err
 	}
 
+	resp, err := s.client.Do(req, &trans)
 	return trans, resp, err
 }
 
-func (s *BackupsClient) Update(request *UpdateBackupStorage) (BackupStorage, *Response, error) {
+// Update backup storage instance.
+func (s *BackupsClient) Update(ctx context.Context, id int, request *UpdateBackupStorage) (BackupStorage, *Response, error) {
 	var trans BackupStorage
 
-	path := fmt.Sprintf("%s/%d", baseBackupPath, request.BackupStorageID)
+	path := fmt.Sprintf("%s/%d", baseBackupPath, id)
 
-	resp, err := s.client.MakeRequest("PUT", path, request, &trans)
+	req, err := s.client.NewRequest(ctx, http.MethodPut, path, request)
 	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
+		return BackupStorage{}, nil, err
 	}
 
+	resp, err := s.client.Do(req, &trans)
 	return trans, resp, err
 }
 
-func (s *BackupsClient) UpdateBackupMethod(request *UpdateBackupMethod) ([]BackupMethod, *Response, error) {
+// UpdateBackupMethod updates backup storage instance access methods.
+func (s *BackupsClient) UpdateBackupMethod(ctx context.Context, id int, method string, request *UpdateBackupMethod) ([]BackupMethod, *Response, error) {
 	var trans []BackupMethod
 
-	path := fmt.Sprintf("%s/%d/methods/%s", baseBackupPath, request.BackupStorageID, request.BackupMethodName)
-	resp, err := s.client.MakeRequest("PATCH", path, request, &trans)
+	path := fmt.Sprintf("%s/%d/methods/%s", baseBackupPath, id, method)
+	req, err := s.client.NewRequest(ctx, http.MethodPatch, path, request)
 	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
+		return nil, nil, err
 	}
 
+	resp, err := s.client.Do(req, &trans)
 	return trans, resp, err
 }
 
-func (s *BackupsClient) Delete(backupID int) (*Response, error) {
+// Delete backup storage instance.
+func (s *BackupsClient) Delete(ctx context.Context, backupID int) (*Response, error) {
 	path := fmt.Sprintf("%s/%d", baseBackupPath, backupID)
-	resp, err := s.client.MakeRequest("DELETE", path, nil, nil)
+	req, err := s.client.NewRequest(ctx, http.MethodDelete, path, nil)
 	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
+		return nil, err
 	}
 
+	resp, err := s.client.Do(req, nil)
 	return resp, err
 }

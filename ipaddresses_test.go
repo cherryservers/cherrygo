@@ -7,6 +7,9 @@ import (
 	"reflect"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestIpAddresses_List(t *testing.T) {
@@ -18,23 +21,23 @@ func TestIpAddresses_List(t *testing.T) {
 			ID:            "e3f75899-1db3-b794-137f-78c5ee9096af",
 			Address:       "5.199.171.0",
 			AddressFamily: 4,
-			Cidr:          "5.199.171.0/32",
+			CIDR:          "5.199.171.0/32",
 			Type:          "floating-ip",
 			RoutedTo: RoutedTo{
 				ID:            "3ee8e5ce-4208-f437-7055-347e9e4e124e",
 				Address:       "188.214.132.158",
 				AddressFamily: 4,
-				Cidr:          "188.214.132.128/25",
+				CIDR:          "188.214.132.128/25",
 				Gateway:       "188.214.132.129",
 				Type:          "primary-ip",
 				Region: Region{
 					ID:         1,
 					Name:       "EU-Nord-1",
-					RegionIso2: "LT",
+					RegionISO2: "LT",
 					Href:       "/regions/1",
 				},
 			},
-			PtrRecord: "ptr-a",
+			PTRRecord: "ptr-a",
 			ARecord:   "a-a",
 			Href:      "/ips/e3f75899-1db3-b794-137f-78c5ee9096af",
 		},
@@ -42,7 +45,7 @@ func TestIpAddresses_List(t *testing.T) {
 			ID:            "e84d6ae8-573c-ecf9-a01d-afc57f95e910",
 			Address:       "5.199.171.1",
 			AddressFamily: 4,
-			Cidr:          "5.199.171.1/32",
+			CIDR:          "5.199.171.1/32",
 			Type:          "subnet",
 			AssignedTo: AssignedTo{
 				ID:       383531,
@@ -52,7 +55,7 @@ func TestIpAddresses_List(t *testing.T) {
 				Image:    "Ubuntu 18.04 64bit",
 				State:    "active",
 			},
-			PtrRecord: "ptr-b",
+			PTRRecord: "ptr-b",
 			ARecord:   "a-b",
 			Href:      "/ips/e84d6ae8-573c-ecf9-a01d-afc57f95e910",
 		},
@@ -64,11 +67,11 @@ func TestIpAddresses_List(t *testing.T) {
 		jsonBytes, _ := json.Marshal(expected)
 		response := string(jsonBytes)
 
-		fmt.Fprint(writer, response)
+		_, err := fmt.Fprint(writer, response)
+		require.NoError(t, err)
 	})
 
-	ips, _, err := client.IPAddresses.List(projectID, nil)
-
+	ips, _, err := testClient.IPAddresses.List(t.Context(), projectID, nil)
 	if err != nil {
 		t.Errorf("IPAddresses.List returned %+v", err)
 	}
@@ -87,19 +90,19 @@ func TestIpAddress_Get(t *testing.T) {
 		ID:            "e3f75899-1db3-b794-137f-78c5ee9096af",
 		Address:       "5.199.171.0",
 		AddressFamily: 4,
-		Cidr:          "5.199.171.0/32",
+		CIDR:          "5.199.171.0/32",
 		Type:          "floating-ip",
 		RoutedTo: RoutedTo{
 			ID:            "3ee8e5ce-4208-f437-7055-347e9e4e124e",
 			Address:       "188.214.132.158",
 			AddressFamily: 4,
-			Cidr:          "188.214.132.128/25",
+			CIDR:          "188.214.132.128/25",
 			Gateway:       "188.214.132.129",
 			Type:          "primary-ip",
 			Region: Region{
 				ID:         1,
 				Name:       "EU-Nord-1",
-				RegionIso2: "LT",
+				RegionISO2: "LT",
 				Location:   "Lithuania, Vilnius",
 				Href:       "/regions/1",
 			},
@@ -112,14 +115,14 @@ func TestIpAddress_Get(t *testing.T) {
 			Image:    "Ubuntu 18.04 64bit",
 			State:    "active",
 		},
-		PtrRecord: "ptr-r",
+		PTRRecord: "ptr-r",
 		ARecord:   "a-r",
 		Href:      "/ips/e3f75899-1db3-b794-137f-78c5ee9096af",
 	}
 
 	mux.HandleFunc("/v1/ips/"+ipUID, func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
-		fmt.Fprint(writer, `{
+		_, err := fmt.Fprint(writer, `{
 			"id":"e3f75899-1db3-b794-137f-78c5ee9096af",
 			"address":"5.199.171.0",
 			"address_family":4,
@@ -158,9 +161,11 @@ func TestIpAddress_Get(t *testing.T) {
 			"ddos_scrubbing":false,
 			"href":"/ips/e3f75899-1db3-b794-137f-78c5ee9096af"
 		 }`)
+
+		require.NoError(t, err)
 	})
 
-	ip, _, err := client.IPAddresses.Get(ipUID, nil)
+	ip, _, err := testClient.IPAddresses.Get(t.Context(), ipUID, nil)
 	if err != nil {
 		t.Errorf("IPAddress.List returned %+v", err)
 	}
@@ -179,29 +184,29 @@ func TestIpAddress_Create(t *testing.T) {
 		ID:            "e3f75899-1db3-b794-137f-78c5ee9096af",
 		Address:       "5.199.171.0",
 		AddressFamily: 4,
-		Cidr:          "5.199.171.0/32",
+		CIDR:          "5.199.171.0/32",
 		Type:          "floating-ip",
 		Region: Region{
 			ID:         1,
 			Name:       "EU-Nord-1",
-			RegionIso2: "LT",
+			RegionISO2: "LT",
 			Href:       "/regions/1",
 		},
 		RoutedTo: RoutedTo{
 			ID:            "3ee8e5ce-4208-f437-7055-347e9e4e124es",
 			Address:       "188.214.132.158",
 			AddressFamily: 4,
-			Cidr:          "188.214.132.128/25",
+			CIDR:          "188.214.132.128/25",
 			Gateway:       "188.214.132.129",
 			Type:          "primary-ip",
 			Region: Region{
 				ID:         1,
 				Name:       "EU-Nord-1",
-				RegionIso2: "LT",
+				RegionISO2: "LT",
 				Href:       "/regions/1",
 			},
 		},
-		PtrRecord: "ptr-r",
+		PTRRecord: "ptr-r",
 		ARecord:   "a-r",
 		Tags:      &tags,
 		Href:      "/ips/e3f75899-1db3-b794-137f-78c5ee9096af",
@@ -230,18 +235,19 @@ func TestIpAddress_Create(t *testing.T) {
 
 		jsonBytes, _ := json.Marshal(expected)
 		response := string(jsonBytes)
-		fmt.Fprint(writer, response)
+		_, err = fmt.Fprint(writer, response)
+		require.NoError(t, err)
 	})
 
 	ipCreate := CreateIPAddress{
 		Region:    "EU-Nord-1",
-		PtrRecord: "ptr",
+		PTRRecord: "ptr",
 		ARecord:   "a",
 		RoutedTo:  "3ee8e5ce-4208-f437-7055-347e9e4e124e",
 		Tags:      &tags,
 	}
 
-	ipAddress, _, err := client.IPAddresses.Create(projectID, &ipCreate)
+	ipAddress, _, err := testClient.IPAddresses.Create(t.Context(), projectID, &ipCreate)
 	if err != nil {
 		t.Errorf("IPAddress.Create returned %+v", err)
 	}
@@ -255,11 +261,11 @@ func TestIpAddress_Update(t *testing.T) {
 	setup()
 	defer teardown()
 
-	ipId := "e3f75899-1db3-b794-137f-78c5ee9096af"
+	ipID := "e3f75899-1db3-b794-137f-78c5ee9096af"
 	tags := map[string]string{"env": "dev"}
 	expected := IPAddress{
 		ID:        "e3f75899-1db3-b794-137f-78c5ee9096af",
-		PtrRecord: "ptr-new",
+		PTRRecord: "ptr-new",
 		ARecord:   "a-new",
 		Tags:      &tags,
 	}
@@ -270,7 +276,7 @@ func TestIpAddress_Update(t *testing.T) {
 		"tags":       map[string]interface{}{"env": "dev"},
 	}
 
-	mux.HandleFunc("/v1/ips/"+ipId, func(writer http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/v1/ips/"+ipID, func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodPut)
 
 		var v map[string]interface{}
@@ -285,16 +291,17 @@ func TestIpAddress_Update(t *testing.T) {
 
 		jsonBytes, _ := json.Marshal(expected)
 		response := string(jsonBytes)
-		fmt.Fprint(writer, response)
+		_, err = fmt.Fprint(writer, response)
+		require.NoError(t, err)
 	})
 
 	ipUpdate := UpdateIPAddress{
-		PtrRecord: "ptr-new",
+		PTRRecord: "ptr-new",
 		ARecord:   "a-new",
 		Tags:      &tags,
 	}
 
-	ipAddress, _, err := client.IPAddresses.Update(ipId, &ipUpdate)
+	ipAddress, _, err := testClient.IPAddresses.Update(t.Context(), ipID, &ipUpdate)
 	if err != nil {
 		t.Errorf("IPAddress.Update returned %+v", err)
 	}
@@ -308,19 +315,68 @@ func TestIpAddress_Delete(t *testing.T) {
 	setup()
 	defer teardown()
 
-	ipId := "e3f75899-1db3-b794-137f-78c5ee9096af"
+	ipID := "e3f75899-1db3-b794-137f-78c5ee9096af"
 
-	mux.HandleFunc("/v1/ips/"+ipId, func(writer http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/v1/ips/"+ipID, func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodDelete)
 
 		writer.WriteHeader(http.StatusNoContent)
 
-		fmt.Fprint(writer)
+		_, err := fmt.Fprint(writer)
+		require.NoError(t, err)
 	})
 
-	_, err := client.IPAddresses.Remove(ipId)
-
+	_, err := testClient.IPAddresses.Remove(t.Context(), ipID)
 	if err != nil {
 		t.Errorf("IPAddress.Remove returned %+v", err)
 	}
+}
+
+func TestIPAddress_Assign(t *testing.T) {
+	setup()
+	defer teardown()
+
+	assignRequest := AssignIPAddress{
+		ServerID: 123,
+	}
+
+	mux.HandleFunc("PUT /v1/ips/abc123", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, http.MethodPut)
+
+		v := new(AssignIPAddress)
+		err := json.NewDecoder(r.Body).Decode(v)
+		require.NoError(t, err)
+
+		assert.Equal(t, assignRequest, *v)
+
+		_, err = fmt.Fprint(w, `{"id": "abc123", "address": "127.0.0.1"}`)
+		require.NoError(t, err)
+	})
+
+	ip, _, err := testClient.IPAddresses.Assign(t.Context(), "abc123", &assignRequest)
+	require.NoError(t, err)
+
+	assert.Equal(t, "abc123", ip.ID)
+	assert.Equal(t, "127.0.0.1", ip.Address)
+}
+
+func TestIPAddress_Unassign(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("PUT /v1/ips/abc123", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, http.MethodPut)
+
+		v := new(UpdateIPAddress)
+		err := json.NewDecoder(r.Body).Decode(v)
+		require.NoError(t, err)
+
+		assert.Equal(t, "0", v.TargetedTo)
+
+		_, err = fmt.Fprint(w, `{"id": "abc123", "address": "127.0.0.1"}`)
+		require.NoError(t, err)
+	})
+
+	_, err := testClient.IPAddresses.Unassign(t.Context(), "abc123")
+	require.NoError(t, err)
 }

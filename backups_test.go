@@ -3,10 +3,14 @@ package cherrygo
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"reflect"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestBackupStorage_Get(t *testing.T) {
@@ -25,7 +29,7 @@ func TestBackupStorage_Get(t *testing.T) {
 
 	mux.HandleFunc("/v1/backup-storages/123", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
-		fmt.Fprint(writer, `{
+		_, err := fmt.Fprint(writer, `{
 			"id": 123,
 			"status": "deployed",
 			"state": "active",
@@ -34,9 +38,10 @@ func TestBackupStorage_Get(t *testing.T) {
 			"size_gigabytes": 100,
 			"used_gigabytes": 1
 		}`)
+		require.NoError(t, err)
 	})
 
-	backup, _, err := client.Backups.Get(123, nil)
+	backup, _, err := testClient.Backups.Get(t.Context(), 123, nil)
 	if err != nil {
 		t.Errorf("Backups.Get returned %+v", err)
 	}
@@ -57,14 +62,14 @@ func TestBackupStorage_ListBackups(t *testing.T) {
 
 	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID)+"/backup-storages", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
-		fmt.Fprint(writer, `[
+		_, err := fmt.Fprint(writer, `[
 			{"id": 123},
 			{"id": 321}
 		]`)
+		require.NoError(t, err)
 	})
 
-	backups, _, err := client.Backups.ListBackups(projectID, nil)
-
+	backups, _, err := testClient.Backups.ListBackups(t.Context(), projectID, nil)
 	if err != nil {
 		t.Errorf("Backups.ListBackups returned %+v", err)
 	}
@@ -90,7 +95,7 @@ func TestBackupStorage_ListPlans(t *testing.T) {
 
 	mux.HandleFunc("/v1/backup-storage-plans", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
-		fmt.Fprint(writer, `[
+		_, err := fmt.Fprint(writer, `[
 			{
 				"id": 123,
 				"name": "Backup 100",
@@ -99,10 +104,11 @@ func TestBackupStorage_ListPlans(t *testing.T) {
 			},
 			{"id": 321}
 		]`)
+
+		require.NoError(t, err)
 	})
 
-	backupPlans, _, err := client.Backups.ListPlans(nil)
-
+	backupPlans, _, err := testClient.Backups.ListPlans(t.Context(), nil)
 	if err != nil {
 		t.Errorf("Backups.ListPlans returned %+v", err)
 	}
@@ -117,11 +123,10 @@ func TestBackupStorage_Create(t *testing.T) {
 	defer teardown()
 
 	serverID := 312
-	requestBody := map[string]interface{}{
-		"server_id": float64(serverID),
-		"slug":      "backup_100",
-		"region":    "eu_nord_1",
-		"ssh_key":   "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC6ec8eT...",
+	requestBody := map[string]any{
+		"slug":    "backup_100",
+		"region":  "eu_nord_1",
+		"ssh_key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC6ec8eT...",
 	}
 
 	mux.HandleFunc("/v1/servers/"+strconv.Itoa(serverID)+"/backup-storages", func(writer http.ResponseWriter, request *http.Request) {
@@ -137,17 +142,17 @@ func TestBackupStorage_Create(t *testing.T) {
 			t.Errorf("Request body\n sent %#v\n expected %#v", v, requestBody)
 		}
 
-		fmt.Fprint(writer, `{"id": 123}`)
+		_, err = fmt.Fprint(writer, `{"id": 123}`)
+		require.NoError(t, err)
 	})
 
 	createBackup := CreateBackup{
-		ServerID:       serverID,
 		BackupPlanSlug: "backup_100",
 		RegionSlug:     "eu_nord_1",
 		SSHKey:         "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC6ec8eT...",
 	}
 
-	_, _, err := client.Backups.Create(&createBackup)
+	_, _, err := testClient.Backups.Create(t.Context(), serverID, &createBackup)
 	if err != nil {
 		t.Errorf("Backup.Create returned %+v", err)
 	}
@@ -157,8 +162,7 @@ func TestBackupStorage_Update(t *testing.T) {
 	setup()
 	defer teardown()
 
-	requestBody := map[string]interface{}{
-		"id":       float64(123),
+	requestBody := map[string]any{
 		"slug":     "backup_500",
 		"password": "abc123",
 	}
@@ -176,16 +180,16 @@ func TestBackupStorage_Update(t *testing.T) {
 			t.Errorf("Request body\n sent %#v\n expected %#v", v, requestBody)
 		}
 
-		fmt.Fprint(writer, `{"id": 123}`)
+		_, err = fmt.Fprint(writer, `{"id": 123}`)
+		require.NoError(t, err)
 	})
 
 	updateBackupStorage := UpdateBackupStorage{
-		BackupStorageID: 123,
-		BackupPlanSlug:  "backup_500",
-		Password:        "abc123",
+		BackupPlanSlug: "backup_500",
+		Password:       "abc123",
 	}
 
-	_, _, err := client.Backups.Update(&updateBackupStorage)
+	_, _, err := testClient.Backups.Update(t.Context(), 123, &updateBackupStorage)
 	if err != nil {
 		t.Errorf("Backups.Update returned %+v", err)
 	}
@@ -196,11 +200,9 @@ func TestBackupStorage_UpdateMethod(t *testing.T) {
 	defer teardown()
 
 	methodName := "FTP"
-	requestBody := map[string]interface{}{
-		"id":        float64(123),
-		"name":      methodName,
+	requestBody := map[string]any{
 		"enabled":   true,
-		"whitelist": []interface{}{"1.1.1.1", "2.2.2.2"},
+		"whitelist": []any{"1.1.1.1", "2.2.2.2"},
 	}
 
 	mux.HandleFunc("/v1/backup-storages/123/methods/"+methodName, func(writer http.ResponseWriter, request *http.Request) {
@@ -216,7 +218,7 @@ func TestBackupStorage_UpdateMethod(t *testing.T) {
 			t.Errorf("Request body\n sent %#v\n expected %#v", v, requestBody)
 		}
 
-		fmt.Fprint(writer, `[{
+		_, err = fmt.Fprint(writer, `[{
 			"name": "FTP",
 			"username": "username",
 			"password": "password",
@@ -224,19 +226,46 @@ func TestBackupStorage_UpdateMethod(t *testing.T) {
 			"ssh_key": "ssh_key",
 			"enabled": true
 			}]`)
+
+		require.NoError(t, err)
 	})
 
+	var (
+		enabled   = true
+		whitelist = []string{"1.1.1.1", "2.2.2.2"}
+	)
 	updateBackupMethod := UpdateBackupMethod{
-		BackupStorageID:  123,
-		BackupMethodName: methodName,
-		Enabled:          true,
-		Whitelist:        []string{"1.1.1.1", "2.2.2.2"},
+		Enabled:   &enabled,
+		Whitelist: &whitelist,
 	}
 
-	_, _, err := client.Backups.UpdateBackupMethod(&updateBackupMethod)
+	_, _, err := testClient.Backups.UpdateBackupMethod(t.Context(), 123, methodName, &updateBackupMethod)
 	if err != nil {
 		t.Errorf("Backups.UpdateBackupMethod returned %+v", err)
 	}
+}
+
+func TestBackupStorage_UpdateMethodBodyFieldsOmitted(t *testing.T) {
+	setup()
+	defer teardown()
+
+	bod := UpdateBackupMethod{}
+
+	mux.HandleFunc("PATCH /v1/backup-storages/123/methods/FTP", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, http.MethodPatch)
+
+		got, err := io.ReadAll(r.Body)
+		require.NoError(t, err)
+		assert.JSONEq(t, "{}", string(got))
+
+		_, err = fmt.Fprint(w, `[{
+			"name": "FTP"
+			}]`)
+		require.NoError(t, err)
+	})
+
+	_, _, err := testClient.Backups.UpdateBackupMethod(t.Context(), 123, "FTP", &bod)
+	require.NoError(t, err)
 }
 
 func TestBackupStorage_Delete(t *testing.T) {
@@ -246,10 +275,11 @@ func TestBackupStorage_Delete(t *testing.T) {
 	mux.HandleFunc("/v1/backup-storages/123", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodDelete)
 		writer.WriteHeader(http.StatusNoContent)
-		fmt.Fprint(writer)
+		_, err := fmt.Fprint(writer)
+		require.NoError(t, err)
 	})
 
-	_, err := client.Backups.Delete(123)
+	_, err := testClient.Backups.Delete(t.Context(), 123)
 	if err != nil {
 		t.Errorf("Backups.Delete returned %+v", err)
 	}

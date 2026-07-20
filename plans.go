@@ -1,20 +1,27 @@
 package cherrygo
 
 import (
+	"context"
 	"fmt"
+	"net/http"
 )
 
-const teamPlanPath = "/v1/teams"
-const basePlanPath = "/v1/plans"
+const (
+	teamPlanPath = "/v1/teams"
+	basePlanPath = "/v1/plans"
+)
 
 // PlansService is an interface for interfacing with the Plan endpoints of the CherryServers API
 // See: https://api.cherryservers.com/doc/#tag/Plans
 type PlansService interface {
-	List(teamID int, opts *GetOptions) ([]Plan, *Response, error)
-	GetBySlug(slug string, opts *GetOptions) (Plan, *Response, error)
-	GetByID(id int, opts *GetOptions) (Plan, *Response, error)
+	List(ctx context.Context, teamID int, opts *GetOptions) ([]Plan, *Response, error)
+	GetBySlug(ctx context.Context, slug string, opts *GetOptions) (Plan, *Response, error)
+	GetByID(ctx context.Context, id int, opts *GetOptions) (Plan, *Response, error)
+	ListPrebuiltPlans(ctx context.Context, basePlan, region string, opts *GetOptions) ([]PrebuiltPlan, *Response, error)
+	ListPrebuiltTeamPlans(ctx context.Context, basePlan, region string, teamID int, opts *GetOptions) ([]PrebuiltPlan, *Response, error)
 }
 
+// Plan data.
 type Plan struct {
 	ID               int                `json:"id,omitempty"`
 	Name             string             `json:"name,omitempty"`
@@ -28,10 +35,20 @@ type Plan struct {
 	Softwares        []SoftwareImage    `json:"softwares"`
 }
 
+// PrebuiltPlan is a base plan variant for a pre-assembled server.
+type PrebuiltPlan struct {
+	ID       int       `json:"id"`
+	StockQty int       `json:"stock_qty"`
+	Specs    Specs     `json:"specs"`
+	Pricing  []Pricing `json:"pricing"`
+}
+
+// SoftwareImage data.
 type SoftwareImage struct {
 	Image SoftwareImageSpecs `json:"image"`
 }
 
+// SoftwareImageSpecs data.
 type SoftwareImageSpecs struct {
 	Name string `json:"name"`
 	Slug string `json:"slug"`
@@ -39,16 +56,16 @@ type SoftwareImageSpecs struct {
 
 // Specs specifies fields for specs
 type Specs struct {
-	Cpus      Cpus      `json:"cpus,omitempty"`
+	CPUs      CPUs      `json:"cpus,omitempty"`
 	Memory    Memory    `json:"memory,omitempty"`
 	Storage   []Storage `json:"storage,omitempty"`
 	Raid      Raid      `json:"raid,omitempty"`
-	Nics      Nics      `json:"nics,omitempty"`
+	NICs      NICs      `json:"nics,omitempty"`
 	Bandwidth Bandwidth `json:"bandwidth,omitempty"`
 }
 
-// Cpus fields
-type Cpus struct {
+// CPUs fields
+type CPUs struct {
 	Count     int     `json:"count,omitempty"`
 	Name      string  `json:"name,omitempty"`
 	Cores     int     `json:"cores,omitempty"`
@@ -77,8 +94,8 @@ type Raid struct {
 	Name string `json:"name,omitempty"`
 }
 
-// Nics fields
-type Nics struct {
+// NICs fields
+type NICs struct {
 	Name string `json:"name,omitempty"`
 }
 
@@ -87,18 +104,20 @@ type Bandwidth struct {
 	Name string `json:"name,omitempty"`
 }
 
+// AvailableRegions data.
 type AvailableRegions struct {
 	*Region
 	StockQty int `json:"stock_qty,omitempty"`
 	SpotQty  int `json:"spot_qty,omitempty"`
 }
 
+// PlansClient makes plan related API requests.
 type PlansClient struct {
 	client *Client
 }
 
 // List func lists plans
-func (p *PlansClient) List(teamID int, opts *GetOptions) ([]Plan, *Response, error) {
+func (p *PlansClient) List(ctx context.Context, teamID int, opts *GetOptions) ([]Plan, *Response, error) {
 	basePath := basePlanPath
 	if teamID != 0 {
 		basePath = fmt.Sprintf("%s/%d/plans", teamPlanPath, teamID)
@@ -107,33 +126,72 @@ func (p *PlansClient) List(teamID int, opts *GetOptions) ([]Plan, *Response, err
 	path := opts.WithQuery(basePath)
 	var trans []Plan
 
-	resp, err := p.client.MakeRequest("GET", path, nil, &trans)
+	req, err := p.client.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
+		return nil, nil, err
 	}
 
+	resp, err := p.client.Do(req, &trans)
 	return trans, resp, err
 }
 
-func (p *PlansClient) get(path string, opts *GetOptions) (Plan, *Response, error) {
+func (p *PlansClient) get(ctx context.Context, path string) (Plan, *Response, error) {
 	var trans Plan
 
-	resp, err := p.client.MakeRequest("GET", path, nil, &trans)
+	req, err := p.client.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
-		err = fmt.Errorf("error: %v", err)
+		return Plan{}, nil, err
 	}
 
+	resp, err := p.client.Do(req, &trans)
 	return trans, resp, err
 }
 
-func (p *PlansClient) GetByID(id int, opts *GetOptions) (Plan, *Response, error) {
+// GetByID retrieves server plan by ID.
+func (p *PlansClient) GetByID(ctx context.Context, id int, opts *GetOptions) (Plan, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("%s/%d", basePlanPath, id))
 
-	return p.get(path, opts)
+	return p.get(ctx, path)
 }
 
-func (p *PlansClient) GetBySlug(slug string, opts *GetOptions) (Plan, *Response, error) {
+// GetBySlug retrieves server plan by slug.
+func (p *PlansClient) GetBySlug(ctx context.Context, slug string, opts *GetOptions) (Plan, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("%s/%s", basePlanPath, slug))
 
-	return p.get(path, opts)
+	return p.get(ctx, path)
+}
+
+func (p *PlansClient) listPrebuiltPlans(ctx context.Context, path, region string, opts *GetOptions) ([]PrebuiltPlan, *Response, error) {
+	var pps []PrebuiltPlan
+
+	if opts == nil {
+		opts = new(GetOptions)
+	}
+	if opts.QueryParams == nil {
+		opts.QueryParams = make(map[string]string, 1)
+	}
+	opts.QueryParams["region"] = region
+
+	req, err := p.client.NewRequest(ctx, http.MethodGet, opts.WithQuery(path), nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := p.client.Do(req, &pps)
+	return pps, resp, err
+}
+
+// ListPrebuiltPlans retrieves variations of the base plan that have pre-assembled stock.
+// Mutates opts to set the region query parameter.
+func (p *PlansClient) ListPrebuiltPlans(ctx context.Context, basePlan, region string, opts *GetOptions) ([]PrebuiltPlan, *Response, error) {
+	path := fmt.Sprintf("%s/%s/prebuilts", basePlanPath, basePlan)
+	return p.listPrebuiltPlans(ctx, path, region, opts)
+}
+
+// ListPrebuiltTeamPlans retrieves variations of the base plan that have pre-assembled stock.
+// The pricing is adjusted according to your teams billing settings.
+// Mutates opts to set the region query parameter.
+func (p *PlansClient) ListPrebuiltTeamPlans(ctx context.Context, basePlan, region string, teamID int, opts *GetOptions) ([]PrebuiltPlan, *Response, error) {
+	path := fmt.Sprintf("%s/%d/plans/%s/prebuilts", teamPlanPath, teamID, basePlan)
+	return p.listPrebuiltPlans(ctx, path, region, opts)
 }

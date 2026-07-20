@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestRegions_List(t *testing.T) {
@@ -16,21 +18,21 @@ func TestRegions_List(t *testing.T) {
 			ID:         1,
 			Name:       "EU-Nord-1",
 			Slug:       "eu_nord_1",
-			RegionIso2: "LT",
+			RegionISO2: "LT",
 			Href:       "/regions/1",
 		},
 		{
 			ID:         2,
 			Name:       "EU-West-1",
 			Slug:       "eu_west_1",
-			RegionIso2: "NL",
+			RegionISO2: "NL",
 			Href:       "/regions/2",
 		},
 	}
 
 	mux.HandleFunc("/v1/regions", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
-		fmt.Fprint(writer, `[
+		_, err := fmt.Fprint(writer, `[
 			{
 				"id":1,
 				"name":"EU-Nord-1",
@@ -46,9 +48,10 @@ func TestRegions_List(t *testing.T) {
 				"href":"/regions/2"
 			 }
 		]`)
+		require.NoError(t, err)
 	})
 
-	regions, _, err := client.Regions.List(nil)
+	regions, _, err := testClient.Regions.List(t.Context(), nil)
 	if err != nil {
 		t.Errorf("Regions.List returned %+v", err)
 	}
@@ -66,22 +69,23 @@ func TestRegion_Get(t *testing.T) {
 		ID:         1,
 		Name:       "EU-Nord-1",
 		Slug:       "eu_nord_1",
-		RegionIso2: "LT",
+		RegionISO2: "LT",
 		Href:       "/regions/1",
 	}
 
 	mux.HandleFunc("/v1/regions/eu_nord_1", func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
-		fmt.Fprint(writer, `{
+		_, err := fmt.Fprint(writer, `{
 			"id":1,
 			"name":"EU-Nord-1",
 			"slug":"eu_nord_1",
 			"region_iso_2":"LT",
 			"href":"/regions/1"
 		}`)
+		require.NoError(t, err)
 	})
 
-	region, _, err := client.Regions.Get("eu_nord_1", nil)
+	region, _, err := testClient.Regions.Get(t.Context(), "eu_nord_1", nil)
 	if err != nil {
 		t.Errorf("Regions.Get returned %+v", err)
 	}

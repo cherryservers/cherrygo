@@ -1,31 +1,76 @@
 package cherrygo
 
 import (
+	"context"
+	"crypto/rand"
+	"errors"
 	"fmt"
+	"math/big"
+	"net/http"
+	"net/netip"
+	"time"
 )
 
-const baseServerPath = "/v1/servers"
-const endServersPath = "servers"
+const (
+	baseServerPath = "/v1/servers"
+	endServersPath = "servers"
+)
+
+// ServerStatus is the pseudo-enum for server statuses.
+//
+// Used as a constraint for server status parameters.
+// It is not used as a field type in response structs and
+// makes no guarantees about enumerating all possible status values.
+type ServerStatus int
+
+const (
+	// StatusDeployed status is used to indicate an active server
+	// deployment. This is generally the status to watch for when
+	// provisioning a new server, except when using custom installation
+	// procedures, in which case, see `Allocated`.
+	StatusDeployed ServerStatus = iota
+
+	// StatusAllocated status is used to indicate an active server
+	// deployment, when custom installation procedures are used, i.e.
+	// iPXE, since these don't go through the full standard deployment
+	// process.
+	StatusAllocated
+)
+
+var serverStatusValues = map[ServerStatus]string{
+	StatusDeployed:  "deployed",
+	StatusAllocated: "allocated",
+}
+
+func (ss ServerStatus) String() string {
+	if v, ok := serverStatusValues[ss]; ok {
+		return v
+	}
+
+	return fmt.Sprintf("invalid ServerStatus(%d)", ss)
+}
 
 // ServersService is an interface for interfacing with the Server endpoints of the CherryServers API
 // See: https://api.cherryservers.com/doc/#tag/Servers
 type ServersService interface {
-	List(projectID int, opts *GetOptions) ([]Server, *Response, error)
-	Get(serverID int, opts *GetOptions) (Server, *Response, error)
-	PowerOff(serverID int) (Server, *Response, error)
-	PowerOn(serverID int) (Server, *Response, error)
-	Create(request *CreateServer) (Server, *Response, error)
-	Delete(serverID int) (Server, *Response, error)
-	PowerState(serverID int) (PowerState, *Response, error)
-	Reboot(serverID int) (Server, *Response, error)
-	EnterRescueMode(serverID int, fields *RescueServerFields) (Server, *Response, error)
-	ExitRescueMode(serverID int) (Server, *Response, error)
-	Update(serverID int, request *UpdateServer) (Server, *Response, error)
-	Reinstall(serverID int, fields *ReinstallServerFields) (Server, *Response, error)
-	ListSSHKeys(serverID int, opts *GetOptions) ([]SSHKey, *Response, error)
-	ResetBMCPassword(serverID int) (Server, *Response, error)
-	ListCycles(opts *GetOptions) ([]ServerCycle, *Response, error)
-	Upgrade(serverID int, plan string) (Server, *Response, error)
+	List(ctx context.Context, projectID int, opts *GetOptions) ([]Server, *Response, error)
+	Get(ctx context.Context, serverID int, opts *GetOptions) (Server, *Response, error)
+	PowerOff(ctx context.Context, serverID int) (Server, *Response, error)
+	PowerOn(ctx context.Context, serverID int) (Server, *Response, error)
+	Create(ctx context.Context, request *CreateServer) (Server, *Response, error)
+	Delete(ctx context.Context, serverID int) (*Response, error)
+	PowerState(ctx context.Context, serverID int) (PowerState, *Response, error)
+	Reboot(ctx context.Context, serverID int) (Server, *Response, error)
+	EnterRescueMode(ctx context.Context, serverID int, fields *RescueServerFields) (Server, *Response, error)
+	ExitRescueMode(ctx context.Context, serverID int) (Server, *Response, error)
+	Update(ctx context.Context, serverID int, request *UpdateServer) (Server, *Response, error)
+	Reinstall(ctx context.Context, serverID int, fields *ReinstallServerFields) (Server, *Response, error)
+	ListSSHKeys(ctx context.Context, serverID int, opts *GetOptions) ([]SSHKey, *Response, error)
+	ResetBMCPassword(ctx context.Context, serverID int) (Server, *Response, error)
+	ListCycles(ctx context.Context, opts *GetOptions) ([]ServerCycle, *Response, error)
+	Upgrade(ctx context.Context, serverID int, plan string) (Server, *Response, error)
+	AllowBMCAccess(ctx context.Context, serverID int, ip4 string) (Server, *Response, error)
+	WaitForStatus(ctx context.Context, serverID int, status ServerStatus) (Server, *Response, error)
 }
 
 // Server response object
@@ -55,23 +100,35 @@ type Server struct {
 	Backup           BackupStorage     `json:"backup_storage,omitempty"`
 	Created          string            `json:"created_at,omitempty"`
 	TerminationDate  string            `json:"termination_date,omitempty"`
+	VLAN             int               `json:"vlan,omitempty"`
 }
 
+// BMC data.
 type BMC struct {
 	User     string `json:"user,omitempty"`
 	Password string `json:"password,omitempty"`
+
+	// IP is the address at which the BMC can be reached.
+	IP netip.Addr `json:"ip,omitzero"`
+
+	// AllowedIP is the address that is whitelisted for BMC access.
+	AllowedIP netip.Addr `json:"allowed_ip,omitzero"`
+
+	Expires time.Time `json:"expires,omitzero"`
 }
 
+// DeployedImage data.
 type DeployedImage struct {
 	Name string `json:"name,omitempty"`
 	Slug string `json:"slug,omitempty"`
 }
 
-type ReinstallServer struct {
+type reinstallRequest struct {
 	ServerAction
 	*ReinstallServerFields
 }
 
+// ReinstallServerFields holds the fields for a server reinstall request.
 type ReinstallServerFields struct {
 	Image           string   `json:"image"`
 	Hostname        string   `json:"hostname,omitempty"`
@@ -82,11 +139,12 @@ type ReinstallServerFields struct {
 	OSPartitionSize int      `json:"os_partition_size,omitempty"`
 }
 
-type RescueServer struct {
+type rescueServer struct {
 	ServerAction
 	*RescueServerFields
 }
 
+// RescueServerFields holds the fields for a server rescue request.
 type RescueServerFields struct {
 	Password string `json:"password"`
 }
@@ -101,15 +159,26 @@ type PowerState struct {
 	Power string `json:"power"`
 }
 
+// UpgradeServer action request body.
 type UpgradeServer struct {
 	ServerAction
 	Plan string `json:"plan"`
 }
 
+type allowBMCAccess struct {
+	ServerAction
+	AllowedIP string `json:"allowed_ip,omitempty"`
+}
+
 // CreateServer fields for ordering new server
 type CreateServer struct {
-	ProjectID       int                `json:"project_id"`
-	Plan            string             `json:"plan"`
+	ProjectID int    `json:"project_id"`
+	Plan      string `json:"plan"`
+
+	// PrebuiltID allows selecting a pre-assembled plan variant.
+	// Requires Plan to be set as well.
+	PrebuiltID int `json:"prebuilt_id,omitempty"`
+
 	Hostname        string             `json:"hostname,omitempty"`
 	Image           string             `json:"image,omitempty"`
 	Region          string             `json:"region"`
@@ -123,6 +192,7 @@ type CreateServer struct {
 	StorageID       int                `json:"storage_id,omitempty"`
 	Cycle           string             `json:"cycle,omitempty"`
 	DiscountCode    string             `json:"discount,omitempty"`
+	ConfigureIPv6   *bool              `json:"configure_ipv6,omitempty"`
 }
 
 // UpdateServer fields for updating a server with specified tags
@@ -130,202 +200,332 @@ type UpdateServer struct {
 	Name     string             `json:"name,omitempty"`
 	Hostname string             `json:"hostname,omitempty"`
 	Tags     *map[string]string `json:"tags,omitempty"`
-	Bgp      bool               `json:"bgp"`
+	BGP      *bool              `json:"bgp,omitempty"`
 }
 
+// ServerCycle data.
 type ServerCycle struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
 	Slug string `json:"slug"`
 }
 
+// ServersClient makes server related API requests.
 type ServersClient struct {
 	client *Client
 }
 
 // List func lists teams
-func (s *ServersClient) List(projectID int, opts *GetOptions) ([]Server, *Response, error) {
+func (s *ServersClient) List(ctx context.Context, projectID int, opts *GetOptions) ([]Server, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("/v1/projects/%d/servers", projectID))
-
 	var trans []Server
-	resp, err := s.client.MakeRequest("GET", path, nil, &trans)
+
+	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
+		return nil, nil, err
 	}
 
+	resp, err := s.client.Do(req, &trans)
 	return trans, resp, err
 }
 
-func (s *ServersClient) Get(serverID int, opts *GetOptions) (Server, *Response, error) {
+// Get server.
+func (s *ServersClient) Get(ctx context.Context, serverID int, opts *GetOptions) (Server, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("%s/%d", baseServerPath, serverID))
-
 	var trans Server
 
-	resp, err := s.client.MakeRequest("GET", path, nil, &trans)
+	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
+		return Server{}, nil, err
 	}
 
+	resp, err := s.client.Do(req, &trans)
 	return trans, resp, err
 }
 
-func (s *ServersClient) action(serverID int, serverAction ServerAction) (Server, *Response, error) {
+func (s *ServersClient) action(ctx context.Context, serverID int, serverAction ServerAction) (Server, *Response, error) {
 	var trans Server
-
 	path := fmt.Sprintf("%s/%d/actions", baseServerPath, serverID)
-	resp, err := s.client.MakeRequest("POST", path, serverAction, &trans)
 
+	req, err := s.client.NewRequest(ctx, http.MethodPost, path, serverAction)
+	if err != nil {
+		return Server{}, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	return trans, resp, err
 }
 
 // PowerOff function turns server off
-func (s *ServersClient) PowerOff(serverID int) (Server, *Response, error) {
+func (s *ServersClient) PowerOff(ctx context.Context, serverID int) (Server, *Response, error) {
 	action := ServerAction{
 		Type: "power_off",
 	}
 
-	return s.action(serverID, action)
+	return s.action(ctx, serverID, action)
 }
 
 // PowerOn function turns server on
-func (s *ServersClient) PowerOn(serverID int) (Server, *Response, error) {
+func (s *ServersClient) PowerOn(ctx context.Context, serverID int) (Server, *Response, error) {
 	action := ServerAction{
 		Type: "power_on",
 	}
 
-	return s.action(serverID, action)
+	return s.action(ctx, serverID, action)
 }
 
 // Reboot function restarts desired server
-func (s *ServersClient) Reboot(serverID int) (Server, *Response, error) {
+func (s *ServersClient) Reboot(ctx context.Context, serverID int) (Server, *Response, error) {
 	action := ServerAction{
 		Type: "reboot",
 	}
 
-	return s.action(serverID, action)
+	return s.action(ctx, serverID, action)
 }
 
-func (s *ServersClient) EnterRescueMode(serverID int, fields *RescueServerFields) (Server, *Response, error) {
+// EnterRescueMode on server.
+func (s *ServersClient) EnterRescueMode(ctx context.Context, serverID int, fields *RescueServerFields) (Server, *Response, error) {
 	var trans Server
-
-	request := &RescueServer{ServerAction{Type: "enter-rescue-mode"}, fields}
+	request := &rescueServer{ServerAction{Type: "enter-rescue-mode"}, fields}
 	path := fmt.Sprintf("%s/%d/actions", baseServerPath, serverID)
-	resp, err := s.client.MakeRequest("POST", path, request, &trans)
 
+	req, err := s.client.NewRequest(ctx, http.MethodPost, path, request)
+	if err != nil {
+		return Server{}, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	return trans, resp, err
 }
 
-func (s *ServersClient) ExitRescueMode(serverID int) (Server, *Response, error) {
+// ExitRescueMode on server.
+func (s *ServersClient) ExitRescueMode(ctx context.Context, serverID int) (Server, *Response, error) {
 	action := ServerAction{
 		Type: "exit-rescue-mode",
 	}
 
-	return s.action(serverID, action)
+	return s.action(ctx, serverID, action)
 }
 
-func (s *ServersClient) ResetBMCPassword(serverID int) (Server, *Response, error) {
+// ResetBMCPassword for bare metal server.
+func (s *ServersClient) ResetBMCPassword(ctx context.Context, serverID int) (Server, *Response, error) {
 	action := ServerAction{
 		Type: "reset-bmc-password",
 	}
 
-	return s.action(serverID, action)
+	return s.action(ctx, serverID, action)
 }
 
-func (s *ServersClient) Reinstall(serverID int, fields *ReinstallServerFields) (Server, *Response, error) {
+// Reinstall server OS.
+func (s *ServersClient) Reinstall(ctx context.Context, serverID int, fields *ReinstallServerFields) (Server, *Response, error) {
 	var trans Server
-
-	request := &ReinstallServer{ServerAction{Type: "reinstall"}, fields}
+	request := &reinstallRequest{ServerAction{Type: "reinstall"}, fields}
 	path := fmt.Sprintf("%s/%d/actions", baseServerPath, serverID)
-	resp, err := s.client.MakeRequest("POST", path, request, &trans)
 
+	req, err := s.client.NewRequest(ctx, http.MethodPost, path, request)
+	if err != nil {
+		return Server{}, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	return trans, resp, err
 }
 
-func (s *ServersClient) Upgrade(serverID int, plan string) (Server, *Response, error) {
+// Upgrade virtual server plan.
+func (s *ServersClient) Upgrade(ctx context.Context, serverID int, plan string) (Server, *Response, error) {
 	var trans Server
-
 	request := &UpgradeServer{
 		ServerAction: ServerAction{Type: "upgrade"},
 		Plan:         plan,
 	}
 	path := fmt.Sprintf("%s/%d/actions", baseServerPath, serverID)
-	resp, err := s.client.MakeRequest("POST", path, request, &trans)
 
+	req, err := s.client.NewRequest(ctx, http.MethodPost, path, request)
+	if err != nil {
+		return Server{}, nil, err
+	}
+
+	resp, err := s.client.Do(req, &trans)
 	return trans, resp, err
 }
 
-func (s *ServersClient) PowerState(serverID int) (PowerState, *Response, error) {
-	path := fmt.Sprintf("%s/%d?fields=power", baseServerPath, serverID)
+// AllowBMCAccess allows BMC/IPMI access from the specified IPv4 address for a limited duration.
+// If ip4 is empty, no whitelist will be used, i.e. all addresses will be allowed.
+func (s *ServersClient) AllowBMCAccess(ctx context.Context, serverID int, ip4 string) (Server, *Response, error) {
+	var srv Server
+	body := &allowBMCAccess{
+		ServerAction: ServerAction{Type: "create-console-access"},
+		AllowedIP:    ip4,
+	}
+	path := fmt.Sprintf("%s/%d/actions", baseServerPath, serverID)
 
+	req, err := s.client.NewRequest(ctx, http.MethodPost, path, body)
+	if err != nil {
+		return Server{}, nil, err
+	}
+
+	resp, err := s.client.Do(req, &srv)
+	return srv, resp, err
+}
+
+// PowerState retrieves server power state.
+func (s *ServersClient) PowerState(ctx context.Context, serverID int) (PowerState, *Response, error) {
+	path := fmt.Sprintf("%s/%d?fields=power", baseServerPath, serverID)
 	var trans PowerState
 
-	resp, err := s.client.MakeRequest("GET", path, nil, &trans)
+	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
+		return PowerState{}, nil, err
 	}
 
+	resp, err := s.client.Do(req, &trans)
 	return trans, resp, err
 }
 
-func (s *ServersClient) Create(request *CreateServer) (Server, *Response, error) {
+// Create server.
+func (s *ServersClient) Create(ctx context.Context, request *CreateServer) (Server, *Response, error) {
 	var trans Server
-
 	path := fmt.Sprintf("/v1/projects/%d/servers", request.ProjectID)
-	resp, err := s.client.MakeRequest("POST", path, request, &trans)
 
+	req, err := s.client.NewRequest(ctx, http.MethodPost, path, request)
 	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
+		return Server{}, nil, err
 	}
 
+	resp, err := s.client.Do(req, &trans)
 	return trans, resp, err
 }
 
-func (s *ServersClient) Update(serverID int, request *UpdateServer) (Server, *Response, error) {
+// Update server.
+func (s *ServersClient) Update(ctx context.Context, serverID int, request *UpdateServer) (Server, *Response, error) {
 	var trans Server
-
 	path := fmt.Sprintf("%s/%d", baseServerPath, serverID)
-	resp, err := s.client.MakeRequest("PUT", path, request, &trans)
 
+	req, err := s.client.NewRequest(ctx, http.MethodPut, path, request)
 	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
+		return Server{}, nil, err
 	}
 
+	resp, err := s.client.Do(req, &trans)
 	return trans, resp, err
 }
 
-func (s *ServersClient) Delete(serverID int) (Server, *Response, error) {
-	var trans Server
-
+// Delete server.
+func (s *ServersClient) Delete(ctx context.Context, serverID int) (*Response, error) {
 	path := fmt.Sprintf("%s/%d", baseServerPath, serverID)
-	resp, err := s.client.MakeRequest("DELETE", path, nil, &trans)
 
+	req, err := s.client.NewRequest(ctx, http.MethodDelete, path, nil)
 	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
+		return nil, err
 	}
 
-	return trans, resp, err
+	resp, err := s.client.Do(req, nil)
+	return resp, err
 }
 
-func (s *ServersClient) ListSSHKeys(serverID int, opts *GetOptions) ([]SSHKey, *Response, error) {
+// ListSSHKeys list SSH keys assigned to the server.
+func (s *ServersClient) ListSSHKeys(ctx context.Context, serverID int, opts *GetOptions) ([]SSHKey, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("%s/%d/ssh-keys", baseServerPath, serverID))
-
 	var trans []SSHKey
-	resp, err := s.client.MakeRequest("GET", path, nil, &trans)
+
+	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
+		return nil, nil, err
 	}
 
+	resp, err := s.client.Do(req, &trans)
 	return trans, resp, err
 }
 
-func (s *ServersClient) ListCycles(opts *GetOptions) ([]ServerCycle, *Response, error) {
+// ListCycles lists available billing cycles.
+func (s *ServersClient) ListCycles(ctx context.Context, opts *GetOptions) ([]ServerCycle, *Response, error) {
 	path := opts.WithQuery("cycles")
-
 	var trans []ServerCycle
-	resp, err := s.client.MakeRequest("GET", path, nil, &trans)
+
+	req, err := s.client.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
-		err = fmt.Errorf("Error: %v", err)
+		return nil, nil, err
 	}
 
+	resp, err := s.client.Do(req, &trans)
 	return trans, resp, err
+}
+
+// WaitForStatus blocks until server reaches specified status.
+func (s *ServersClient) WaitForStatus(ctx context.Context, serverID int, status ServerStatus) (Server, *Response, error) {
+	if s.client.pollBackoff == nil {
+		return Server{}, nil, errors.New("nil client pollBackoff function")
+	}
+
+	attempt := 0
+	for {
+		server, resp, err := s.Get(ctx, serverID, nil)
+		if err != nil {
+			return Server{}, nil, err
+		}
+
+		if server.Status == status.String() {
+			return server, resp, nil
+		}
+
+		if resp == nil {
+			return Server{}, nil, fmt.Errorf("nil response from GET server %d", serverID)
+		}
+
+		select {
+		case <-time.After(s.client.pollBackoff(attempt, resp.Response)):
+			attempt++
+		case <-ctx.Done():
+			return Server{}, nil, ctx.Err()
+		}
+	}
+}
+
+// GeneratePassword generates a password that matches Cherry Servers secure password
+// criteria in a cryptographically secure way.
+//
+// The requirements are as follows:
+//
+// - At least 8 characters (this function will generate a 20 character long password).
+//
+// - Must include at least one letter.
+//
+// - Must include at least one capital letter that is not the first character.
+//
+// - Must include at least one number that is not the last character.
+//
+// - Forbidden characters ' " ` ! $ % & ; % #.
+func GeneratePassword() (string, error) {
+	const (
+		lowercase = "abcdefghijklmnopqrstuvwxyz"
+		uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		digits    = "0123456789"
+		all       = lowercase + uppercase + digits
+		length    = 20
+	)
+	password := make([]byte, length)
+
+	var charset string
+	for i := range length {
+		switch i {
+		case 0:
+			// Ensure there is at least one lower-case alphabetical character.
+			charset = lowercase
+		case 1:
+			// Ensure there is at least one upper-case alphabetical
+			// character that is not first.
+			charset = uppercase
+		case 2:
+			// Ensure there is at least one digit that is not last.
+			charset = digits
+		default:
+			charset = all
+		}
+		idx, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
+		if err != nil {
+			return "", err
+		}
+		password[i] = charset[idx.Int64()]
+	}
+	return string(password), nil
 }

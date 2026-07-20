@@ -2,46 +2,59 @@
 
 Cherry Servers golang API client library for Cherry Servers RESTful API.
 
-You can view the client API docs here: [https://pkg.go.dev/github.com/cherryservers/cherrygo/v3](https://pkg.go.dev/github.com/cherryservers/cherrygo/v3)
+You can view the client API docs here: [https://pkg.go.dev/github.com/cherryservers/cherrygo/v4](https://pkg.go.dev/github.com/cherryservers/cherrygo/v4)
 
 You can view Cherry Servers API docs here: [https://api.cherryservers.com/doc](https://api.cherryservers.com/doc)
 
 ## Table of Contents
 
-- [Installation](#installation)
-- [Authentication](#authentication)
-- [Examples](#examples)
-  - [Get teams](#get-teams)
-  - [Get projects](#get-projects)
-  - [Get plans](#get-plans)
-  - [Get images](#get-images)
-  - [Request new server](#request-new-server)
+- [cherrygo](#cherrygo)
+  - [Table of Contents](#table-of-contents)
+  - [Installation](#installation)
+    - [Authentication](#authentication)
+    - [Examples](#examples)
+      - [Get teams](#get-teams)
+      - [Get projects](#get-projects)
+      - [Get plans](#get-plans)
+      - [Get images](#get-images)
+      - [Request new server](#request-new-server)
+  - [License](#license)
 
 ## Installation
 
 Add the library as a dependency to your project:
 ```
-go get github.com/cherryservers/cherrygo/v3
+go get github.com/cherryservers/cherrygo/v4
 ```
 
 ### Authentication
 
-To authenticate to the Cherry Servers API, you must have an API token. You can create API tokens in the [Cherry Servers client portal](https://portal.cherryservers.com/settings/api-keys). Tokens must be exported in the `CHERRY_AUTH_TOKEN` environment variable or passed to the client directly.
+To authenticate to the Cherry Servers API, you must have an API key. You can create API keys in the [Cherry Servers client portal](https://portal.cherryservers.com/settings/api-keys). API keys must be exported in the `CHERRY_API_KEY` environment variable or passed to the client directly.
 
-Use an exported CHERRY_AUTH_TOKEN environment variable:
+Use an exported CHERRY_API_KEY environment variable:
 ```
-export CHERRY_AUTH_TOKEN="4bdc0acb8f7af4bdc0acb8f7afe78522e6dae9b7e03b0e78522e6dae9b7e03b0"
+export CHERRY_API_KEY="4bdc0acb8f7af4bdc0acb8f7afe78522e6dae9b7e03b0e78522e6dae9b7e03b0"
 ```
 ```go
+import (
+	"context"
+	"log"
+
+	"github.com/cherryservers/cherrygo/v4"
+)
+
+
 func main() {
+    ctx := context.Background()
     c, err := cherrygo.NewClient()
+    if err != nil {
+        log.Fatal(err)
+    }
 }
 ```
-Pass a token directly to the client:
+To pass a key to client without an environment variable:
 ```go
-func main() {
-    c, err := cherrygo.NewClient(cherrygo.WithAuthToken("your-api-token"))
-}
+c, err := cherrygo.NewClient(cherrygo.WithAPIKey("your-api-key"))
 ```
 
 ### Examples
@@ -49,26 +62,27 @@ func main() {
 #### Get teams
 You will need a team ID for subsequent function calls, for example, to get projects for a specified team, you will need to provide a team ID.
 ```go
-teams, _, err := c.Teams.List(nil)
+teams, _, err := c.Teams.List(ctx, nil)
 if err != nil {
-    log.Fatal("Error", err)
+    log.Fatal(err)
 }
 
 for _, t := range teams {
-    log.Println(t.ID, t.Name, t.Credit.Promo.Remaining, t.Credit.Promo.Usage, t.Credit.Resources.Pricing.Price)
+    log.Printf("id: %d, name: %q, remaining promo credit: %f\n",
+        t.ID, t.Name, t.Credit.Promo.Remaining)
 }
 ```
 
 #### Get projects
 After you have your team ID, you can list your projects. You will need your project ID to list your servers or order new ones.
 ```go
-projects, _, err := c.Projects.List(teamID, nil)
+projects, _, err := c.Projects.List(ctx, teamID, nil)
 if err != nil {
-    log.Fatal("Error", err)
+    log.Fatal(err)
 }
 
 for _, p := range projects {
-    log.Println(p.ID, p.Name, p.Href)
+    log.Println(p.ID, p.Name)
 }
 ```
 
@@ -76,13 +90,22 @@ for _, p := range projects {
 View available server plans.
 
 ```go
-plans, _, err := c.Plans.List(teamID, nil)
+plans, _, err := c.Plans.List(ctx, teamID, nil)
 if err != nil {
-    log.Fatalf("Plans error: %v", err)
+    log.Fatal(err)
 }
 
 for _, p := range plans {
-    log.Println(p.Name, p.Slug)
+    var hourlyPrice float32
+    for _, pr := range p.Pricing {
+        if pr.Unit == "Hourly" {
+            hourlyPrice = pr.Price
+        }
+    }
+    for _, r := range p.AvailableRegions {
+        log.Printf("slug: %q, region: %q, stock: %d, type: %q, hourly price: %f",
+            p.Slug, r.Slug, r.StockQty, p.Type, hourlyPrice)
+    }
 }
 ```
 
@@ -90,13 +113,13 @@ for _, p := range plans {
 View OS images available for a specific plan.
 
 ```go
-images, _, err := c.Images.List(planSlug, nil)
+images, _, err := c.Images.List(ctx, planSlug, nil)
 if err != nil {
-    log.Fatal("Error", err)
+    log.Fatal(err)
 }
 
 for _, i := range images {
-    log.Println(i.Name, i.Slug)
+    log.Println(i.Slug)
 }
 ```
 
@@ -109,29 +132,13 @@ addServerRequest := cherrygo.CreateServer{
     Plan:        planSlug,
 }
 
-server, _, err := c.Servers.Create(&addServerRequest)
+server, _, err := c.Servers.Create(ctx, &addServerRequest)
 if err != nil {
-    log.Fatal("Error while creating new server: ", err)
+    log.Fatal(err)
 }
 
 log.Println(server.ID, server.Name, server.Hostname)
 ```
-
-## Debug
-
-If you want to debug this library, set the CHERRY_DEBUG environment variable to true, which enables full API request and response logging.
-```
-export CHERRY_DEBUG="true"
-```
-
-Unset the variable to stop debugging.
-```
-unset CHERRY_DEBUG
-```
-
-## Release process
-
-Before release, the `libraryVersion` constant in `cherrygo.go` should be set to the correct version.
 
 ## License
 

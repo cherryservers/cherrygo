@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestProjects_List(t *testing.T) {
@@ -18,7 +20,7 @@ func TestProjects_List(t *testing.T) {
 			ID:   321,
 			Name: "My Project",
 			Href: "/projects/321",
-			Bgp: ProjectBGP{
+			BGP: ProjectBGP{
 				Enabled:  true,
 				LocalASN: 123,
 			},
@@ -27,7 +29,7 @@ func TestProjects_List(t *testing.T) {
 			ID:   322,
 			Name: "My New Project",
 			Href: "/projects/322",
-			Bgp: ProjectBGP{
+			BGP: ProjectBGP{
 				Enabled:  false,
 				LocalASN: 0,
 			},
@@ -40,11 +42,11 @@ func TestProjects_List(t *testing.T) {
 		jsonBytes, _ := json.Marshal(expected)
 		response := string(jsonBytes)
 
-		fmt.Fprint(writer, response)
+		_, err := fmt.Fprint(writer, response)
+		require.NoError(t, err)
 	})
 
-	projects, _, err := client.Projects.List(teamID, nil)
-
+	projects, _, err := testClient.Projects.List(t.Context(), teamID, nil)
 	if err != nil {
 		t.Errorf("Projects.List returned %+v", err)
 	}
@@ -62,7 +64,7 @@ func TestProject_Get(t *testing.T) {
 		ID:   projectID,
 		Name: "My Project",
 		Href: "/projects/321",
-		Bgp: ProjectBGP{
+		BGP: ProjectBGP{
 			Enabled:  true,
 			LocalASN: 123,
 		},
@@ -70,7 +72,7 @@ func TestProject_Get(t *testing.T) {
 
 	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID), func(writer http.ResponseWriter, request *http.Request) {
 		testMethod(t, request, http.MethodGet)
-		fmt.Fprint(writer, `{
+		_, err := fmt.Fprint(writer, `{
 			"id": 321,
 			"name": "My Project",
 			"href": "/projects/321",
@@ -79,9 +81,10 @@ func TestProject_Get(t *testing.T) {
 				"local_asn": 123
 			}
 		}`)
+		require.NoError(t, err)
 	})
 
-	project, _, err := client.Projects.Get(projectID, nil)
+	project, _, err := testClient.Projects.Get(t.Context(), projectID, nil)
 	if err != nil {
 		t.Errorf("Project.List returned %+v", err)
 	}
@@ -99,7 +102,7 @@ func TestProject_Create(t *testing.T) {
 		ID:   322,
 		Name: "My Custom Project",
 		Href: "/projects/322",
-		Bgp: ProjectBGP{
+		BGP: ProjectBGP{
 			Enabled:  true,
 			LocalASN: 123,
 		},
@@ -124,14 +127,15 @@ func TestProject_Create(t *testing.T) {
 
 		jsonBytes, _ := json.Marshal(expected)
 		response := string(jsonBytes)
-		fmt.Fprint(writer, response)
+		_, err = fmt.Fprint(writer, response)
+		require.NoError(t, err)
 	})
 
 	projectCreate := CreateProject{
 		Name: "My Custom Project",
 	}
 
-	project, _, err := client.Projects.Create(teamID, &projectCreate)
+	project, _, err := testClient.Projects.Create(t.Context(), teamID, &projectCreate)
 	if err != nil {
 		t.Errorf("Project.Create returned %+v", err)
 	}
@@ -163,7 +167,8 @@ func TestProject_Update(t *testing.T) {
 			t.Errorf("Request body\n sent %#v\n expected %#v", v, requestBody)
 		}
 
-		fmt.Fprint(writer, `{"id": 321}`)
+		_, err = fmt.Fprint(writer, `{"id": 321}`)
+		require.NoError(t, err)
 	})
 
 	name := "My Updated Project"
@@ -171,10 +176,10 @@ func TestProject_Update(t *testing.T) {
 
 	projectUpdate := UpdateProject{
 		Name: &name,
-		Bgp:  &bgp,
+		BGP:  &bgp,
 	}
 
-	_, _, err := client.Projects.Update(projectID, &projectUpdate)
+	_, _, err := testClient.Projects.Update(t.Context(), projectID, &projectUpdate)
 	if err != nil {
 		t.Errorf("Project.Update returned %+v", err)
 	}
@@ -189,11 +194,11 @@ func TestProject_Delete(t *testing.T) {
 
 		writer.WriteHeader(http.StatusNoContent)
 
-		fmt.Fprint(writer)
+		_, err := fmt.Fprint(writer)
+		require.NoError(t, err)
 	})
 
-	_, err := client.Projects.Delete(projectID)
-
+	_, err := testClient.Projects.Delete(t.Context(), projectID)
 	if err != nil {
 		t.Errorf("Project.Delete returned %+v", err)
 	}
@@ -221,10 +226,11 @@ func TestProjectSSHKeys_List(t *testing.T) {
 		jsonBytes, _ := json.Marshal(expected)
 		response := string(jsonBytes)
 
-		fmt.Fprint(writer, response)
+		_, err := fmt.Fprint(writer, response)
+		require.NoError(t, err)
 	})
 
-	sshKeys, _, err := client.Projects.ListSSHKeys(123, nil)
+	sshKeys, _, err := testClient.Projects.ListSSHKeys(t.Context(), 123, nil)
 	if err != nil {
 		t.Errorf("Projects.ListSSHKeys returned %+v", err)
 	}
