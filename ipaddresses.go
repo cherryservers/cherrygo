@@ -38,6 +38,9 @@ type IPAddress struct {
 	Tags          *map[string]string `json:"tags,omitempty"`
 	DDoSScrubbing bool               `json:"ddos_scrubbing,omitempty"`
 	Href          string             `json:"href,omitempty"`
+
+	// Only available for private IPs.
+	VLANID int `json:"vlan_id,omitempty"`
 }
 
 // RoutedTo fields

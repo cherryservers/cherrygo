@@ -100,7 +100,10 @@ type Server struct {
 	Backup           BackupStorage     `json:"backup_storage,omitempty"`
 	Created          string            `json:"created_at,omitempty"`
 	TerminationDate  string            `json:"termination_date,omitempty"`
-	VLAN             int               `json:"vlan,omitempty"`
+
+	// This is the ID of the public VLAN and is only set for bare-metal servers.
+	// See IPAddress.VLANID for the private VLAN ID.
+	VLAN int `json:"vlan,omitempty"`
 }
 
 // BMC data.

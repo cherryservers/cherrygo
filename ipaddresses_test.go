@@ -59,6 +59,10 @@ func TestIpAddresses_List(t *testing.T) {
 			ARecord:   "a-b",
 			Href:      "/ips/e84d6ae8-573c-ecf9-a01d-afc57f95e910",
 		},
+		{
+			ID:     "55fcd8f8-3916-d26e-523f-85a2a52b90bc",
+			VLANID: 1234,
+		},
 	}
 
 	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID)+"/ips", func(writer http.ResponseWriter, request *http.Request) {
