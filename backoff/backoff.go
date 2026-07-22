@@ -38,10 +38,16 @@ func RateLimitedExponentialBackoff(cfg ExponentialBackoffConfig) Func {
 func ExponentialBackoff(cfg ExponentialBackoffConfig) Func {
 	return func(attempts int, _ *http.Response) time.Duration {
 		backoffSeconds := cfg.Base.Seconds() * math.Pow(cfg.Multiplier, float64(attempts))
-		backoff := time.Second * time.Duration(backoffSeconds)
-		backoff = jitter(backoff)
 
-		return min(backoff, cfg.Cap)
+		// Guard against overflow on high iterations.
+		if math.IsNaN(backoffSeconds) ||
+			math.IsInf(backoffSeconds, 0) ||
+			backoffSeconds <= 0 ||
+			backoffSeconds >= cfg.Cap.Seconds() {
+			return cfg.Cap
+		}
+		backoff := time.Duration(backoffSeconds * float64(time.Second))
+		return jitter(backoff)
 	}
 }
 

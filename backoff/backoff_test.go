@@ -85,3 +85,14 @@ func TestRateLimitedExponentialBackoff(t *testing.T) {
 		})
 	}
 }
+
+func TestExponentialBackoffNoOverflow(t *testing.T) {
+	fn := backoff.ExponentialBackoff(backoff.ExponentialBackoffConfig{
+		Base:       2 * time.Second,
+		Cap:        60 * time.Second,
+		Multiplier: 2,
+	})
+
+	got := fn(1000, nil)
+	assert.Equal(t, 60*time.Second, got)
+}
