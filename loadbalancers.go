@@ -1,0 +1,191 @@
+package cherrygo
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"net/netip"
+	"time"
+)
+
+const lbPath = "/v1/load-balancers"
+
+// LoadBalancerService is used to manage load balancer resources.
+//
+// Check out the [API docs] for specifics on the API
+// and [product docs] for details on how Cherry Servers load balancers work.
+//
+// [API docs]: https://api.cherryservers.com/doc/#tag/Load-Balancer
+// [product docs]: https://www.cherryservers.com/knowledge/docs/networking/load-balancer
+type LoadBalancerService interface {
+	Get(ctx context.Context, id int, opts *GetOptions) (LoadBalancer, *Response, error)
+}
+
+// LoadBalancer represents a Cherry Servers load balancer resource.
+//
+// Check out the [product docs] for details on how Cherry Servers load balancers work.
+//
+// [product docs]: https://www.cherryservers.com/knowledge/docs/networking/load-balancer
+type LoadBalancer struct {
+	ID     int              `json:"id,omitzero"`
+	Name   string           `json:"name,omitzero"`
+	Status string           `json:"status,omitzero"`
+	Plan   LoadBalancerPlan `json:"plan,omitzero"`
+
+	// Servers that the load balancer may route traffic to.
+	Servers []Server `json:"servers,omitzero"`
+
+	// Rules for routing traffic to backend servers.
+	Rules      []LoadBalancerRule `json:"rules,omitzero"`
+	IPAdresses []IPAddress        `json:"ip_addresses,omitzero"`
+	Region     Region             `json:"region,omitzero"`
+
+	// Backends define the rules and mechanisms for routing traffic
+	// to a particular backend server.
+	Backends []LoadBalancerBackend `json:"backends,omitzero"`
+
+	// StickyCookie is the cookie that is used to route subsequent requests from
+	// the same client to the same server.
+	StickyCookie string `json:"sticky_cookie,omitzero"`
+
+	// StickyEnabled indicates whether sticky sessions are enabled with the
+	// use of StickyCookie.
+	StickyEnabled bool `json:"sticky_enabled"`
+
+	// HTTPSRedirectEnabled indicates whether all HTTP traffic will be
+	// redirected through HTTPS via a 307 redirect.
+	HTTPSRedirectEnabled bool `json:"https_redirect_enabled"`
+
+	// ProxyEnabled indicates whether the client IP address will be preserved
+	// as the request passes through the load balancer.
+	ProxyEnabled bool `json:"proxy_enabled"`
+
+	// Certificates that the load balancer uses, if HTTPS routing
+	// rules are in effect.
+	Certificates []LoadBalancerCertificate `json:"certificates,omitzero"`
+	Pricing      Pricing                   `json:"pricing,omitzero"`
+
+	// HealthCheck defines the health checking rules for backend servers.
+	HealthCheck LoadBalancerHealthCheck `json:"health_check,omitzero"`
+}
+
+// LoadBalancerPlan represents the core load balancer attributes,
+// based on price and regional availability.
+type LoadBalancerPlan struct {
+	Slug       string                      `json:"slug,omitzero"`
+	Pricing    []Pricing                   `json:"pricing,omitzero"`
+	Regions    []Region                    `json:"regions,omitzero"`
+	Attributes []LoadBalancerPlanAttribute `json:"attributes,omitzero"`
+}
+
+// LoadBalancerPlanAttribute defines load balancer attributes,
+// such as max RPS or bandwidth limitations.
+type LoadBalancerPlanAttribute struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+// LoadBalancerRule defines how traffic is routed to backends.
+type LoadBalancerRule struct {
+	ID              string `json:"id,omitzero"`
+	SourcePort      int    `json:"source_port,omitzero"`
+	DestinationPort int    `json:"destination_port,omitzero"`
+
+	// SourceProtocol supports "tcp", "http", "http2" and "https".
+	// "https" requires adding a certificate.
+	SourceProtocol string `json:"source_protocol,omitzero"`
+
+	// DestinationProtocol supports "tcp", "http", "http2" and "https".
+	// "https" requires adding a certificate.
+	DestinationProtocol string `json:"destination_protocol,omitzero"`
+
+	// StickyEnabled indicates if sticky sessions (the use of a cookie
+	// to route subsequent requests from a client to the same server) are enabled.
+	StickyEnabled bool `json:"sticky_enabled"`
+
+	// Balance defines the algorithm to use for traffic balancing.
+	// The options are:
+	//   - roundrobin - forwards requests to each backend according
+	//     to their assigned weight; the higher the weight, the more requests are sent.
+	//   - static-rr - forwards requests to each backend in sequential order.
+	//   - leastconn - forwards requests to the backend that had the least active
+	//     connections at the time the request was made.
+	//   - source - preserves the incoming request’s original IP when forwarding it to the backend.
+	Balance string `json:"balance,omitzero"`
+	Status  string `json:"status,omitzero"`
+}
+
+// LoadBalancerBackend defines a backend server to which traffic is routed,
+// as well as the rule that specifies the routing mechanism.
+type LoadBalancerBackend struct {
+	Rule LoadBalancerRule `json:"rule,omitzero"`
+	IP   netip.Addr       `json:"ip,omitzero"`
+	Port int              `json:"port,omitzero"`
+
+	// Status should be "Up" for a healthy backend server.
+	Status string `json:"state,omitzero"`
+
+	// StatusDetail is a more detailed status description, such as
+	// "Layer4 connection problem".
+	StatusDetail string `json:"status,omitzero"`
+
+	// Weigh is used by some of the balance options in Rule
+	// to determine traffic distribution.
+	Weight int `json:"weight,omitzero"`
+
+	// Fails indicates how many times the backend server has failed to respond.
+	Fails int `json:"fails,omitzero"`
+
+	// Downs indicates how many times the backend servers went down.
+	Downs int `json:"downs,omitzero"`
+
+	// Downtime in seconds.
+	Downtime int `json:"downtime,omitzero"`
+}
+
+// LoadBalancerCertificate is a certificate for HTTPS-based rules.
+type LoadBalancerCertificate struct {
+	ID      string    `json:"id,omitzero"`
+	CN      string    `json:"cn,omitzero"`
+	Starts  time.Time `json:"starts,omitzero"`
+	Expires time.Time `json:"expires,omitzero"`
+}
+
+// LoadBalancerHealthCheck defines the parameters for health checks, should it be enabled.
+type LoadBalancerHealthCheck struct {
+	Enabled bool `json:"enabled"`
+
+	// Path defines the path at which to perform the health check.
+	// Only valid for HTTP/HTTPS based rules.
+	Path string `json:"path,omitzero"`
+
+	// Interval in seconds.
+	Interval int `json:"interval,omitzero"`
+
+	// HealthyThreshold is the number of successful health checks for the
+	// backend server, before it's considered healthy.
+	HealthyThreshold int `json:"healthy_threshold,omitzero"`
+
+	// UnhealthyThreshold is the number of failed health checks for the
+	// backend server, before it's considered unhealthy.
+	UnhealthyThreshold int `json:"unhealthy_threshold,omitzero"`
+}
+
+// LoadBalancerClient makes load balancer related API requests.
+type LoadBalancerClient struct {
+	client *Client
+}
+
+// Get retrieves a load balancer resource.
+func (c *LoadBalancerClient) Get(ctx context.Context, id int, opts *GetOptions) (LoadBalancer, *Response, error) {
+	path := opts.WithQuery(fmt.Sprintf("%s/%d", lbPath, id))
+	var trans LoadBalancer
+
+	req, err := c.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return LoadBalancer{}, nil, err
+	}
+
+	resp, err := c.client.Do(req, &trans)
+	return trans, resp, err
+}
