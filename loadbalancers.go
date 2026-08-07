@@ -19,6 +19,7 @@ const lbPath = "/v1/load-balancers"
 // [product docs]: https://www.cherryservers.com/knowledge/docs/networking/load-balancer
 type LoadBalancerService interface {
 	Get(ctx context.Context, id int, opts *GetOptions) (LoadBalancer, *Response, error)
+	List(ctx context.Context, projectID int, opts *GetOptions) ([]LoadBalancer, *Response, error)
 }
 
 // LoadBalancer represents a Cherry Servers load balancer resource.
@@ -179,13 +180,27 @@ type LoadBalancerClient struct {
 // Get retrieves a load balancer resource.
 func (c *LoadBalancerClient) Get(ctx context.Context, id int, opts *GetOptions) (LoadBalancer, *Response, error) {
 	path := opts.WithQuery(fmt.Sprintf("%s/%d", lbPath, id))
-	var trans LoadBalancer
+	var lb LoadBalancer
 
 	req, err := c.client.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
 		return LoadBalancer{}, nil, err
 	}
 
-	resp, err := c.client.Do(req, &trans)
-	return trans, resp, err
+	resp, err := c.client.Do(req, &lb)
+	return lb, resp, err
+}
+
+// List retrieves all load balancers in a project.
+func (c *LoadBalancerClient) List(ctx context.Context, projectID int, opts *GetOptions) ([]LoadBalancer, *Response, error) {
+	path := opts.WithQuery(fmt.Sprintf("%s/%d/load-balancers", baseProjectPath, projectID))
+	var lbs []LoadBalancer
+
+	req, err := c.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return []LoadBalancer{}, nil, err
+	}
+
+	resp, err := c.client.Do(req, &lbs)
+	return lbs, resp, err
 }

@@ -30,11 +30,13 @@ func TestLoadBalancer_Get(t *testing.T) {
 	setup()
 	defer teardown()
 
-	apiBody, err := os.Open(filepath.Join(".", "testdata", "loadbalancer.json"))
+	apiBody, err := os.Open(filepath.Join(".", "testdata", "loadbalancer", "get.json"))
 	require.NoError(t, err)
 	defer func() {
 		closeErr := apiBody.Close()
-		t.Log(closeErr.Error())
+		if err != nil {
+			t.Log(closeErr.Error())
+		}
 	}()
 
 	mux.HandleFunc("GET /v1/load-balancers/931318", func(w http.ResponseWriter, _ *http.Request) {
@@ -111,4 +113,28 @@ func TestLoadBalancer_Get(t *testing.T) {
 	assert.Contains(t, got.Certificates, wantCert)
 	assert.Equal(t, float32(1.11), got.Pricing.Price)
 	assert.Equal(t, wantHealthCheck, got.HealthCheck)
+}
+
+func TestLoadBalancer_List(t *testing.T) {
+	setup()
+	defer teardown()
+
+	apiBody, err := os.Open(filepath.Join(".", "testdata", "loadbalancer", "list.json"))
+	require.NoError(t, err)
+	defer func() {
+		closeErr := apiBody.Close()
+		if err != nil {
+			t.Log(closeErr.Error())
+		}
+	}()
+
+	mux.HandleFunc("GET /v1/projects/1/load-balancers", func(w http.ResponseWriter, _ *http.Request) {
+		_, handleErr := io.Copy(w, apiBody)
+		require.NoError(t, handleErr)
+	})
+
+	got, _, err := testClient.LoadBalancers.List(t.Context(), 1, nil)
+	require.NoError(t, err)
+
+	assert.Equal(t, 931318, got[0].ID)
 }
