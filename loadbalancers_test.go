@@ -115,6 +115,25 @@ func TestLoadBalancer_Get(t *testing.T) {
 	assert.Equal(t, wantHealthCheck, got.HealthCheck)
 }
 
+func TestLoadBalancer_GetSendsOpts(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("GET /v1/load-balancers/1", func(w http.ResponseWriter, r *http.Request) {
+		handleErr := r.ParseForm()
+		require.NoError(t, handleErr)
+		limit := r.Form.Get("limit")
+		assert.Equal(t, "1", limit)
+		w.Write([]byte(`{"id": 1}`))
+	})
+
+	got, _, err := testClient.LoadBalancers.Get(t.Context(), 1, &GetOptions{
+		Limit: 1,
+	})
+	require.NoError(t, err)
+	assert.Equal(t, 1, got.ID)
+}
+
 func TestLoadBalancer_List(t *testing.T) {
 	setup()
 	defer teardown()
@@ -137,4 +156,21 @@ func TestLoadBalancer_List(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, 931318, got[0].ID)
+}
+
+func TestLoadBalancer_ListSendsOpts(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("GET /v1/projects/1/load-balancers", func(w http.ResponseWriter, r *http.Request) {
+		handleErr := r.ParseForm()
+		require.NoError(t, handleErr)
+		limit := r.Form.Get("limit")
+		assert.Equal(t, "1", limit)
+		w.Write([]byte(`[{"id": 1}]`))
+	})
+
+	got, _, err := testClient.LoadBalancers.List(t.Context(), 1, &GetOptions{Limit: 1})
+	require.NoError(t, err)
+	assert.Equal(t, 1, got[0].ID)
 }
