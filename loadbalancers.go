@@ -21,6 +21,7 @@ type LoadBalancerService interface {
 	Get(ctx context.Context, id int, opts *GetOptions) (LoadBalancer, *Response, error)
 	List(ctx context.Context, projectID int, opts *GetOptions) ([]LoadBalancer, *Response, error)
 	Create(ctx context.Context, projectID int, request CreateLoadBalancer) (LoadBalancer, *Response, error)
+	Delete(ctx context.Context, id int) (*Response, error)
 }
 
 // LoadBalancer represents a Cherry Servers load balancer resource.
@@ -238,4 +239,16 @@ func (c *LoadBalancerClient) Create(ctx context.Context, projectID int, request 
 
 	resp, err := c.client.Do(req, &lb)
 	return lb, resp, err
+}
+
+// Delete a load balancer.
+func (c *LoadBalancerClient) Delete(ctx context.Context, id int) (*Response, error) {
+	path := fmt.Sprintf("%s/%d", lbPath, id)
+
+	req, err := c.client.NewRequest(ctx, http.MethodDelete, path, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.client.Do(req, nil)
 }

@@ -225,3 +225,15 @@ func TestLoadBalancer_Create(t *testing.T) {
 		})
 	}
 }
+
+func TestLoadBalancer_Delete(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("DELETE /v1/load-balancers/1", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	_, err := testClient.LoadBalancers.Delete(t.Context(), 1)
+	require.NoError(t, err)
+}
