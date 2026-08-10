@@ -237,3 +237,40 @@ func TestLoadBalancer_Delete(t *testing.T) {
 	_, err := testClient.LoadBalancers.Delete(t.Context(), 1)
 	require.NoError(t, err)
 }
+
+func TestLoadBalancer_ListPlans(t *testing.T) {
+	setup()
+	defer teardown()
+
+	apiBody, err := os.Open(filepath.Join(".", "testdata", "loadbalancer", "plans.json"))
+	require.NoError(t, err)
+	defer func() {
+		closeErr := apiBody.Close()
+		if closeErr != nil {
+			t.Log(closeErr.Error())
+		}
+	}()
+
+	mux.HandleFunc("GET /v1/teams/1/load-balancer-plans", func(w http.ResponseWriter, r *http.Request) {
+		handleErr := r.ParseForm()
+		require.NoError(t, handleErr)
+		limit := r.Form.Get("limit")
+		assert.Equal(t, "1", limit)
+
+		_, handleErr = io.Copy(w, apiBody)
+		require.NoError(t, handleErr)
+	})
+
+	got, _, err := testClient.LoadBalancers.ListPlans(t.Context(), 1, &GetOptions{Limit: 1})
+	require.NoError(t, err)
+
+	wantAttribute := LoadBalancerPlanAttribute{
+		Name:  "Number of vCPUs",
+		Value: "1",
+	}
+
+	assert.Equal(t, "load_balancer_1", got[0].Slug)
+	assert.Equal(t, float32(12.1), got[0].Pricing[0].Price)
+	assert.Equal(t, "LT-Siauliai", got[0].Regions[0].Slug)
+	assert.Equal(t, wantAttribute, got[0].Attributes[0])
+}

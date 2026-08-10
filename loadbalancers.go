@@ -22,6 +22,7 @@ type LoadBalancerService interface {
 	List(ctx context.Context, projectID int, opts *GetOptions) ([]LoadBalancer, *Response, error)
 	Create(ctx context.Context, projectID int, request CreateLoadBalancer) (LoadBalancer, *Response, error)
 	Delete(ctx context.Context, id int) (*Response, error)
+	ListPlans(ctx context.Context, teamID int, opts *GetOptions) ([]LoadBalancerPlan, *Response, error)
 }
 
 // LoadBalancer represents a Cherry Servers load balancer resource.
@@ -251,4 +252,18 @@ func (c *LoadBalancerClient) Delete(ctx context.Context, id int) (*Response, err
 	}
 
 	return c.client.Do(req, nil)
+}
+
+// ListPlans lists load balancer plans.
+func (c *LoadBalancerClient) ListPlans(ctx context.Context, teamID int, opts *GetOptions) ([]LoadBalancerPlan, *Response, error) {
+	path := opts.WithQuery(fmt.Sprintf("%s/%d/load-balancer-plans", teamsPath, teamID))
+	var plans []LoadBalancerPlan
+
+	req, err := c.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return []LoadBalancerPlan{}, nil, err
+	}
+
+	resp, err := c.client.Do(req, &plans)
+	return plans, resp, err
 }
