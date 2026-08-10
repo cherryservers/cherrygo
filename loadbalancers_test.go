@@ -1,6 +1,7 @@
 package cherrygo
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"net/netip"
@@ -124,7 +125,8 @@ func TestLoadBalancer_GetSendsOpts(t *testing.T) {
 		require.NoError(t, handleErr)
 		limit := r.Form.Get("limit")
 		assert.Equal(t, "1", limit)
-		w.Write([]byte(`{"id": 1}`))
+		_, handleErr = w.Write([]byte(`{"id": 1}`))
+		require.NoError(t, handleErr)
 	})
 
 	got, _, err := testClient.LoadBalancers.Get(t.Context(), 1, &GetOptions{
@@ -167,10 +169,59 @@ func TestLoadBalancer_ListSendsOpts(t *testing.T) {
 		require.NoError(t, handleErr)
 		limit := r.Form.Get("limit")
 		assert.Equal(t, "1", limit)
-		w.Write([]byte(`[{"id": 1}]`))
+		_, handleErr = w.Write([]byte(`[{"id": 1}]`))
+		require.NoError(t, handleErr)
 	})
 
 	got, _, err := testClient.LoadBalancers.List(t.Context(), 1, &GetOptions{Limit: 1})
 	require.NoError(t, err)
 	assert.Equal(t, 1, got[0].ID)
+}
+
+func TestLoadBalancer_Create(t *testing.T) {
+	cases := []struct {
+		name     string
+		req      CreateLoadBalancer
+		wantBody string
+	}{
+		{
+			name: "only plan set",
+			req: CreateLoadBalancer{
+				Plan: "test-plan",
+			},
+			wantBody: "{\"slug\":\"test-plan\"}\n",
+		},
+		{
+			name: "all fields set",
+			req: CreateLoadBalancer{
+				Name:   "test-name",
+				Plan:   "test-plan",
+				Region: "test-region",
+				Cycle:  "test-cycle",
+			},
+			wantBody: "{\"name\":\"test-name\",\"slug\":\"test-plan\",\"region\":\"test-region\",\"cycle\":\"test-cycle\"}\n",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			setup()
+			defer teardown()
+
+			mux.HandleFunc("POST /v1/projects/1/load-balancers", func(w http.ResponseWriter, r *http.Request) {
+				body, handleErr := io.ReadAll(r.Body)
+				require.NoError(t, handleErr)
+				assert.Equal(t, tc.wantBody, string(body))
+
+				w.WriteHeader(http.StatusCreated)
+				_, handleErr = fmt.Fprint(w, `{"id":1}`)
+				require.NoError(t, handleErr)
+			})
+
+			got, _, err := testClient.LoadBalancers.Create(t.Context(), 1, tc.req)
+			require.NoError(t, err)
+
+			assert.Equal(t, 1, got.ID)
+		})
+	}
 }

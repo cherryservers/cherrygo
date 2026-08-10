@@ -20,6 +20,7 @@ const lbPath = "/v1/load-balancers"
 type LoadBalancerService interface {
 	Get(ctx context.Context, id int, opts *GetOptions) (LoadBalancer, *Response, error)
 	List(ctx context.Context, projectID int, opts *GetOptions) ([]LoadBalancer, *Response, error)
+	Create(ctx context.Context, projectID int, request CreateLoadBalancer) (LoadBalancer, *Response, error)
 }
 
 // LoadBalancer represents a Cherry Servers load balancer resource.
@@ -203,4 +204,38 @@ func (c *LoadBalancerClient) List(ctx context.Context, projectID int, opts *GetO
 
 	resp, err := c.client.Do(req, &lbs)
 	return lbs, resp, err
+}
+
+// CreateLoadBalancer is the body for a load balancer creation request.
+type CreateLoadBalancer struct {
+	// Name for the load balancer resource. Will be auto-generated, if not set.
+	Name string `json:"name,omitzero"`
+
+	// Plan slug. Required.
+	Plan string `json:"slug"`
+
+	// Region slug. Note that not all regions may support load balancers,
+	// see the [product docs]. Defaults to `LT-Siauliai`.
+	//
+	// [product docs]: https://www.cherryservers.com/knowledge/docs/networking/load-balancer
+	Region string `json:"region,omitzero"`
+
+	// Cycle sets the billing cycle for the load balancer.
+	// Defaults to "hourly". If another cycle is chosen, funds will be charged
+	// from the account balance to cover the invoice.
+	Cycle string `json:"cycle,omitzero"`
+}
+
+// Create a new load balancer.
+func (c *LoadBalancerClient) Create(ctx context.Context, projectID int, request CreateLoadBalancer) (LoadBalancer, *Response, error) {
+	path := fmt.Sprintf("%s/%d/load-balancers", baseProjectPath, projectID)
+	var lb LoadBalancer
+
+	req, err := c.client.NewRequest(ctx, http.MethodPost, path, request)
+	if err != nil {
+		return LoadBalancer{}, nil, err
+	}
+
+	resp, err := c.client.Do(req, &lb)
+	return lb, resp, err
 }
