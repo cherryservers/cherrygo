@@ -140,6 +140,12 @@ type ReinstallServerFields struct {
 	SSHKeys         []string `json:"ssh_keys,omitempty"`
 	UserData        string   `json:"user_data,omitempty"`
 	OSPartitionSize int      `json:"os_partition_size,omitempty"`
+
+	// PersistIPXE enables persisting the universal iPXE image between server boots.
+	// See the [product docs] for more on how Cherry Servers implements iPXE support.
+	//
+	// [product docs]: https://www.cherryservers.com/knowledge/docs/compute/configuration-management/ipxe#how-ipxe-works-with-cherry-servers
+	PersistIPXE bool `json:"persist_ipxe"`
 }
 
 type rescueServer struct {
@@ -196,6 +202,12 @@ type CreateServer struct {
 	Cycle           string             `json:"cycle,omitempty"`
 	DiscountCode    string             `json:"discount,omitempty"`
 	ConfigureIPv6   *bool              `json:"configure_ipv6,omitempty"`
+
+	// PersistIPXE enables persisting the universal iPXE image between server boots.
+	// See the [product docs] for more on how Cherry Servers implements iPXE support.
+	//
+	// [product docs]: https://www.cherryservers.com/knowledge/docs/compute/configuration-management/ipxe#how-ipxe-works-with-cherry-servers
+	PersistIPXE bool `json:"persist_ipxe"`
 }
 
 // UpdateServer fields for updating a server with specified tags
