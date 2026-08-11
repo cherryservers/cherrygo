@@ -274,3 +274,61 @@ func TestLoadBalancer_ListPlans(t *testing.T) {
 	assert.Equal(t, "LT-Siauliai", got[0].Regions[0].Slug)
 	assert.Equal(t, wantAttribute, got[0].Attributes[0])
 }
+
+func TestLoadBalancer_Update(t *testing.T) {
+	cases := []struct {
+		name     string
+		req      UpdateLoadBalancer
+		wantBody string
+	}{
+		{
+			name:     "all fields omitted",
+			wantBody: "{}\n",
+		},
+		{
+			name: "all fields present",
+			req: UpdateLoadBalancer{
+				Name:                 "n",
+				Plan:                 "p",
+				StickyCookie:         "c",
+				StickyEnabled:        new(bool),
+				HTTPSRedirectEnabled: new(bool),
+				ProxyEnabled:         new(bool),
+				HealthCheckEnabled:   new(bool),
+				HealthCheckPath:      "/",
+				HealthCheckInterval:  1,
+				HealthyThreshold:     1,
+				UnhealthyThreshold:   1,
+			},
+			wantBody: "{\"name\":\"n\",\"slug\":\"p\"," +
+				"\"sticky_cookie\":\"c\",\"sticky_enabled\":false," +
+				"\"https_redirect_enabled\":false,\"proxy_enabled\":false," +
+				"\"health_check_enabled\":false,\"health_check_path\":\"/\"," +
+				"\"health_check_interval\":1,\"healthy_threshold\":1," +
+				"\"unhealthy_threshold\":1}\n",
+		},
+	}
+
+	setup()
+	defer teardown()
+
+	var wantBody string
+	mux.HandleFunc("PUT /v1/load-balancers/1", func(w http.ResponseWriter, r *http.Request) {
+		bod, handleErr := io.ReadAll(r.Body)
+		require.NoError(t, handleErr)
+		assert.Equal(t, wantBody, string(bod))
+
+		_, handleErr = fmt.Fprint(w, `{"id":1}`)
+		require.NoError(t, handleErr)
+	})
+
+	for _, tc := range cases {
+		wantBody = tc.wantBody
+		t.Run(tc.name, func(t *testing.T) {
+			got, _, err := testClient.LoadBalancers.Update(t.Context(), 1, tc.req)
+			require.NoError(t, err)
+
+			assert.Equal(t, 1, got.ID)
+		})
+	}
+}

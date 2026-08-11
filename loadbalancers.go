@@ -23,6 +23,7 @@ type LoadBalancerService interface {
 	Create(ctx context.Context, projectID int, request CreateLoadBalancer) (LoadBalancer, *Response, error)
 	Delete(ctx context.Context, id int) (*Response, error)
 	ListPlans(ctx context.Context, teamID int, opts *GetOptions) ([]LoadBalancerPlan, *Response, error)
+	Update(ctx context.Context, id int, request UpdateLoadBalancer) (LoadBalancer, *Response, error)
 }
 
 // LoadBalancer represents a Cherry Servers load balancer resource.
@@ -266,4 +267,56 @@ func (c *LoadBalancerClient) ListPlans(ctx context.Context, teamID int, opts *Ge
 
 	resp, err := c.client.Do(req, &plans)
 	return plans, resp, err
+}
+
+// UpdateLoadBalancer is the body for a load balancer update request.
+type UpdateLoadBalancer struct {
+	Name string `json:"name,omitzero"`
+
+	// Plan slug. Initiates an upgrade process, during which the load balancer will be unavailable.
+	Plan string `json:"slug,omitzero"`
+
+	// StickyCookie used by sticky sessions.
+	StickyCookie string `json:"sticky_cookie,omitzero"`
+
+	// StickEnabled enables sticky sessions, which route subsequent requests
+	// from the same client to the same server.
+	StickyEnabled *bool `json:"sticky_enabled,omitzero"`
+
+	// HTTPSRedirectEnabled redirects all HTTP traffic through HTTPS with a 307 redirect.
+	HTTPSRedirectEnabled *bool `json:"https_redirect_enabled,omitzero"`
+
+	// ProxyEnabled preserves client IP as the request passes through the load balancer.
+	ProxyEnabled *bool `json:"proxy_enabled,omitzero"`
+
+	// HealthCheckEnabled enables backend server health checks. Only for HTTP/S rules.
+	HealthCheckEnabled *bool `json:"health_check_enabled,omitzero"`
+
+	// HealthCheckPath is the path at which the health checks are performed.
+	HealthCheckPath string `json:"health_check_path,omitzero"`
+
+	// HealthCheckInterval determines how often to perform health checks, in seconds.
+	HealthCheckInterval int `json:"health_check_interval,omitzero"`
+
+	// HealthyThreshold determines how many successful health checks are required
+	// for a backend server to become healthy.
+	HealthyThreshold int `json:"healthy_threshold,omitzero"`
+
+	// UnhealthyThreshold determines how many failed health checks are required for
+	// a backend server to become unhealthy.
+	UnhealthyThreshold int `json:"unhealthy_threshold,omitzero"`
+}
+
+// Update load balancer.
+func (c *LoadBalancerClient) Update(ctx context.Context, id int, request UpdateLoadBalancer) (LoadBalancer, *Response, error) {
+	path := fmt.Sprintf("%s/%d", lbPath, id)
+	var lb LoadBalancer
+
+	req, err := c.client.NewRequest(ctx, http.MethodPut, path, request)
+	if err != nil {
+		return LoadBalancer{}, nil, err
+	}
+
+	resp, err := c.client.Do(req, &lb)
+	return lb, resp, err
 }
