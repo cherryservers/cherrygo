@@ -24,6 +24,7 @@ type LoadBalancerService interface {
 	Delete(ctx context.Context, id int) (*Response, error)
 	ListPlans(ctx context.Context, teamID int, opts *GetOptions) ([]LoadBalancerPlan, *Response, error)
 	Update(ctx context.Context, id int, request UpdateLoadBalancer) (LoadBalancer, *Response, error)
+	Reset(ctx context.Context, id int) (LoadBalancer, *Response, error)
 }
 
 // LoadBalancer represents a Cherry Servers load balancer resource.
@@ -313,6 +314,26 @@ func (c *LoadBalancerClient) Update(ctx context.Context, id int, request UpdateL
 	var lb LoadBalancer
 
 	req, err := c.client.NewRequest(ctx, http.MethodPut, path, request)
+	if err != nil {
+		return LoadBalancer{}, nil, err
+	}
+
+	resp, err := c.client.Do(req, &lb)
+	return lb, resp, err
+}
+
+// Reset load balancer.
+// This will re-deploy the load balancer, keeping all existing configuration.
+func (c *LoadBalancerClient) Reset(ctx context.Context, id int) (LoadBalancer, *Response, error) {
+	path := fmt.Sprintf("%s/%d/actions", lbPath, id)
+	bod := struct {
+		Type string `json:"type"`
+	}{
+		Type: "reset",
+	}
+	var lb LoadBalancer
+
+	req, err := c.client.NewRequest(ctx, http.MethodPost, path, bod)
 	if err != nil {
 		return LoadBalancer{}, nil, err
 	}

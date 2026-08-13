@@ -332,3 +332,23 @@ func TestLoadBalancer_Update(t *testing.T) {
 		})
 	}
 }
+
+func TestLoadBalancer_Reset(t *testing.T) {
+	setup()
+	defer teardown()
+
+	wantBody := "{\"type\":\"reset\"}\n"
+
+	mux.HandleFunc("POST /v1/load-balancers/1/actions", func(w http.ResponseWriter, r *http.Request) {
+		body, handleErr := io.ReadAll(r.Body)
+		require.NoError(t, handleErr)
+		assert.Equal(t, wantBody, string(body))
+
+		_, handleErr = fmt.Fprint(w, `{"id":1}`)
+		require.NoError(t, handleErr)
+	})
+
+	got, _, err := testClient.LoadBalancers.Reset(t.Context(), 1)
+	require.NoError(t, err)
+	assert.Equal(t, 1, got.ID)
+}
