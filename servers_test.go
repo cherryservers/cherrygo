@@ -754,6 +754,44 @@ func TestServer_WaitForStatusFailsWhenContextCancelled(t *testing.T) {
 	assert.Equal(t, 2, pollCount)
 }
 
+func TestServer_WaitForStatusReturnsErrorWhenDeploymentFails(t *testing.T) {
+	mux := http.NewServeMux()
+	apiServer := httptest.NewServer(mux)
+	defer apiServer.Close()
+
+	ctx := t.Context()
+
+	var pollF backoff.Func = func(_ int, _ *http.Response) time.Duration {
+		return 0
+	}
+
+	client, err := NewClient(WithAPIKey(
+		"fakeKey"),
+		WithPollBackoff(pollF),
+		WithURL(apiServer.URL),
+	)
+	require.NoError(t, err)
+
+	pollCount := 0
+	mux.HandleFunc("GET /v1/servers/123", func(w http.ResponseWriter, _ *http.Request) {
+		var handleErr error
+		pollCount++
+		if pollCount > 2 {
+			_, handleErr = fmt.Fprint(w, `{"id": 123, "status": "failed deployment"}`)
+		} else {
+			_, handleErr = fmt.Fprint(w, `{"id": 123, "status": "deploying"}`)
+		}
+		require.NoError(t, handleErr)
+	})
+
+	srv, resp, err := client.Servers.WaitForStatus(ctx, 123, StatusDeployed)
+
+	assert.Error(t, err)
+	assert.NotNil(t, resp)
+	assert.Equal(t, "failed deployment", srv.Status)
+	assert.Equal(t, 3, pollCount)
+}
+
 func TestGeneratePasswordGeneratesValidCherryServersPasswords(t *testing.T) {
 	const minLen = 16
 	var failures []string
