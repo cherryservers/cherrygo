@@ -35,11 +35,15 @@ const (
 	// iPXE, since these don't go through the full standard deployment
 	// process.
 	StatusAllocated
+
+	// StatusFailed is an internal Cherry Servers deployment failure.
+	StatusFailed
 )
 
 var serverStatusValues = map[ServerStatus]string{
 	StatusDeployed:  "deployed",
 	StatusAllocated: "allocated",
+	StatusFailed:    "failed deployment",
 }
 
 func (ss ServerStatus) String() string {
@@ -455,6 +459,7 @@ func (s *ServersClient) ListCycles(ctx context.Context, opts *GetOptions) ([]Ser
 }
 
 // WaitForStatus blocks until server reaches specified status.
+// Returns an error if the server has a failing status.
 func (s *ServersClient) WaitForStatus(ctx context.Context, serverID int, status ServerStatus) (Server, *Response, error) {
 	if s.client.pollBackoff == nil {
 		return Server{}, nil, errors.New("nil client pollBackoff function")
@@ -464,22 +469,23 @@ func (s *ServersClient) WaitForStatus(ctx context.Context, serverID int, status 
 	for {
 		server, resp, err := s.Get(ctx, serverID, nil)
 		if err != nil {
-			return Server{}, nil, err
+			return Server{}, resp, err
 		}
 
 		if server.Status == status.String() {
 			return server, resp, nil
 		}
 
-		if resp == nil {
-			return Server{}, nil, fmt.Errorf("nil response from GET server %d", serverID)
+		if server.Status == StatusFailed.String() {
+			err = fmt.Errorf("server %d deployment failed, contact support for assistance", serverID)
+			return server, resp, err
 		}
 
 		select {
 		case <-time.After(s.client.pollBackoff(attempt, resp.Response)):
 			attempt++
 		case <-ctx.Done():
-			return Server{}, nil, ctx.Err()
+			return Server{}, resp, ctx.Err()
 		}
 	}
 }
