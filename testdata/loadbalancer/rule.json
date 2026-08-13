@@ -1,0 +1,10 @@
+{
+  "id": "9d4007cc-8109-11f1-a8ee-00163e7dabb3",
+  "source_port": 8765,
+  "destination_port": 6443,
+  "source_protocol": "tcp",
+  "destination_protocol": "tcp",
+  "sticky_enabled": false,
+  "balance": "roundrobin",
+  "status": "Active"
+}

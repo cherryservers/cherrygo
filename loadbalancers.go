@@ -25,6 +25,8 @@ type LoadBalancerService interface {
 	ListPlans(ctx context.Context, teamID int, opts *GetOptions) ([]LoadBalancerPlan, *Response, error)
 	Update(ctx context.Context, id int, request UpdateLoadBalancer) (LoadBalancer, *Response, error)
 	Reset(ctx context.Context, id int) (LoadBalancer, *Response, error)
+
+	GetRule(ctx context.Context, lbID int, ruleID string, opts *GetOptions) (LoadBalancerRule, *Response, error)
 }
 
 // LoadBalancer represents a Cherry Servers load balancer resource.
@@ -340,4 +342,18 @@ func (c *LoadBalancerClient) Reset(ctx context.Context, id int) (LoadBalancer, *
 
 	resp, err := c.client.Do(req, &lb)
 	return lb, resp, err
+}
+
+// GetRule retrieves a specific load balancing rule.
+func (c *LoadBalancerClient) GetRule(ctx context.Context, lbID int, ruleID string, opts *GetOptions) (LoadBalancerRule, *Response, error) {
+	path := opts.WithQuery(fmt.Sprintf("%s/%d/rules/%s", lbPath, lbID, ruleID))
+	var rule LoadBalancerRule
+
+	req, err := c.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return LoadBalancerRule{}, nil, err
+	}
+
+	resp, err := c.client.Do(req, &rule)
+	return rule, resp, err
 }

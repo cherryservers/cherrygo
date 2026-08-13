@@ -352,3 +352,44 @@ func TestLoadBalancer_Reset(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, 1, got.ID)
 }
+
+func TestLoadBalancer_GetRule(t *testing.T) {
+	setup()
+	defer teardown()
+
+	apiResp, err := os.Open(filepath.Join(".", "testdata", "loadbalancer", "rule.json"))
+	require.NoError(t, err)
+	defer func() {
+		closeErr := apiResp.Close()
+		if closeErr != nil {
+			t.Log(closeErr.Error())
+		}
+	}()
+
+	mux.HandleFunc("GET /v1/load-balancers/1/rules/9d4007cc-8109-11f1-a8ee-00163e7dabb3",
+		func(w http.ResponseWriter, r *http.Request) {
+			handleErr := r.ParseForm()
+			require.NoError(t, handleErr)
+			limit := r.Form.Get("limit")
+			assert.Equal(t, "1", limit)
+
+			_, handleErr = io.Copy(w, apiResp)
+			require.NoError(t, handleErr)
+		})
+
+	got, _, err := testClient.LoadBalancers.GetRule(
+		t.Context(),
+		1,
+		"9d4007cc-8109-11f1-a8ee-00163e7dabb3",
+		&GetOptions{Limit: 1})
+	require.NoError(t, err)
+
+	assert.Equal(t, "9d4007cc-8109-11f1-a8ee-00163e7dabb3", got.ID)
+	assert.Equal(t, 8765, got.SourcePort)
+	assert.Equal(t, 6443, got.DestinationPort)
+	assert.Equal(t, "tcp", got.SourceProtocol)
+	assert.Equal(t, "tcp", got.DestinationProtocol)
+	assert.False(t, got.StickyEnabled)
+	assert.Equal(t, "roundrobin", got.Balance)
+	assert.Equal(t, "Active", got.Status)
+}
