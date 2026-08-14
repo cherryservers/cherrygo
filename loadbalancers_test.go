@@ -34,7 +34,7 @@ func TestLoadBalancer_Get(t *testing.T) {
 	apiBody, err := os.ReadFile(filepath.Join(".", "testdata", "loadbalancer", "get.json"))
 	require.NoError(t, err)
 
-	setupGetHandler(t, apiBody, "GET /v1/load-balancers/931318")
+	setupGetWithOptsHandler(t, apiBody, "GET /v1/load-balancers/931318")
 
 	got, _, err := testClient.LoadBalancers.Get(t.Context(), 931318, &GetOptions{Limit: 1})
 	require.NoError(t, err)
@@ -114,7 +114,7 @@ func TestLoadBalancer_List(t *testing.T) {
 	apiBody, err := os.ReadFile(filepath.Join(".", "testdata", "loadbalancer", "list.json"))
 	require.NoError(t, err)
 
-	setupGetHandler(t, apiBody, "GET /v1/projects/1/load-balancers")
+	setupGetWithOptsHandler(t, apiBody, "GET /v1/projects/1/load-balancers")
 
 	got, _, err := testClient.LoadBalancers.List(t.Context(), 1, &GetOptions{Limit: 1})
 	require.NoError(t, err)
@@ -152,15 +152,13 @@ func TestLoadBalancer_Create(t *testing.T) {
 			setup()
 			defer teardown()
 
-			mux.HandleFunc("POST /v1/projects/1/load-balancers", func(w http.ResponseWriter, r *http.Request) {
-				body, handleErr := io.ReadAll(r.Body)
-				require.NoError(t, handleErr)
-				assert.Equal(t, tc.wantBody, string(body))
-
-				w.WriteHeader(http.StatusCreated)
-				_, handleErr = fmt.Fprint(w, `{"id":1}`)
-				require.NoError(t, handleErr)
-			})
+			setupHandler(
+				t,
+				tc.wantBody,
+				`{"id":1}`,
+				http.StatusCreated,
+				"POST /v1/projects/1/load-balancers",
+			)
 
 			got, _, err := testClient.LoadBalancers.Create(t.Context(), 1, tc.req)
 			require.NoError(t, err)
@@ -174,9 +172,7 @@ func TestLoadBalancer_Delete(t *testing.T) {
 	setup()
 	defer teardown()
 
-	mux.HandleFunc("DELETE /v1/load-balancers/1", func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(http.StatusNoContent)
-	})
+	setupHandler(t, "", "", http.StatusNoContent, "DELETE /v1/load-balancers/1")
 
 	_, err := testClient.LoadBalancers.Delete(t.Context(), 1)
 	require.NoError(t, err)
@@ -189,7 +185,7 @@ func TestLoadBalancer_ListPlans(t *testing.T) {
 	apiBody, err := os.ReadFile(filepath.Join(".", "testdata", "loadbalancer", "plans.json"))
 	require.NoError(t, err)
 
-	setupGetHandler(t, apiBody, "GET /v1/teams/1/load-balancer-plans")
+	setupGetWithOptsHandler(t, apiBody, "GET /v1/teams/1/load-balancer-plans")
 
 	got, _, err := testClient.LoadBalancers.ListPlans(t.Context(), 1, &GetOptions{Limit: 1})
 	require.NoError(t, err)
@@ -239,22 +235,18 @@ func TestLoadBalancer_Update(t *testing.T) {
 		},
 	}
 
-	setup()
-	defer teardown()
-
-	var wantBody string
-	mux.HandleFunc("PUT /v1/load-balancers/1", func(w http.ResponseWriter, r *http.Request) {
-		bod, handleErr := io.ReadAll(r.Body)
-		require.NoError(t, handleErr)
-		assert.Equal(t, wantBody, string(bod))
-
-		_, handleErr = fmt.Fprint(w, `{"id":1}`)
-		require.NoError(t, handleErr)
-	})
-
 	for _, tc := range cases {
-		wantBody = tc.wantBody
 		t.Run(tc.name, func(t *testing.T) {
+			setup()
+			defer teardown()
+			setupHandler(
+				t,
+				tc.wantBody,
+				`{"id":1}`,
+				http.StatusOK,
+				"PUT /v1/load-balancers/1",
+			)
+
 			got, _, err := testClient.LoadBalancers.Update(t.Context(), 1, tc.req)
 			require.NoError(t, err)
 
@@ -267,16 +259,13 @@ func TestLoadBalancer_Reset(t *testing.T) {
 	setup()
 	defer teardown()
 
-	wantBody := "{\"type\":\"reset\"}\n"
-
-	mux.HandleFunc("POST /v1/load-balancers/1/actions", func(w http.ResponseWriter, r *http.Request) {
-		body, handleErr := io.ReadAll(r.Body)
-		require.NoError(t, handleErr)
-		assert.Equal(t, wantBody, string(body))
-
-		_, handleErr = fmt.Fprint(w, `{"id":1}`)
-		require.NoError(t, handleErr)
-	})
+	setupHandler(
+		t,
+		"{\"type\":\"reset\"}\n",
+		`{"id":1}`,
+		http.StatusOK,
+		"POST /v1/load-balancers/1/actions",
+	)
 
 	got, _, err := testClient.LoadBalancers.Reset(t.Context(), 1)
 	require.NoError(t, err)
@@ -290,7 +279,7 @@ func TestLoadBalancer_GetRule(t *testing.T) {
 	apiResp, err := os.ReadFile(filepath.Join(".", "testdata", "loadbalancer", "rule.json"))
 	require.NoError(t, err)
 
-	setupGetHandler(t, apiResp, "GET /v1/load-balancers/1/rules/9d4007cc-8109-11f1-a8ee-00163e7dabb3")
+	setupGetWithOptsHandler(t, apiResp, "GET /v1/load-balancers/1/rules/9d4007cc-8109-11f1-a8ee-00163e7dabb3")
 
 	got, _, err := testClient.LoadBalancers.GetRule(
 		t.Context(),
@@ -309,7 +298,7 @@ func TestLoadBalancer_GetRule(t *testing.T) {
 	assert.Equal(t, "Active", got.Status)
 }
 
-func setupGetHandler(t *testing.T, body []byte, handlePattern string) {
+func setupGetWithOptsHandler(t *testing.T, body []byte, handlePattern string) {
 	mux.HandleFunc(handlePattern, func(w http.ResponseWriter, r *http.Request) {
 		handleErr := r.ParseForm()
 		require.NoError(t, handleErr)
@@ -318,5 +307,20 @@ func setupGetHandler(t *testing.T, body []byte, handlePattern string) {
 
 		_, handleErr = fmt.Fprint(w, string(body))
 		require.NoError(t, handleErr)
+	})
+}
+
+func setupHandler(t *testing.T, wantReqBody, respBody string, status int, handlePattern string) {
+	mux.HandleFunc(handlePattern, func(w http.ResponseWriter, r *http.Request) {
+		if wantReqBody != "" {
+			body, err := io.ReadAll(r.Body)
+			require.NoError(t, err)
+			assert.Equal(t, wantReqBody, string(body))
+		}
+		w.WriteHeader(status)
+		if respBody != "" {
+			_, err := fmt.Fprint(w, respBody)
+			require.NoError(t, err)
+		}
 	})
 }
