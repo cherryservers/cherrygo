@@ -28,6 +28,7 @@ type LoadBalancerService interface {
 
 	GetRule(ctx context.Context, lbID int, ruleID string, opts *GetOptions) (LoadBalancerRule, *Response, error)
 	ListRules(ctx context.Context, id int, opts *GetOptions) ([]LoadBalancerRule, *Response, error)
+	CreateRule(ctx context.Context, id int, request CreateLoadBalancerRule) ([]LoadBalancerRule, *Response, error)
 }
 
 // LoadBalancer represents a Cherry Servers load balancer resource.
@@ -365,6 +366,48 @@ func (c *LoadBalancerClient) ListRules(ctx context.Context, id int, opts *GetOpt
 	var rules []LoadBalancerRule
 
 	req, err := c.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := c.client.Do(req, &rules)
+	return rules, resp, err
+}
+
+// CreateLoadBalancerRule is the body for a load balancer rule creation request.
+type CreateLoadBalancerRule struct {
+	// SourceProtocol supports "tcp", "http", "http2" and "https".
+	// "https" requires adding a certificate.
+	SourceProtocol string `json:"source_protocol"`
+	SourcePort     int    `json:"source_port"`
+
+	// DestinationProtocol supports "tcp", "http", "http2" and "https".
+	// "https" requires adding a certificate.
+	DestinationProtocol string `json:"destination_protocol"`
+	DestinationPort     int    `json:"destination_port"`
+
+	// CertificateID is the TLS certificate ID for https-based rules.
+	CertificateID string `json:"certificate_id,omitzero"`
+
+	// Balance defines the algorithm to use for traffic balancing.
+	// The options are:
+	//   - roundrobin - forwards requests to each backend according
+	//     to their assigned weight; the higher the weight, the more requests are sent.
+	//   - static-rr - forwards requests to each backend in sequential order.
+	//   - leastconn - forwards requests to the backend that had the least active
+	//     connections at the time the request was made.
+	//   - source - preserves the incoming request’s original IP when forwarding it to the backend.
+	//
+	// Defaults to "roundrobin".
+	Balance string `json:"balance,omitzero"`
+}
+
+// CreateRule creates a new load balancer routing rule.
+func (c *LoadBalancerClient) CreateRule(ctx context.Context, id int, request CreateLoadBalancerRule) ([]LoadBalancerRule, *Response, error) {
+	path := fmt.Sprintf("%s/%d/rules", lbPath, id)
+	var rules []LoadBalancerRule
+
+	req, err := c.client.NewRequest(ctx, http.MethodPost, path, request)
 	if err != nil {
 		return nil, nil, err
 	}

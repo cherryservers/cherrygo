@@ -310,6 +310,51 @@ func TestLoadBalancer_ListRules(t *testing.T) {
 	assert.Equal(t, "a", got[0].ID)
 }
 
+func TestLoadBalancer_CreateRule(t *testing.T) {
+	cases := []struct {
+		name        string
+		req         CreateLoadBalancerRule
+		wantReqBody string
+	}{
+		{
+			name:        "no params",
+			wantReqBody: "{\"source_protocol\":\"\",\"source_port\":0,\"destination_protocol\":\"\",\"destination_port\":0}\n",
+		},
+		{
+			name: "all params",
+			req: CreateLoadBalancerRule{
+				SourceProtocol:      "test-proto",
+				SourcePort:          1,
+				DestinationProtocol: "test-proto",
+				DestinationPort:     1,
+				CertificateID:       "1",
+				Balance:             "test-balance",
+			},
+			wantReqBody: "{\"source_protocol\":\"test-proto\",\"source_port\":1,\"destination_protocol\":\"test-proto\",\"destination_port\":1,\"certificate_id\":\"1\",\"balance\":\"test-balance\"}\n",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			setup()
+			defer teardown()
+
+			setupHandler(
+				t,
+				tc.wantReqBody,
+				`[{"id":"a"}]`,
+				http.StatusOK,
+				"POST /v1/load-balancers/1/rules",
+			)
+
+			got, _, err := testClient.LoadBalancers.CreateRule(t.Context(), 1, tc.req)
+			require.NoError(t, err)
+
+			assert.Equal(t, "a", got[0].ID)
+		})
+	}
+}
+
 func setupGetWithOptsHandler(t *testing.T, body []byte, handlePattern string) {
 	mux.HandleFunc(handlePattern, func(w http.ResponseWriter, r *http.Request) {
 		handleErr := r.ParseForm()
