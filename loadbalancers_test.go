@@ -381,6 +381,46 @@ func TestLoadBalancer_ListServers(t *testing.T) {
 	assert.Equal(t, 1, got[0].ID)
 }
 
+func TestLoadBalancer_AddServer(t *testing.T) {
+	cases := []struct {
+		name        string
+		req         AddLoadBalancerServer
+		wantReqBody string
+	}{
+		{
+			name:        "no params",
+			wantReqBody: "{\"server_id\":0}\n",
+		},
+		{
+			name: "all params",
+			req: AddLoadBalancerServer{
+				ServerID:     1,
+				ServerWeight: 1,
+			},
+			wantReqBody: "{\"server_id\":1,\"server_weight\":1}\n",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			setup()
+			defer teardown()
+
+			setupHandler(
+				t,
+				tc.wantReqBody,
+				`[{"id":1}]`,
+				200,
+				"POST /v1/load-balancers/1/servers",
+			)
+
+			got, _, err := testClient.LoadBalancers.AddServer(t.Context(), 1, tc.req)
+			require.NoError(t, err)
+			assert.Equal(t, 1, got[0].ID)
+		})
+	}
+}
+
 func setupGetWithOptsHandler(t *testing.T, body []byte, handlePattern string) {
 	mux.HandleFunc(handlePattern, func(w http.ResponseWriter, r *http.Request) {
 		handleErr := r.ParseForm()

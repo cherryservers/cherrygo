@@ -32,6 +32,7 @@ type LoadBalancerService interface {
 	DeleteRule(ctx context.Context, lbID int, ruleID string) (*Response, error)
 
 	ListServers(ctx context.Context, id int, opts *GetOptions) ([]Server, *Response, error)
+	AddServer(ctx context.Context, id int, request AddLoadBalancerServer) ([]Server, *Response, error)
 }
 
 // LoadBalancer represents a Cherry Servers load balancer resource.
@@ -142,7 +143,7 @@ type LoadBalancerBackend struct {
 	// "Layer4 connection problem".
 	StatusDetail string `json:"status,omitzero"`
 
-	// Weigh is used by some of the balance options in Rule
+	// Weight is used by some of the balance options in Rule
 	// to determine traffic distribution.
 	Weight int `json:"weight,omitzero"`
 
@@ -437,6 +438,29 @@ func (c *LoadBalancerClient) ListServers(ctx context.Context, id int, opts *GetO
 	var servers []Server
 
 	req, err := c.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := c.client.Do(req, &servers)
+	return servers, resp, err
+}
+
+// AddLoadBalancerServer is the body for a load balancer server addition request.
+type AddLoadBalancerServer struct {
+	ServerID int `json:"server_id"`
+
+	// ServerWeight is used by some of the balancing algorithms
+	// to determine traffic distribution. Defaults to 99.
+	ServerWeight int `json:"server_weight,omitzero"`
+}
+
+// AddServer adds a server to the load balancer, so that traffic may be routed to it.
+func (c *LoadBalancerClient) AddServer(ctx context.Context, id int, request AddLoadBalancerServer) ([]Server, *Response, error) {
+	path := fmt.Sprintf("%s/%d/servers", lbPath, id)
+	var servers []Server
+
+	req, err := c.client.NewRequest(ctx, http.MethodPost, path, request)
 	if err != nil {
 		return nil, nil, err
 	}
