@@ -355,6 +355,16 @@ func TestLoadBalancer_CreateRule(t *testing.T) {
 	}
 }
 
+func TestLoadBalancer_DeleteRule(t *testing.T) {
+	setup()
+	defer teardown()
+
+	setupHandler(t, "", "", 204, "DELETE /v1/load-balancers/1/rules/a")
+
+	_, err := testClient.LoadBalancers.DeleteRule(t.Context(), 1, "a")
+	require.NoError(t, err)
+}
+
 func setupGetWithOptsHandler(t *testing.T, body []byte, handlePattern string) {
 	mux.HandleFunc(handlePattern, func(w http.ResponseWriter, r *http.Request) {
 		handleErr := r.ParseForm()

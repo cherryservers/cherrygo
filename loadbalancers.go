@@ -29,6 +29,7 @@ type LoadBalancerService interface {
 	GetRule(ctx context.Context, lbID int, ruleID string, opts *GetOptions) (LoadBalancerRule, *Response, error)
 	ListRules(ctx context.Context, id int, opts *GetOptions) ([]LoadBalancerRule, *Response, error)
 	CreateRule(ctx context.Context, id int, request CreateLoadBalancerRule) ([]LoadBalancerRule, *Response, error)
+	DeleteRule(ctx context.Context, lbID int, ruleID string) (*Response, error)
 }
 
 // LoadBalancer represents a Cherry Servers load balancer resource.
@@ -414,4 +415,16 @@ func (c *LoadBalancerClient) CreateRule(ctx context.Context, id int, request Cre
 
 	resp, err := c.client.Do(req, &rules)
 	return rules, resp, err
+}
+
+// DeleteRule deletes a load balancer routing rule.
+func (c *LoadBalancerClient) DeleteRule(ctx context.Context, lbID int, ruleID string) (*Response, error) {
+	path := fmt.Sprintf("%s/%d/rules/%s", lbPath, lbID, ruleID)
+
+	req, err := c.client.NewRequest(ctx, http.MethodDelete, path, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.client.Do(req, nil)
 }
