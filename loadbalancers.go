@@ -30,6 +30,8 @@ type LoadBalancerService interface {
 	ListRules(ctx context.Context, id int, opts *GetOptions) ([]LoadBalancerRule, *Response, error)
 	CreateRule(ctx context.Context, id int, request CreateLoadBalancerRule) ([]LoadBalancerRule, *Response, error)
 	DeleteRule(ctx context.Context, lbID int, ruleID string) (*Response, error)
+
+	ListServers(ctx context.Context, id int, opts *GetOptions) ([]Server, *Response, error)
 }
 
 // LoadBalancer represents a Cherry Servers load balancer resource.
@@ -427,4 +429,18 @@ func (c *LoadBalancerClient) DeleteRule(ctx context.Context, lbID int, ruleID st
 	}
 
 	return c.client.Do(req, nil)
+}
+
+// ListServers lists servers that the load balancer may route traffic to.
+func (c *LoadBalancerClient) ListServers(ctx context.Context, id int, opts *GetOptions) ([]Server, *Response, error) {
+	path := opts.WithQuery(fmt.Sprintf("%s/%d/servers", lbPath, id))
+	var servers []Server
+
+	req, err := c.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := c.client.Do(req, &servers)
+	return servers, resp, err
 }

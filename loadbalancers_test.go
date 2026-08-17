@@ -365,6 +365,22 @@ func TestLoadBalancer_DeleteRule(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestLoadBalancer_ListServers(t *testing.T) {
+	setup()
+	defer teardown()
+
+	setupGetWithOptsHandler(t, []byte(`[{"id":1}]`), "GET /v1/load-balancers/1/servers")
+
+	got, _, err := testClient.LoadBalancers.ListServers(
+		t.Context(),
+		1,
+		&GetOptions{Limit: 1},
+	)
+
+	require.NoError(t, err)
+	assert.Equal(t, 1, got[0].ID)
+}
+
 func setupGetWithOptsHandler(t *testing.T, body []byte, handlePattern string) {
 	mux.HandleFunc(handlePattern, func(w http.ResponseWriter, r *http.Request) {
 		handleErr := r.ParseForm()
