@@ -176,6 +176,7 @@ func TestServer_Create(t *testing.T) {
 		"tags":           map[string]interface{}{"env": "dev"},
 		"spot_market":    false,
 		"configure_ipv6": false,
+		"persist_ipxe":   true,
 	}
 
 	mux.HandleFunc("/v1/projects/"+strconv.Itoa(projectID)+"/servers", func(writer http.ResponseWriter, request *http.Request) {
@@ -210,6 +211,7 @@ func TestServer_Create(t *testing.T) {
 		UserData:      "dXNlcl9kYXRh",
 		Tags:          &tags,
 		ConfigureIPv6: new(bool),
+		PersistIPXE:   true,
 	}
 
 	server, _, err := testClient.Servers.Create(t.Context(), &serverCreate)
@@ -579,6 +581,7 @@ func TestServer_Reinstall(t *testing.T) {
 		SSHKeys:         []string{"123"},
 		UserData:        "test-user-data",
 		OSPartitionSize: 1,
+		PersistIPXE:     true,
 	}
 
 	mux.HandleFunc("POST /v1/servers/123/actions", func(w http.ResponseWriter, r *http.Request) {
