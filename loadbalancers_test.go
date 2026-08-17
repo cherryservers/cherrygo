@@ -481,6 +481,24 @@ func TestLoadBalancer_AddCertificate(t *testing.T) {
 	}
 }
 
+func TestLoadBalancer_ListCertificates(t *testing.T) {
+	setup()
+	defer teardown()
+
+	respBody, err := os.ReadFile(filepath.Join("testdata", "loadbalancer", "certificates.json"))
+	require.NoError(t, err)
+
+	setupGetWithOptsHandler(t, respBody, "GET /v1/load-balancers/1/certificates")
+
+	got, _, err := testClient.LoadBalancers.ListCertificates(t.Context(), 1, &GetOptions{Limit: 1})
+	require.NoError(t, err)
+
+	assert.Equal(t, "86807cc4-9a2e-11f1-a8ee-00163e7dabb3", got[0].ID)
+	assert.Equal(t, "kube-apiserver", got[0].CN)
+	assert.Equal(t, "2026-07-10 11:45:00 +0300 EEST", got[0].Starts.String())
+	assert.Equal(t, "2027-07-10 11:45:00 +0300 EEST", got[0].Expires.String())
+}
+
 func setupGetWithOptsHandler(t *testing.T, body []byte, handlePattern string) {
 	mux.HandleFunc(handlePattern, func(w http.ResponseWriter, r *http.Request) {
 		handleErr := r.ParseForm()

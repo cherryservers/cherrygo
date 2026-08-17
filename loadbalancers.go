@@ -35,6 +35,7 @@ type LoadBalancerService interface {
 	AddServer(ctx context.Context, id int, request AddLoadBalancerServer) ([]Server, *Response, error)
 	DeleteServer(ctx context.Context, lbID, serverID int) (*Response, error)
 
+	ListCertificates(ctx context.Context, id int, opts *GetOptions) ([]LoadBalancerCertificate, *Response, error)
 	AddCertificate(ctx context.Context, id int, request AddLoadBalancerCertificate) ([]LoadBalancerCertificate, *Response, error)
 }
 
@@ -497,6 +498,20 @@ func (c *LoadBalancerClient) AddCertificate(ctx context.Context, id int, request
 	var certs []LoadBalancerCertificate
 
 	req, err := c.client.NewRequest(ctx, http.MethodPost, path, request)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := c.client.Do(req, &certs)
+	return certs, resp, err
+}
+
+// ListCertificates lists all the certificates available to the load balancer.
+func (c *LoadBalancerClient) ListCertificates(ctx context.Context, id int, opts *GetOptions) ([]LoadBalancerCertificate, *Response, error) {
+	path := opts.WithQuery(fmt.Sprintf("%s/%d/certificates", lbPath, id))
+	var certs []LoadBalancerCertificate
+
+	req, err := c.client.NewRequest(ctx, http.MethodGet, path, nil)
 	if err != nil {
 		return nil, nil, err
 	}
