@@ -499,6 +499,16 @@ func TestLoadBalancer_ListCertificates(t *testing.T) {
 	assert.Equal(t, "2027-07-10 11:45:00 +0300 EEST", got[0].Expires.String())
 }
 
+func TestLoadBalancer_DeleteCertificate(t *testing.T) {
+	setup()
+	defer teardown()
+
+	setupHandler(t, "", "", http.StatusNoContent, "DELETE /v1/load-balancers/1/certificates/a")
+
+	_, err := testClient.LoadBalancers.DeleteCertificate(t.Context(), 1, "a")
+	require.NoError(t, err)
+}
+
 func setupGetWithOptsHandler(t *testing.T, body []byte, handlePattern string) {
 	mux.HandleFunc(handlePattern, func(w http.ResponseWriter, r *http.Request) {
 		handleErr := r.ParseForm()

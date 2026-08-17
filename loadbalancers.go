@@ -37,6 +37,7 @@ type LoadBalancerService interface {
 
 	ListCertificates(ctx context.Context, id int, opts *GetOptions) ([]LoadBalancerCertificate, *Response, error)
 	AddCertificate(ctx context.Context, id int, request AddLoadBalancerCertificate) ([]LoadBalancerCertificate, *Response, error)
+	DeleteCertificate(ctx context.Context, lbID int, certID string) (*Response, error)
 }
 
 // LoadBalancer represents a Cherry Servers load balancer resource.
@@ -518,4 +519,16 @@ func (c *LoadBalancerClient) ListCertificates(ctx context.Context, id int, opts 
 
 	resp, err := c.client.Do(req, &certs)
 	return certs, resp, err
+}
+
+// DeleteCertificate deletes a load balancer certificate.
+func (c *LoadBalancerClient) DeleteCertificate(ctx context.Context, lbID int, certID string) (*Response, error) {
+	path := fmt.Sprintf("%s/%d/certificates/%s", lbPath, lbID, certID)
+
+	req, err := c.client.NewRequest(ctx, http.MethodDelete, path, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.client.Do(req, nil)
 }
