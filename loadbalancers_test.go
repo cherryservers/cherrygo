@@ -298,6 +298,18 @@ func TestLoadBalancer_GetRule(t *testing.T) {
 	assert.Equal(t, "Active", got.Status)
 }
 
+func TestLoadBalancer_ListRules(t *testing.T) {
+	setup()
+	defer teardown()
+
+	setupGetWithOptsHandler(t, []byte(`[{"id":"a"}]`), "GET /v1/load-balancers/1/rules")
+
+	got, _, err := testClient.LoadBalancers.ListRules(t.Context(), 1, &GetOptions{Limit: 1})
+	require.NoError(t, err)
+
+	assert.Equal(t, "a", got[0].ID)
+}
+
 func setupGetWithOptsHandler(t *testing.T, body []byte, handlePattern string) {
 	mux.HandleFunc(handlePattern, func(w http.ResponseWriter, r *http.Request) {
 		handleErr := r.ParseForm()
