@@ -439,6 +439,48 @@ func TestLoadBalancer_DeleteServer(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestLoadBalancer_AddCertificate(t *testing.T) {
+	cases := []struct {
+		name        string
+		req         AddLoadBalancerCertificate
+		wantReqBody string
+	}{
+		{
+			name:        "no params",
+			wantReqBody: "{\"key\":\"\",\"certificate\":\"\"}\n",
+		},
+		{
+			name: "all params",
+			req: AddLoadBalancerCertificate{
+				PrivateKey:  "a",
+				Certificate: "a",
+			},
+			wantReqBody: "{\"key\":\"a\",\"certificate\":\"a\"}\n",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			setup()
+			defer teardown()
+
+			setupHandler(
+				t,
+				tc.wantReqBody,
+				`[{"id": "a"}]`,
+				http.StatusOK,
+				"POST /v1/load-balancers/1/certificates",
+			)
+
+			got, _, err := testClient.LoadBalancers.AddCertificate(
+				t.Context(), 1, tc.req)
+			require.NoError(t, err)
+
+			assert.Equal(t, "a", got[0].ID)
+		})
+	}
+}
+
 func setupGetWithOptsHandler(t *testing.T, body []byte, handlePattern string) {
 	mux.HandleFunc(handlePattern, func(w http.ResponseWriter, r *http.Request) {
 		handleErr := r.ParseForm()

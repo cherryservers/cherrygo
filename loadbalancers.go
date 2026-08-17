@@ -34,6 +34,8 @@ type LoadBalancerService interface {
 	ListServers(ctx context.Context, id int, opts *GetOptions) ([]Server, *Response, error)
 	AddServer(ctx context.Context, id int, request AddLoadBalancerServer) ([]Server, *Response, error)
 	DeleteServer(ctx context.Context, lbID, serverID int) (*Response, error)
+
+	AddCertificate(ctx context.Context, id int, request AddLoadBalancerCertificate) ([]LoadBalancerCertificate, *Response, error)
 }
 
 // LoadBalancer represents a Cherry Servers load balancer resource.
@@ -481,4 +483,24 @@ func (c *LoadBalancerClient) DeleteServer(ctx context.Context, lbID, serverID in
 	}
 
 	return c.client.Do(req, nil)
+}
+
+// AddLoadBalancerCertificate is the body for a load balancer certificate addition request.
+type AddLoadBalancerCertificate struct {
+	PrivateKey  string `json:"key"`
+	Certificate string `json:"certificate"`
+}
+
+// AddCertificate adds a certificate that the load balancer can use for HTTPS rules.
+func (c *LoadBalancerClient) AddCertificate(ctx context.Context, id int, request AddLoadBalancerCertificate) ([]LoadBalancerCertificate, *Response, error) {
+	path := fmt.Sprintf("%s/%d/certificates", lbPath, id)
+	var certs []LoadBalancerCertificate
+
+	req, err := c.client.NewRequest(ctx, http.MethodPost, path, request)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := c.client.Do(req, &certs)
+	return certs, resp, err
 }
