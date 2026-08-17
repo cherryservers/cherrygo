@@ -82,6 +82,11 @@ func TestLoadBalancer_Get(t *testing.T) {
 		UnhealthyThreshold: 3,
 	}
 
+	wantMetric := LoadBalancerMetric{
+		Title: "CPU Usage",
+		URL:   "https://lb-graph.cherryservers.com/84.32.109.76:5656/d-solo/0vm8QxLDz/load-balancer-proxy?orgId=2&theme=light&panelId=320&from=now-3h&to=now",
+	}
+
 	assert.Equal(t, 931318, got.ID)
 	assert.Equal(t, "test", got.Name)
 	assert.Equal(t, "deployed", got.Status)
@@ -105,6 +110,7 @@ func TestLoadBalancer_Get(t *testing.T) {
 	assert.Contains(t, got.Certificates, wantCert)
 	assert.Equal(t, float32(1.11), got.Pricing.Price)
 	assert.Equal(t, wantHealthCheck, got.HealthCheck)
+	assert.Equal(t, wantMetric, got.Metrics[0])
 }
 
 func TestLoadBalancer_List(t *testing.T) {

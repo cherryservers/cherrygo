@@ -86,6 +86,9 @@ type LoadBalancer struct {
 
 	// HealthCheck defines the health checking rules for backend servers.
 	HealthCheck LoadBalancerHealthCheck `json:"health_check,omitzero"`
+
+	// Metrics defines the load balancer metric server URLs.
+	Metrics []LoadBalancerMetric `json:"metrics,omitzero"`
 }
 
 // LoadBalancerPlan represents the core load balancer attributes,
@@ -188,6 +191,12 @@ type LoadBalancerHealthCheck struct {
 	// UnhealthyThreshold is the number of failed health checks for the
 	// backend server, before it's considered unhealthy.
 	UnhealthyThreshold int `json:"unhealthy_threshold,omitzero"`
+}
+
+// LoadBalancerMetric contains the metric server URLs.
+type LoadBalancerMetric struct {
+	Title string `json:"title"`
+	URL   string `json:"url"`
 }
 
 // LoadBalancerClient makes load balancer related API requests.
