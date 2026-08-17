@@ -421,6 +421,24 @@ func TestLoadBalancer_AddServer(t *testing.T) {
 	}
 }
 
+func TestLoadBalancer_DeleteServer(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("DELETE /v1/load-balancers/1/servers", func(w http.ResponseWriter, r *http.Request) {
+		handleErr := r.ParseForm()
+		require.NoError(t, handleErr)
+
+		serverID := r.Form.Get("server_id")
+		assert.Equal(t, "1", serverID)
+
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	_, err := testClient.LoadBalancers.DeleteServer(t.Context(), 1, 1)
+	require.NoError(t, err)
+}
+
 func setupGetWithOptsHandler(t *testing.T, body []byte, handlePattern string) {
 	mux.HandleFunc(handlePattern, func(w http.ResponseWriter, r *http.Request) {
 		handleErr := r.ParseForm()
