@@ -175,7 +175,7 @@ type LoadBalancerHealthCheck struct {
 	Enabled bool `json:"enabled"`
 
 	// Path defines the path at which to perform the health check.
-	// Only valid for HTTP/HTTPS based rules.
+	// Only valid for HTTPS based rules.
 	Path string `json:"path,omitzero"`
 
 	// Interval in seconds.
@@ -303,10 +303,10 @@ type UpdateLoadBalancer struct {
 	// ProxyEnabled preserves client IP as the request passes through the load balancer.
 	ProxyEnabled *bool `json:"proxy_enabled,omitzero"`
 
-	// HealthCheckEnabled enables backend server health checks. Only for HTTP/S rules.
+	// HealthCheckEnabled enables backend server health checks.
 	HealthCheckEnabled *bool `json:"health_check_enabled,omitzero"`
 
-	// HealthCheckPath is the path at which the health checks are performed.
+	// HealthCheckPath is the path at which the health checks are performed.  Only for HTTP/S rules.
 	HealthCheckPath string `json:"health_check_path,omitzero"`
 
 	// HealthCheckInterval determines how often to perform health checks, in seconds.
