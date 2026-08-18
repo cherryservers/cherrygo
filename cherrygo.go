@@ -41,17 +41,18 @@ type Client struct {
 	UserAgent string
 	APIKey    string
 
-	Teams       TeamsService
-	Plans       PlansService
-	Images      ImagesService
-	Projects    ProjectsService
-	SSHKeys     SSHKeysService
-	Servers     ServersService
-	IPAddresses IPAddressesService
-	Storages    StoragesService
-	Regions     RegionsService
-	Users       UsersService
-	Backups     BackupsService
+	Teams         TeamsService
+	Plans         PlansService
+	Images        ImagesService
+	Projects      ProjectsService
+	SSHKeys       SSHKeysService
+	Servers       ServersService
+	IPAddresses   IPAddressesService
+	Storages      StoragesService
+	Regions       RegionsService
+	Users         UsersService
+	Backups       BackupsService
+	LoadBalancers LoadBalancerService
 }
 
 // Response is the http response from api calls.
@@ -225,6 +226,7 @@ func NewClient(opts ...ClientOpt) (*Client, error) {
 	c.Regions = &RegionsClient{client: c}
 	c.Users = &UsersClient{client: c}
 	c.Backups = &BackupsClient{client: c}
+	c.LoadBalancers = &LoadBalancerClient{client: c}
 
 	return c, err
 }
