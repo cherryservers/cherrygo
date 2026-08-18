@@ -501,8 +501,8 @@ func TestLoadBalancer_ListCertificates(t *testing.T) {
 
 	assert.Equal(t, "86807cc4-9a2e-11f1-a8ee-00163e7dabb3", got[0].ID)
 	assert.Equal(t, "kube-apiserver", got[0].CN)
-	assert.Equal(t, "2026-07-10 11:45:00 +0300 EEST", got[0].Starts.String())
-	assert.Equal(t, "2027-07-10 11:45:00 +0300 EEST", got[0].Expires.String())
+	assert.Equal(t, timeMustParse("2026-07-10T11:45:00+03:00"), got[0].Starts)
+	assert.Equal(t, timeMustParse("2027-07-10T11:45:00+03:00"), got[0].Expires)
 }
 
 func TestLoadBalancer_DeleteCertificate(t *testing.T) {
